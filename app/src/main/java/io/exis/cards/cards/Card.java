@@ -19,6 +19,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
+import android.content.Context;
+import java.util.Scanner;
 
 public class Card {
 
@@ -62,7 +64,14 @@ public class Card {
     }//end getCardByID method
 
     //load file into string and return it
-    private String getCardString(String path) throws IOException{
+    private String getCardString(String path, Context context) throws IOException{
+
+        //TODO get resourceID from path string
+
+        Scanner fileIn = new Scanner(context.getResources().openRawResource(file));
+
+        return fileIn.nextLine();
+
         /*
         FileInputStream stream;
         stream = Activity.openFileInput("test.txt");
@@ -75,12 +84,12 @@ public class Card {
         {
             fileContent.append(new String(buffer, 0, n));
         }
-        */
+
 
 
         byte[] encoded = Files.readAllBytes(Paths.get(path));
         return new String(encoded, "UTF-8");
-
+        */
     }//end getCardString method
 
 }
