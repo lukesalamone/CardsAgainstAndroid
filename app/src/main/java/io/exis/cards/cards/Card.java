@@ -11,6 +11,7 @@ package io.exis.cards.cards;
  */
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.provider.MediaStore;
 
 import org.json.*;
@@ -27,15 +28,19 @@ public class Card {
     int ID;
     String text;
     char type;
+    JSONObject cardsJSON = new JSONObject();
+    Context context;
+
+    //it will be difficult to add or remove questions...
+    private final int numQuestions21 = 36;
+    private final int numQuestions13 = 27;
 
     //Every card has an ID, associated text, and type
     //Type may be 'q' for question or 'a' for answer
     public Card(int cardID, String cardText, char cardType){
-
         ID = cardID;
         text = cardText;
         type = cardType;
-
     }
 
     public int getID(){
@@ -50,46 +55,63 @@ public class Card {
         return this.type;
     }//end getType method
 
-    //returns a Card from an ID.
-    //When R is true return normal card set
-    //When R is false return PG13 card set
-    public Card getCardByID(int ID, boolean R){
+    //returns a Card from an ID. When R is true return normal card set
+    public Card getCardByID(int ID, boolean R) throws JSONException{
+
+        char type;
 
         if(R){
-
+            //requesting a question card
+            if(ID < numQuestions21){
+                cardsJSON = getCardsJSON("q21");
+                type = 'q';
+            //requesting an answer card
+            } else {
+                cardsJSON = getCardsJSON("a21");
+                type = 'a';
+            }
         } else {
-
+            if(ID < numQuestions13){
+                cardsJSON = getCardsJSON("q13");
+                type = 'q';
+            } else {
+                cardsJSON = getCardsJSON("a13");
+                type = 'a';
+            }
         }
 
+        String cardText = cardsJSON.names().getString(ID);
+
+        Card card = new Card(ID, cardText, type);
+
+        return card;
     }//end getCardByID method
 
     //load file into string and return it
-    private String getCardString(String path, Context context) throws IOException{
+    private String getCardString(String name) {
 
-        //TODO get resourceID from path string
+        int resID = context.getResources().getIdentifier(name, "values", context.getPackageName());
 
-        Scanner fileIn = new Scanner(context.getResources().openRawResource(file));
+        Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
 
         return fileIn.nextLine();
 
-        /*
-        FileInputStream stream;
-        stream = Activity.openFileInput("test.txt");
-        StringBuffer fileContent = new StringBuffer("");
+    }//end getCardString method
 
-        byte[] buffer = new byte[1024];
+    private JSONObject getCardsJSON(String name){
 
-        int n = stream.read(buffer);
-        while (n != -1)
-        {
-            fileContent.append(new String(buffer, 0, n));
+        if(cardsJSON.length() == 0){
+            String cardString = getCardString(name);
+            try {
+                cardsJSON = new JSONObject(cardString);
+                return cardsJSON;
+            } catch (JSONException e){
+                throw new RuntimeException(e);
+            }
         }
 
+        return cardsJSON;
 
-
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return new String(encoded, "UTF-8");
-        */
-    }//end getCardString method
+    }//end getCardJSON method
 
 }
