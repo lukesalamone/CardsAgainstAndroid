@@ -16,19 +16,19 @@ public class Player {
 
     //list of a player's cards
     ArrayList<Card> hand = new ArrayList<Card>();
+    boolean isCzar;
 
     private Riffle riffle = new Riffle();
 
-    public Player(int ID, ArrayList<Card> cards){
+    public Player(int ID, ArrayList<Card> cards, boolean czar){
         playerID = ID;
         hand = cards;
+        boolean isCzar = czar;
     }//end Player constructor
 
     //allows player to submit to dealer
     public void submitCard(Card card){
-        int nullPos = -1;
         boolean removed = false;
-
 
         //get a receipt
         boolean received = riffle.submit(card);
@@ -47,9 +47,6 @@ public class Player {
             riffle.reportError(0, "Unable to add new card" +
                 " due to riffle response error", null, hand);
         }
-
-        return;
-
     }//end submitCard method
 
     public ArrayList<Card> getCards(){
