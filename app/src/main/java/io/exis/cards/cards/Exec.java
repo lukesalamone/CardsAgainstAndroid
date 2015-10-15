@@ -62,4 +62,17 @@ public class Exec {
         return counter++;
     }//end getNewID method
 
+    public double generateKey(){
+        double key;
+        double rand = Math.random()*Double.MAX_VALUE;
+
+        //get SYS time
+        double time = System.currentTimeMillis();;
+
+        //multiply by random number
+        key = time*rand;
+
+        return (int)key;
+    }
+
 }
