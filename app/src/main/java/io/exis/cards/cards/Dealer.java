@@ -28,9 +28,11 @@ public class Dealer {
 
     //pg13 or R
     boolean rating;
+    int dealerID;
 
-    public Dealer(boolean R){
+    public Dealer(boolean R, int ID){
         rating = R;
+        dealerID = ID;
     }
 
     public Card dealCard(Player player){
@@ -58,7 +60,7 @@ public class Dealer {
         return (getGameSize() + 1 > this.ROOMCAP);
     }
 
-    private boolean addPlayer(Player player){
+    public boolean addPlayer(Player player){
 
         //max capacity exceeded
         if(full()){
@@ -84,7 +86,7 @@ public class Dealer {
         return this.rating;
     }
 
-    private void removePlayer(Player player){
+    public void removePlayer(Player player){
         players.remove(player);
     }//end remove player method
 

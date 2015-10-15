@@ -26,7 +26,7 @@ public class RiffleSession {
         final String uri = "ws://ubuntu@ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws";
 
         try {
-            connection.connect(uri, new WebSocketHandler() {
+            this.connection.connect(uri, new WebSocketHandler() {
 
                 @Override
                 public void onOpen() {
@@ -72,8 +72,6 @@ public class RiffleSession {
     public boolean submit(Card card){
         boolean received = true;
 
-
-
         /*
          *
          * Insert magic here...
@@ -92,6 +90,10 @@ public class RiffleSession {
     public void leave(Player player){
 
     }//end leave method
+
+    public int getNewID(){
+
+    }
 
     public void rejectPlayer(Player player){
 

@@ -13,6 +13,8 @@ public class Exec {
 
     ArrayList<Dealer> dealers = new ArrayList<>();
 
+    int counter = 0;
+
     public Exec(){
 
     }//end Exec constructor
@@ -20,13 +22,20 @@ public class Exec {
     //create new dealer and add to dealer list
     //return dealer ID
     public Dealer addDealer(boolean R){
-        Dealer dealer = new Dealer(R);
+        Dealer dealer = new Dealer(R, getNewID());
         dealers.add(dealer);
         return dealer;
     }//end addDealer method
 
     public void removeDealer(Dealer dealer){
         dealers.remove(dealer);
+    }
+
+    public void addPlayer(boolean R){
+        Player newbie = new Player(getNewID(),
+                new ArrayList<Card>(),
+                false);
+        findDealer(R).addPlayer(newbie);
     }
 
     //finds a dealer of appropriate game not at max capacity
@@ -38,15 +47,19 @@ public class Exec {
             }
         }
 
-        return new Dealer(R);
+        return new Dealer(R, getNewID());
     }//end findDealer method
 
-    public void auth(String user, String pass){
+    public boolean auth(String user, String pass){
 
         /*
          * MAGIC GOES HERE
          */
-
+        return true;
     }//end auth method
+
+    public int getNewID(){
+        return counter++;
+    }//end getNewID method
 
 }
