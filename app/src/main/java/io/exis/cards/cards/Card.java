@@ -28,6 +28,7 @@ public class Card {
     int ID;
     String text;
     char type;
+    int PID;
     JSONObject cardsJSON = new JSONObject();
     Context context;
 
@@ -37,10 +38,11 @@ public class Card {
 
     //Every card has an ID, associated text, and type
     //Type may be 'q' for question or 'a' for answer
-    public Card(int cardID, String cardText, char cardType){
+    public Card(int cardID, String cardText, char cardType, int playerID){
         ID = cardID;
         text = cardText;
         type = cardType;
+        PID = playerID;
     }//end Card constructor
 
     public int getID(){
@@ -55,11 +57,15 @@ public class Card {
         return this.type;
     }//end getType method
 
+    public int getPID(){
+        return this.PID;
+    }
+
     public boolean equals(Card card){
         if(this.getID() != card.getID()){
             return false;
         }
-        if(!this.getText().equals(card.getText())){
+        if (!this.getText().equals(card.getText())){
             return false;
         }
         if(this.getType() != card.getType()){
@@ -95,7 +101,7 @@ public class Card {
 
         String cardText = cardsJSON.names().getString(ID);
 
-        Card card = new Card(ID, cardText, type);
+        Card card = new Card(ID, cardText, type, getPID());
 
         return card;
     }//end getCardByID method

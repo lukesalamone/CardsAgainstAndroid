@@ -43,6 +43,17 @@ public class RiffleSession {
                 public void onClose(int code, String reason) {
                     Log.d(TAG, "Connection lost.");
                 }
+
+                //allows player to request his hand
+                public ArrayList<Card> getHand(){
+
+                }//end getHand method
+
+                //allows players and dealers to play cards
+                public boolean sendCard(Card card, int playerID){
+
+                }//end sendCard method
+
             });
         } catch (WebSocketException e) {
             Log.d(TAG, e.toString());
@@ -57,8 +68,11 @@ public class RiffleSession {
 
     }//end isCardCzar method
 
+    //called when a player submits his card
     public boolean submit(Card card){
         boolean received = true;
+
+
 
         /*
          *
@@ -70,7 +84,7 @@ public class RiffleSession {
     }//end submit method
 
 
-    public Card receive(){
+    public Card sendCard(int PID){
 
     }//end receive method
 
@@ -79,15 +93,19 @@ public class RiffleSession {
 
     }//end leave method
 
-    public void reportError(int errCode, String msg){
+    public void rejectPlayer(Player player){
 
     }
 
-    public void reportError(int errCode, String msg, Card card){
+    public void reportError(int errCode, int PID, String msg){
+
+    }
+
+    public void reportError(int errCode, int PID, String msg, Card card){
 
     }//end reportError method
 
-    public void reportError(int errCode, String msg, Card card, ArrayList<Card> hand){
+    public void reportError(int errCode, int PID, String msg, Card card, ArrayList<Card> hand){
 
     }//end reportError method
 }
