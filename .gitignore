@@ -1,7 +1,14 @@
-.gradle
+#Directories#
+#############
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
-.DS_Store
 /build
 /captures
+
+#Annoying files#
+################
+.gradle
+.DS_Store
+*~
+*.swp
