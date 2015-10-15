@@ -26,8 +26,11 @@ public class Dealer {
     //dealers initiated with PID = 0
     RiffleSession riffle = new RiffleSession(0 + "");
 
-    public Dealer(boolean R){
+    //pg13 or R
+    boolean rating;
 
+    public Dealer(boolean R){
+        rating = R;
     }
 
     public Card dealCard(Player player){
@@ -51,12 +54,15 @@ public class Dealer {
 
     }//end dealCard method
 
-    private void addPlayer(Player player){
+    public boolean full(){
+        return (getGameSize() + 1 > this.ROOMCAP);
+    }
+
+    private boolean addPlayer(Player player){
 
         //max capacity exceeded
-        if(getGameSize() + 1 > this.ROOMCAP){
-            riffle.rejectPlayer(player);
-            return;
+        if(full()){
+            return false;
         }
 
         //add to local player list
@@ -66,11 +72,17 @@ public class Dealer {
         for(int i=0; i<5; i++){
             dealCard(player);
         }
+
+        return true;
     }//end addPlayer method
 
     public int getGameSize(){
         return players.size();
     }//end getGameSize method
+
+    public boolean getRating(){
+        return this.rating;
+    }
 
     private void removePlayer(Player player){
         players.remove(player);

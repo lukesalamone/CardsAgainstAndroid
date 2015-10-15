@@ -31,7 +31,22 @@ public class Exec {
 
     //finds a dealer of appropriate game not at max capacity
     public Dealer findDealer(boolean R){
+        //look for an open rating-appropriate dealer
+        for(int i=0; i<dealers.size(); i++){
+            if(dealers.get(i).getRating() == R && !dealers.get(i).full()){
+                return dealers.get(i);
+            }
+        }
 
+        return new Dealer(R);
     }//end findDealer method
+
+    public void auth(String user, String pass){
+
+        /*
+         * MAGIC GOES HERE
+         */
+
+    }//end auth method
 
 }
