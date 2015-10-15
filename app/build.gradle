@@ -6,7 +6,11 @@ android {
 
     defaultConfig {
         applicationId "io.exis.cards.cards"
+<<<<<<< HEAD
         minSdkVersion 22
+=======
+        minSdkVersion 17
+>>>>>>> e5842d6fb2b8b9fc622825869a479aef5f0a6c53
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"

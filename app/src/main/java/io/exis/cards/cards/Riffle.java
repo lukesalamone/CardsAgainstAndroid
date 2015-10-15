@@ -60,7 +60,7 @@ public class RiffleSession {
         }
     }//end start method
 
-    public ArrayList<Card> getCards(int playerID){
+    public ArrayList<Card> getCards(int playerID) {
 
     }//end getCards method
 
