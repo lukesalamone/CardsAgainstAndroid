@@ -12,5 +12,5 @@
 .DS_Store
 *~
 *.swp
-.idea
-.iml
+*.idea
+*.iml
