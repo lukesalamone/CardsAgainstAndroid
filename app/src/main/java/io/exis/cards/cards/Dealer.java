@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
+ * Dealer.java
+ * Manages decks and player points
+ * May report corrupted players
+ *
  * Created by luke on 10/13/15.
  */
 public class Dealer {
@@ -42,6 +46,8 @@ public class Dealer {
 
         //send card to player
         riffle.sendCard(player.getPlayerID());
+
+        return card;
 
     }//end dealCard method
 
