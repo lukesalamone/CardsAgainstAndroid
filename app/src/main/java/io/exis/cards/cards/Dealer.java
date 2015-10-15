@@ -5,6 +5,18 @@ package io.exis.cards.cards;
  */
 public class Dealer {
 
+    Player[] players;
 
+    public Card dealCard(){
+
+    }//end dealCard method
+
+    private static void addPlayer(){
+
+    }//end addPlayer method
+
+    private static void removePlayer(){
+
+    }//end remove player method
 
 }

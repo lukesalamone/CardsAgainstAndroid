@@ -41,7 +41,7 @@ public class Card {
         ID = cardID;
         text = cardText;
         type = cardType;
-    }
+    }//end Card constructor
 
     public int getID(){
         return this.ID;
@@ -54,6 +54,19 @@ public class Card {
     public char getType(){
         return this.type;
     }//end getType method
+
+    public boolean equals(Card card){
+        if(this.getID() != card.getID()){
+            return false;
+        }
+        if(!this.getText().equals(card.getText())){
+            return false;
+        }
+        if(this.getType() != card.getType()){
+            return false;
+        }
+        return true;
+    }
 
     //returns a Card from an ID. When R is true return normal card set
     public Card getCardByID(int ID, boolean R) throws JSONException{
