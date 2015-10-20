@@ -9,7 +9,7 @@ import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
 
 /**
- * Riffle.java
+ * RiffleSession.java
  * Broker between dealer and player
  *
  * Created by luke on 10/13/15.
