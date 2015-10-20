@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+
+import de.tavendo.autobahn.Autobahn;
+import de.tavendo.autobahn.AutobahnConnection;
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
@@ -17,21 +20,23 @@ import de.tavendo.autobahn.WebSocketHandler;
 public class RiffleSession {
 
     public RiffleSession(String playerID){
-        final WebSocketConnection connection = new WebSocketConnection();
         start(playerID);
     }//end Riffle constructor
+
+    final AutobahnConnection connection = new AutobahnConnection();
 
     public void start(final String TAG) {
 
         final String uri = "ws://ubuntu@ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws";
 
         try {
-            this.connection.connect(uri, new WebSocketHandler() {
+            this.connection.connect(uri, new Autobahn.SessionHandler() {
 
                 @Override
                 public void onOpen() {
                     Log.d(TAG, "Status: Connected to " + uri);
                     connection.sendTextMessage("Hello, world!");
+                    eventPubSub();
                 }
 
                 @Override
@@ -44,21 +49,40 @@ public class RiffleSession {
                     Log.d(TAG, "Connection lost.");
                 }
 
-                //allows player to request his hand
-                public ArrayList<Card> getHand(){
-
-                }//end getHand method
-
-                //allows players and dealers to play cards
-                public boolean sendCard(Card card, int playerID){
-
-                }//end sendCard method
-
             });
         } catch (WebSocketException e) {
             Log.d(TAG, e.toString());
         }
     }//end start method
+
+    private class playerSubmitsCard{
+        Player player;
+        Card card;
+    }
+
+    private void eventPubSub(){
+        connection.subscribe("PlayerSubmitsCard",
+                playerSubmitsCard.class;
+                new Autobahn.EventHandler(){
+                    @Override
+                    public void onEvent(String topic, Object event) {
+
+                        //
+
+                    }//end onEvent method
+                };
+        );
+    }//end eventPubSub method
+
+    //allows player to request his hand
+    public ArrayList<Card> getHand(){
+
+    }//end getHand method
+
+    //allows players and dealers to play cards
+    public boolean sendCard(Card card, int playerID){
+
+    }//end sendCard method
 
     public ArrayList<Card> getCards(int playerID) {
 

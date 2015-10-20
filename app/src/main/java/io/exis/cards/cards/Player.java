@@ -61,6 +61,15 @@ public class Player {
         riffle.leave(this);
     }
 
+    //TODO: implement UI controller to implement picking
+    public Card czarPicks(ArrayList<Card> czarList){
+        //UI code goes here
+
+        int x = 0;
+
+        return czarList.get(x);
+    }//end czarPicks method
+
     //add a card to player's hand at position pos
     private void addCard(Card card){
         hand.add(card);

@@ -15,10 +15,6 @@ public class Exec {
 
     int counter = 0;
 
-    public Exec(){
-
-    }//end Exec constructor
-
     //create new dealer and add to dealer list
     //return dealer ID
     public Dealer addDealer(boolean R){
@@ -62,6 +58,7 @@ public class Exec {
         return counter++;
     }//end getNewID method
 
+    //TODO: use exis user verification instead
     public double generateKey(){
         double key;
         double rand = Math.random()*Double.MAX_VALUE;
@@ -73,6 +70,10 @@ public class Exec {
         key = time*rand;
 
         return (int)key;
+    }
+
+    public void addPoint(Player player){
+
     }
 
 }

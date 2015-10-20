@@ -3,6 +3,8 @@ package io.exis.cards.cards;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import android.os.CountDownTimer;
+
 /**
  * Dealer.java
  * Manages decks and player points
@@ -15,13 +17,13 @@ public class Dealer {
     final int ROOMCAP = 6;
 
     //keep track of players playing
-    ArrayList<Player> players = new ArrayList<Player>();
+    ArrayList<Player> players = new ArrayList<>();
 
     //keep track of cards in play
-    ArrayList<Card> inPlay = new ArrayList<Card>();
+    ArrayList<Card> inPlay = new ArrayList<>();
 
     //keep track of cards not in play
-    ArrayList<Card> deck = new ArrayList<Card>();
+    ArrayList<Card> deck = new ArrayList<>();
 
     //dealers initiated with PID = 0
     RiffleSession riffle = new RiffleSession(0 + "");
@@ -30,15 +32,57 @@ public class Dealer {
     boolean rating;
     int dealerID;
 
+    //seconds remaining
+    long timeRemaining;
+
+    CountDownTimer timer = new CountDownTimer(15000, 1000) {
+
+        public void onTick(long millisUntilFinished) {
+            timeRemaining = (millisUntilFinished / 1000);
+        }
+
+        public void onFinish() {
+            //Do something...
+        }
+    };
+
     public Dealer(boolean R, int ID){
         rating = R;
         dealerID = ID;
+        beginGame();
+    }
+
+    public void beginGame(){
+        //game continues until taken down by exec
+        while(true) {
+            //make sure all players have 5 cards
+            for(int i=0; i<players.size(); i++){
+                while(players.get(i).hand.size() < 5){
+                    Card newCard = dealCard(players.get(i));
+                    players.get(i).hand.add(newCard);
+                    inPlay.add(newCard);
+                }
+            }
+
+            //players submit cards
+            timer.start();
+            while(getTimeRemaining() != 0){
+                riffle.subscribe();
+            }
+
+            //czar picks card
+            timer.start();
+
+            //announce winner & give a point
+        }
     }
 
     public Card dealCard(Player player){
 
         //generate new card to give to player
         Card card = generateCard();
+
+        card.PID = player.getPlayerID();
 
         //remove card from deck
         deck.remove(card);
@@ -90,9 +134,13 @@ public class Dealer {
         players.remove(player);
     }//end remove player method
 
+    public long getTimeRemaining(){
+        return timeRemaining;
+    }
+
     private Card generateCard(){
         Collections.shuffle(deck);
         return deck.get(0);
     }//end generateCard method
 
-}
+}//end Dealer class

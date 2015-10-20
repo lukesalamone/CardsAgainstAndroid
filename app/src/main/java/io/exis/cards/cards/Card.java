@@ -15,11 +15,6 @@ import android.content.res.Resources;
 import android.provider.MediaStore;
 
 import org.json.*;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.*;
 import android.content.Context;
 import java.util.Scanner;
 
