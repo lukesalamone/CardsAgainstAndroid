@@ -2,11 +2,7 @@
 <module type="JAVA_MODULE" version="4">
   <component name="FacetManager">
     <facet type="android" name="Android">
-      <configuration>
-        <proGuardCfgFiles>
-          <file>file://$USER_HOME$/Android/Sdk/tools/proguard/proguard-android.txt</file>
-        </proGuardCfgFiles>
-      </configuration>
+      <configuration />
     </facet>
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
@@ -19,5 +15,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="classes" level="project" />
     <orderEntry type="library" name="libs" level="project" />
+    <orderEntry type="library" name="ws.wamp.jawampa:jawampa-core:0.4.0" level="project" />
+    <orderEntry type="library" name="ws.wamp.jawampa:jawampa-netty:0.4.0" level="project" />
   </component>
 </module>

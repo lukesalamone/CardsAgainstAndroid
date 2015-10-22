@@ -2,13 +2,11 @@ package com.exis.riffletest;
 
 import ws.wamp.jawampa.WampClient;
 import ws.wamp.jawampa.WampClientBuilder;
-import ws.wamp.jawampa.WampError;
 import ws.wamp.jawampa.transport.netty.NettyWampClientConnectorProvider;
 
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.Subscription;
@@ -17,13 +15,7 @@ import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 import ws.wamp.jawampa.ApplicationError;
 import ws.wamp.jawampa.Request;
-import ws.wamp.jawampa.WampRouter;
-import ws.wamp.jawampa.WampRouterBuilder;
-import ws.wamp.jawampa.WampClient;
-import ws.wamp.jawampa.WampClientBuilder;
 import ws.wamp.jawampa.connection.IWampConnectorProvider;
-import ws.wamp.jawampa.transport.netty.NettyWampClientConnectorProvider;
-import ws.wamp.jawampa.transport.netty.SimpleWampWebsocketListener;
 
 
 /*
@@ -57,18 +49,18 @@ public class CLITester {
 
     public void start() {
 
-        WampRouterBuilder routerBuilder = new WampRouterBuilder();
-        WampRouter router;
-        try {
-            routerBuilder.addRealm("realm1");
-            router = routerBuilder.build();
-        } catch (ApplicationError e1) {
-            e1.printStackTrace();
-            return;
-        }
+//        WampRouterBuilder routerBuilder = new WampRouterBuilder();
+//        WampRouter router;
+//        try {
+//            routerBuilder.addRealm("realm1");
+//            router = routerBuilder.build();
+//        } catch (ApplicationError e1) {
+//            e1.printStackTrace();
+//            return;
+//        }
 
         URI serverUri = URI.create("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-        SimpleWampWebsocketListener server;
+//        SimpleWampWebsocketListener server;
 
         IWampConnectorProvider connectorProvider = new NettyWampClientConnectorProvider();
         WampClientBuilder builder = new WampClientBuilder();
@@ -76,13 +68,14 @@ public class CLITester {
         // Build two clients
         final WampClient client1;
         final WampClient client2;
+
         try {
-            server = new SimpleWampWebsocketListener(router, serverUri, null);
-            server.start();
+//            server = new SimpleWampWebsocketListener(router, serverUri, null);
+//            server.start();
 
             builder.withConnectorProvider(connectorProvider)
                     .withUri("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws")
-                    .withRealm("xs.javatester")
+                    .withRealm("xs.luke")
                     .withInfiniteReconnects()
                     .withReconnectInterval(3, TimeUnit.SECONDS);
             client1 = builder.build();
@@ -99,7 +92,7 @@ public class CLITester {
 
                 if (t1 instanceof WampClient.ConnectedState) {
                     // Register a procedure
-                    addProcSubscription = client1.registerProcedure("com.example.add").subscribe(new Action1<Request>() {
+                    addProcSubscription = client1.registerProcedure("com.example.add/k").subscribe(new Action1<Request>() {
                         @Override
                         public void call(Request request) {
                             if (request.arguments() == null || request.arguments().size() != 2
@@ -143,7 +136,7 @@ public class CLITester {
                         Thread.sleep(100);
                     } catch (InterruptedException e) { }
                     // Call the procedure
-                    Observable<Long> result1 = client2.call("com.example.add", Long.class, 33, 66);
+                    Observable<Long> result1 = client2.call("com.example.add/k", Long.class, 33, 66);
                     result1.subscribe(new Action1<Long>() {
                         @Override
                         public void call(Long t1) {
@@ -157,7 +150,7 @@ public class CLITester {
                     });
 
                     // Call the procedure with invalid values
-                    Observable<Long> result2 = client2.call("com.example.add", Long.class, 1, "dafs");
+                    Observable<Long> result2 = client2.call("com.example.add/k", Long.class, 1, "dafs");
                     result2.subscribe(new Action1<Long>() {
                         @Override
                         public void call(Long t1) {
@@ -170,7 +163,7 @@ public class CLITester {
                         }
                     });
 
-                    eventSubscription = client2.makeSubscription("test.event", String.class)
+                    eventSubscription = client2.makeSubscription("test.event/k", String.class)
                             .subscribe(new Action1<String>() {
                                 @Override
                                 public void call(String t1) {
@@ -211,7 +204,7 @@ public class CLITester {
         eventPublication = Schedulers.computation().createWorker().schedulePeriodically(new Action0() {
             @Override
             public void call() {
-                client1.publish("test.event", "Hello " + lastEventValue);
+                client1.publish("test.event/k", "Hello " + lastEventValue);
                 lastEventValue++;
             }
         }, eventInterval, eventInterval, TimeUnit.MILLISECONDS);
@@ -226,9 +219,9 @@ public class CLITester {
         eventPublication.unsubscribe();
 
         waitUntilKeypressed();
-        System.out.println("Closing router");
-        router.close().toBlocking().last();
-        server.stop();
+//        System.out.println("Closing router");
+//        router.close().toBlocking().last();
+//        server.stop();
 
         waitUntilKeypressed();
         System.out.println("Closing the client 1");
@@ -249,5 +242,4 @@ public class CLITester {
             e.printStackTrace();
         }
     }
-
 }

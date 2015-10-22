@@ -1,137 +1,244 @@
 package io.exis.cards.cards;
 
-import java.util.ArrayList;
-import android.app.Activity;
-import android.os.Bundle;
-import android.util.Log;
+import ws.wamp.jawampa.WampClient;
+import ws.wamp.jawampa.WampClientBuilder;
+import ws.wamp.jawampa.transport.netty.NettyWampClientConnectorProvider;
 
-import de.tavendo.autobahn.Autobahn;
-import de.tavendo.autobahn.AutobahnConnection;
-import de.tavendo.autobahn.WebSocketConnection;
-import de.tavendo.autobahn.WebSocketException;
-import de.tavendo.autobahn.WebSocketHandler;
+import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.net.URI;
 
-/**
- * RiffleSession.java
- * Broker between dealer and player
+import rx.Observable;
+import rx.Subscription;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
+import ws.wamp.jawampa.ApplicationError;
+import ws.wamp.jawampa.Request;
+import ws.wamp.jawampa.connection.IWampConnectorProvider;
+
+/*
+ * Copyright 2014 Matthias Einwag
  *
- * Created by luke on 10/13/15.
+ * The jawampa authors license this file to you under the Apache License,
+ * version 2.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  */
+
 public class RiffleSession {
 
-    public RiffleSession(String playerID){
-        start(playerID);
-    }//end Riffle constructor
+    public static void main(String[] args) {
+        new RiffleSession().start();
+    }
 
-    final AutobahnConnection connection = new AutobahnConnection();
+    Subscription addProcSubscription;
+    Subscription eventPublication;
+    Subscription eventSubscription;
 
-    public void start(final String TAG) {
+    static final int eventInterval = 2000;
+    int lastEventValue = 0;
 
-        final String uri = "ws://ubuntu@ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws";
+    public void start() {
+
+//        WampRouterBuilder routerBuilder = new WampRouterBuilder();
+//        WampRouter router;
+//        try {
+//            routerBuilder.addRealm("realm1");
+//            router = routerBuilder.build();
+//        } catch (ApplicationError e1) {
+//            e1.printStackTrace();
+//            return;
+//        }
+
+        URI serverUri = URI.create("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
+//        SimpleWampWebsocketListener server;
+
+        IWampConnectorProvider connectorProvider = new NettyWampClientConnectorProvider();
+        WampClientBuilder builder = new WampClientBuilder();
+
+        // Build two clients
+        final WampClient client1;
+        final WampClient client2;
 
         try {
-            this.connection.connect(uri, new Autobahn.SessionHandler() {
+//            server = new SimpleWampWebsocketListener(router, serverUri, null);
+//            server.start();
 
-                @Override
-                public void onOpen() {
-                    Log.d(TAG, "Status: Connected to " + uri);
-                    connection.sendTextMessage("Hello, world!");
-                    eventPubSub();
-                }
-
-                @Override
-                public void onTextMessage(String payload) {
-                    Log.d(TAG, "Got echo: " + payload);
-                }
-
-                @Override
-                public void onClose(int code, String reason) {
-                    Log.d(TAG, "Connection lost.");
-                }
-
-            });
-        } catch (WebSocketException e) {
-            Log.d(TAG, e.toString());
+            builder.withConnectorProvider(connectorProvider)
+                    .withUri("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws")
+                    .withRealm("xs.luke")
+                    .withInfiniteReconnects()
+                    .withReconnectInterval(3, TimeUnit.SECONDS);
+            client1 = builder.build();
+            client2 = builder.build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
         }
-    }//end start method
 
-    private class playerSubmitsCard{
-        Player player;
-        Card card;
+        client1.statusChanged().subscribe(new Action1<WampClient.State>() {
+            @Override
+            public void call(WampClient.State t1) {
+                System.out.println("Session1 status changed to " + t1);
+
+                if (t1 instanceof WampClient.ConnectedState) {
+                    // Register a procedure
+                    addProcSubscription = client1.registerProcedure("com.example.add/k").subscribe(new Action1<Request>() {
+                        @Override
+                        public void call(Request request) {
+                            if (request.arguments() == null || request.arguments().size() != 2
+                                    || !request.arguments().get(0).canConvertToLong()
+                                    || !request.arguments().get(1).canConvertToLong())
+                            {
+                                try {
+                                    request.replyError(new ApplicationError(ApplicationError.INVALID_PARAMETER));
+                                } catch (ApplicationError e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            else {
+                                long a = request.arguments().get(0).asLong();
+                                long b = request.arguments().get(1).asLong();
+                                request.reply(a + b);
+                            }
+                        }
+                    });
+                }
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable t) {
+                System.out.println("Session1 ended with error " + t);
+            }
+        }, new Action0() {
+            @Override
+            public void call() {
+                System.out.println("Session1 ended normally");
+            }
+        });
+
+        client2.statusChanged().subscribe(new Action1<WampClient.State>() {
+            @Override
+            public void call(WampClient.State t1) {
+                System.out.println("Session2 status changed to " + t1);
+
+                if (t1 instanceof WampClient.ConnectedState) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) { }
+                    // Call the procedure
+                    Observable<Long> result1 = client2.call("com.example.add/k", Long.class, 33, 66);
+                    result1.subscribe(new Action1<Long>() {
+                        @Override
+                        public void call(Long t1) {
+                            System.out.println("Completed add with result " + t1);
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable t1) {
+                            System.out.println("Completed add with error " + t1);
+                        }
+                    });
+
+                    // Call the procedure with invalid values
+                    Observable<Long> result2 = client2.call("com.example.add/k", Long.class, 1, "dafs");
+                    result2.subscribe(new Action1<Long>() {
+                        @Override
+                        public void call(Long t1) {
+                            System.out.println("Completed add with result " + t1);
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable t1) {
+                            System.out.println("Completed add with error " + t1);
+                        }
+                    });
+
+                    eventSubscription = client2.makeSubscription("test.event/k", String.class)
+                            .subscribe(new Action1<String>() {
+                                @Override
+                                public void call(String t1) {
+                                    System.out.println("Received event test.event with value " + t1);
+                                }
+                            }, new Action1<Throwable>() {
+                                @Override
+                                public void call(Throwable t1) {
+                                    System.out.println("Completed event test.event with error " + t1);
+                                }
+                            }, new Action0() {
+                                @Override
+                                public void call() {
+                                    System.out.println("Completed event test.event");
+                                }
+                            });
+
+                    // Subscribe on the topic
+
+                }
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable t) {
+                System.out.println("Session2 ended with error " + t);
+            }
+        }, new Action0() {
+            @Override
+            public void call() {
+                System.out.println("Session2 ended normally");
+            }
+        });
+
+        client1.open();
+        client2.open();
+
+        // Publish an event regularly
+        eventPublication = Schedulers.computation().createWorker().schedulePeriodically(new Action0() {
+            @Override
+            public void call() {
+                client1.publish("test.event/k", "Hello " + lastEventValue);
+                lastEventValue++;
+            }
+        }, eventInterval, eventInterval, TimeUnit.MILLISECONDS);
+
+        waitUntilKeypressed();
+        System.out.println("Stopping subscription");
+        if (eventSubscription != null)
+            eventSubscription.unsubscribe();
+
+        waitUntilKeypressed();
+        System.out.println("Stopping publication");
+        eventPublication.unsubscribe();
+
+        waitUntilKeypressed();
+//        System.out.println("Closing router");
+//        router.close().toBlocking().last();
+//        server.stop();
+
+        waitUntilKeypressed();
+        System.out.println("Closing the client 1");
+        client1.close().toBlocking().last();
+
+        waitUntilKeypressed();
+        System.out.println("Closing the client 2");
+        client2.close().toBlocking().last();
     }
 
-    private void eventPubSub(){
-        connection.subscribe("PlayerSubmitsCard",
-                playerSubmitsCard.class;
-                new Autobahn.EventHandler(){
-                    @Override
-                    public void onEvent(String topic, Object event) {
-
-                        //
-
-                    }//end onEvent method
-                };
-        );
-    }//end eventPubSub method
-
-    //allows player to request his hand
-    public ArrayList<Card> getHand(){
-
-    }//end getHand method
-
-    //allows players and dealers to play cards
-    public boolean sendCard(Card card, int playerID){
-
-    }//end sendCard method
-
-    public ArrayList<Card> getCards(int playerID) {
-
-    }//end getCards method
-
-    public boolean isCardCzar(){
-
-    }//end isCardCzar method
-
-    //called when a player submits his card
-    public boolean submit(Card card){
-        boolean received = true;
-
-        /*
-         *
-         * Insert magic here...
-         *
-         */
-
-        return received;
-    }//end submit method
-
-
-    public Card sendCard(int PID){
-
-    }//end receive method
-
-    //called when player leaves room
-    public void leave(Player player){
-
-    }//end leave method
-
-    public int getNewID(){
-
+    private void waitUntilKeypressed() {
+        try {
+            System.in.read();
+            while (System.in.available() > 0) {
+                System.in.read();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
-    public void rejectPlayer(Player player){
-
-    }
-
-    public void reportError(int errCode, int PID, String msg){
-
-    }
-
-    public void reportError(int errCode, int PID, String msg, Card card){
-
-    }//end reportError method
-
-    public void reportError(int errCode, int PID, String msg, Card card, ArrayList<Card> hand){
-
-    }//end reportError method
 }
