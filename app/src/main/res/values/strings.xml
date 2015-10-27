@@ -1,6 +1,9 @@
 <resources>
+    <string name="game_name">Cards Against Android</string>
     <string name="app_name">Cards</string>
     <string name="action_settings">Settings</string>
     <string name="login">Login</string>
     <string name="host">Host Game</string>
+    <string name="pg13">PG-13</string>
+    <string name="adult">Adult</string>
 </resources>

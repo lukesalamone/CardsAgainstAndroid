@@ -48,18 +48,7 @@ public class RiffleSession {
 
     public void start() {
 
-//        WampRouterBuilder routerBuilder = new WampRouterBuilder();
-//        WampRouter router;
-//        try {
-//            routerBuilder.addRealm("realm1");
-//            router = routerBuilder.build();
-//        } catch (ApplicationError e1) {
-//            e1.printStackTrace();
-//            return;
-//        }
-
         URI serverUri = URI.create("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-//        SimpleWampWebsocketListener server;
 
         IWampConnectorProvider connectorProvider = new NettyWampClientConnectorProvider();
         WampClientBuilder builder = new WampClientBuilder();
@@ -69,8 +58,6 @@ public class RiffleSession {
         final WampClient client2;
 
         try {
-//            server = new SimpleWampWebsocketListener(router, serverUri, null);
-//            server.start();
 
             builder.withConnectorProvider(connectorProvider)
                     .withUri("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws")
