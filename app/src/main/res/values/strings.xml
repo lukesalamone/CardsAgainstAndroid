@@ -2,8 +2,13 @@
     <string name="game_name">Cards Against Android</string>
     <string name="app_name">Cards</string>
     <string name="action_settings">Settings</string>
-    <string name="login">Login</string>
+    <string name="play">Play</string>
     <string name="host">Host Game</string>
     <string name="pg13">PG-13</string>
     <string name="adult">Adult</string>
+    <string name="score">Score</string>
+    <string name="question">QUESTIONS GO HERE</string>
+    <string name="answer">ANSWERS GO HERE</string>
+    <string name="room">ROOM NAME</string>
+    <string name="card_spacing">10dp</string>
 </resources>

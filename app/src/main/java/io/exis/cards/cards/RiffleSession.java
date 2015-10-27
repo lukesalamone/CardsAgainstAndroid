@@ -18,19 +18,15 @@ import ws.wamp.jawampa.Request;
 import ws.wamp.jawampa.connection.IWampConnectorProvider;
 
 /*
- * Copyright 2014 Matthias Einwag
+ * RiffleSession.java
  *
- * The jawampa authors license this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
+ * Brokers interactions between server-side exec & dealer
+ * and client players.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Created by Luke Salamone on 10/20/2015.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
+ * Copyright © 2015 exis. All rights reserved.
+ *
  */
 
 public class RiffleSession {
@@ -55,10 +51,9 @@ public class RiffleSession {
 
         // Build two clients
         final WampClient client1;
-        final WampClient client2;
+        //final WampClient client2;
 
         try {
-
             builder.withConnectorProvider(connectorProvider)
                     .withUri("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws")
                     .withRealm("xs.luke")
@@ -205,9 +200,6 @@ public class RiffleSession {
         eventPublication.unsubscribe();
 
         waitUntilKeypressed();
-//        System.out.println("Closing router");
-//        router.close().toBlocking().last();
-//        server.stop();
 
         waitUntilKeypressed();
         System.out.println("Closing the client 1");

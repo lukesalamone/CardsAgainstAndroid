@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingTop="0dp"
+    android:paddingBottom="0dp" tools:context=".MainActivity">
+
+    <TextView android:text="@string/question" android:layout_width="fill_parent"
+        android:layout_height="100sp"
+        android:id="@+id/question"
+        android:textSize="20dp"
+        android:textAlignment="center"
+        android:textColor="#fff"
+        android:layout_alignParentTop="true"
+        android:background="#000"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:padding="5dp" />
+
+    <TextView
+        android:text="@string/room"
+        android:layout_width="fill_parent"
+        android:layout_height="50sp"
+        android:id="@+id/room_id"
+        android:textSize="20dp"
+        android:background="#000"
+        android:textColor="#fff"
+        android:padding="5dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"/>
+
+    <TextView
+        android:text="@string/answer"
+        android:layout_width="fill_parent"
+        android:layout_height="80sp"
+        android:id="@+id/card1"
+        android:textSize="20dp"
+        android:background="#eee"
+        android:textColor="#000"
+        android:layout_below="@+id/question"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@string/card_spacing"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true" />
+
+    <TextView
+        android:text="@string/answer"
+        android:layout_width="fill_parent"
+        android:layout_height="80sp"
+        android:id="@+id/card2"
+        android:textSize="20dp"
+        android:background="#eee"
+        android:textColor="#000"
+        android:layout_below="@+id/card1"
+        android:layout_marginTop="@string/card_spacing" />
+
+    <TextView
+        android:text="@string/answer"
+        android:layout_width="fill_parent"
+        android:layout_height="80sp"
+        android:id="@+id/card3"
+        android:textSize="20dp"
+        android:background="#eee"
+        android:textColor="#000"
+        android:layout_below="@+id/card2"
+        android:layout_marginTop="@string/card_spacing" />
+
+    <TextView
+        android:text="@string/answer"
+        android:layout_width="fill_parent"
+        android:layout_height="80sp"
+        android:id="@+id/card4"
+        android:textSize="20dp"
+        android:background="#eee"
+        android:textColor="#000"
+        android:layout_below="@+id/card3"
+        android:layout_marginTop="@string/card_spacing" />
+
+    <TextView
+        android:text="@string/answer"
+        android:layout_width="fill_parent"
+        android:layout_height="80sp"
+        android:id="@+id/card5"
+        android:textSize="20dp"
+        android:background="#eee"
+        android:textColor="#000"
+        android:layout_below="@+id/card4"
+        android:layout_marginTop="@string/card_spacing" />
+</RelativeLayout>

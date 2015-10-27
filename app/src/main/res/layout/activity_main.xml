@@ -7,32 +7,63 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
     <TextView android:text="@string/game_name" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:id="@+id/textView"
+        android:textSize="30dp"
+        android:layout_centerHorizontal="true"
+        android:textAlignment="center" />
+
+    <TextView
+        android:text="@string/score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/your_score"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:textSize="20dp" />
+
+    <TextView
+        android:text="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/your_points"
+        android:background="#00000000"
+        android:textColor="#ffffff"
+        android:textSize="50sp"
+        android:layout_below="@+id/your_score"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentRight="false"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp" />
 
     <Button
             android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="@string/login" />
-
-    <Button
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="@string/host" />
+            android:layout_width="300dp"
+            android:text="@string/play"
+        android:layout_marginTop="80dp"
+        android:layout_below="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/button" />
 
     <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <RadioButton android:id="@+id/radio_pirates"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="49dp"
+        android:id="@+id/radioGroup">
+        <RadioButton android:id="@+id/radio_pg13"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/pg13"
-            android:onClick="onRadioButtonClicked"/>
-        <RadioButton android:id="@+id/radio_ninjas"
+            android:onClick="onRadioButtonClicked"
+            android:layout_gravity="center_vertical" />
+        <RadioButton android:id="@+id/radio_adult"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/adult"
-            android:onClick="onRadioButtonClicked"/>
+            android:onClick="onRadioButtonClicked" />
     </RadioGroup>
 
 </RelativeLayout>
