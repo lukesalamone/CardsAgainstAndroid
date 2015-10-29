@@ -8,7 +8,6 @@ import android.widget.Chronometer;
 import android.widget.Button;
 import android.widget.TextView;
 import android.content.Context;
-
 import java.util.ArrayList;
 
 /**
@@ -43,10 +42,10 @@ public class GameActivity extends AppCompatActivity {
         //find game & join
         riffle.join();
 
-        //set question
+        //set question TextView
         setQuestion();
 
-        //populate answers
+        //populate answers TextViews
         setAnswers();
 
         playGame();

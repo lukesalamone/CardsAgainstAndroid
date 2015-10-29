@@ -228,7 +228,7 @@ public class RiffleSession {
      * @param   card    Card involved
      * @param   hand    The player's hand
      */
-    public void reportError(int errID, String msg, Card card, ArrayList<Card> hand){
+    public void reportError(int errID, int PID, String msg, Card card, ArrayList<Card> hand){
 
     }
 

@@ -49,7 +49,7 @@ public class Player {
     }//end submitCard method
 
     public ArrayList<Card> getCards(){
-        return riffle.getCards(this.playerID);
+        return this.hand;
     }//end getCards method
 
     public int getPlayerID(){
