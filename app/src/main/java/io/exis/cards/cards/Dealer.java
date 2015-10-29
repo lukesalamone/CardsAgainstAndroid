@@ -25,8 +25,7 @@ public class Dealer {
     //keep track of cards not in play
     ArrayList<Card> deck = new ArrayList<>();
 
-    //dealers initiated with PID = 0
-    RiffleSession riffle = new RiffleSession(0 + "");
+    RiffleSession riffle = new RiffleSession();
 
     //pg13 or R
     boolean rating;
@@ -53,6 +52,10 @@ public class Dealer {
     }
 
     public void beginGame(){
+        //set first player as czar
+        int czarNum = getCzarPos();
+        players.get(czarNum).setCzar(true);
+
         //game continues until taken down by exec
         while(true) {
             //make sure all players have 5 cards
@@ -67,13 +70,35 @@ public class Dealer {
             //players submit cards
             timer.start();
             while(getTimeRemaining() != 0){
-                riffle.subscribe();
+                ArrayList<Card> submitted = new ArrayList<>();
+                Card card = riffle.receiveCard();
+                submitted.add(card);
+
+                //send card to czar
+                riffle.sendCard(players.get(czarNum).getPlayerID(), card);
             }
 
             //czar picks card
             timer.start();
 
+            Card picked = null;
+
             //announce winner & give a point
+            while(getTimeRemaining() != 0){
+                picked = riffle.receiveCard();
+            }
+
+            //give that player a point
+            if (picked != null){
+                Player winner = getPlayerByID(picked.getPID())
+                Exec.addPoint(winner);
+            }
+
+            //set czar to next player
+            players.get(czarNum).setCzar(false);
+            czarNum++;
+            czarNum = czarNum % getGameSize();
+            players.get(czarNum).setCzar(true);
         }
     }
 
@@ -94,7 +119,7 @@ public class Dealer {
         inPlay.add(card);
 
         //send card to player
-        riffle.sendCard(player.getPlayerID());
+        riffle.sendCard(card, player.getPlayerID());
 
         return card;
 
@@ -137,6 +162,24 @@ public class Dealer {
     public long getTimeRemaining(){
         return timeRemaining;
     }
+
+    public int getCzarPos(){
+        for(int i=0; i<players.size(); i++){
+            if(players.get(i).isCzar()){
+                return i;
+            }
+        }
+        return 0;
+    }//end getCzarPos method
+
+    public Player getPlayerByID(int PID){
+        for(int i=0; i<players.size(); i++){
+            if(players.get(i).getPlayerID() == PID){
+                return players.get(i);
+            }
+        }
+        return null;
+    }//end getPlayerByID
 
     private Card generateCard(){
         Collections.shuffle(deck);

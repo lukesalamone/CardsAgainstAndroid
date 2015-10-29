@@ -1,7 +1,6 @@
 package io.exis.cards.cards;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Player.java
@@ -57,14 +56,19 @@ public class Player {
         return this.playerID;
     }//end getPlayerID method
 
+    public boolean isCzar(){
+        return this.isCzar;
+    }
+
+    public void setCzar(boolean isCzar){
+        this.isCzar = isCzar;
+    }
+
     public void leaveRoom(){
         riffle.leave(this);
     }
 
-    //TODO: implement UI controller to implement picking
     public Card czarPicks(ArrayList<Card> czarList){
-        //UI code goes here
-
         int x = 0;
 
         return czarList.get(x);

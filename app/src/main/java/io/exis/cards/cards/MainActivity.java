@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
 
     static final String CONTENT_RATING = "contentRating";
     public boolean adult = false;
+    public RiffleSession riffle = new RiffleSession();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startGame(View view) {
-        Intent intent = new Intent(view.getContext(), Game.class);
+        Intent intent = new Intent(view.getContext(), GameActivity.class);
         view.getContext().startActivity(intent);
     }
 

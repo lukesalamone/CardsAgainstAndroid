@@ -4,6 +4,7 @@ import ws.wamp.jawampa.WampClient;
 import ws.wamp.jawampa.WampClientBuilder;
 import ws.wamp.jawampa.transport.netty.NettyWampClientConnectorProvider;
 
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.URI;
@@ -49,9 +50,7 @@ public class RiffleSession {
         IWampConnectorProvider connectorProvider = new NettyWampClientConnectorProvider();
         WampClientBuilder builder = new WampClientBuilder();
 
-        // Build two clients
-        final WampClient client1;
-        //final WampClient client2;
+        final WampClient client;
 
         try {
             builder.withConnectorProvider(connectorProvider)
@@ -59,21 +58,20 @@ public class RiffleSession {
                     .withRealm("xs.luke")
                     .withInfiniteReconnects()
                     .withReconnectInterval(3, TimeUnit.SECONDS);
-            client1 = builder.build();
-            client2 = builder.build();
+            client = builder.build();
         } catch (Exception e) {
             e.printStackTrace();
             return;
         }
 
-        client1.statusChanged().subscribe(new Action1<WampClient.State>() {
+        client.statusChanged().subscribe(new Action1<WampClient.State>() {
             @Override
             public void call(WampClient.State t1) {
                 System.out.println("Session1 status changed to " + t1);
 
                 if (t1 instanceof WampClient.ConnectedState) {
                     // Register a procedure
-                    addProcSubscription = client1.registerProcedure("com.example.add/k").subscribe(new Action1<Request>() {
+                    addProcSubscription = client.registerProcedure("com.example.add/k").subscribe(new Action1<Request>() {
                         @Override
                         public void call(Request request) {
                             if (request.arguments() == null || request.arguments().size() != 2
@@ -107,85 +105,13 @@ public class RiffleSession {
             }
         });
 
-        client2.statusChanged().subscribe(new Action1<WampClient.State>() {
-            @Override
-            public void call(WampClient.State t1) {
-                System.out.println("Session2 status changed to " + t1);
-
-                if (t1 instanceof WampClient.ConnectedState) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) { }
-                    // Call the procedure
-                    Observable<Long> result1 = client2.call("com.example.add/k", Long.class, 33, 66);
-                    result1.subscribe(new Action1<Long>() {
-                        @Override
-                        public void call(Long t1) {
-                            System.out.println("Completed add with result " + t1);
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable t1) {
-                            System.out.println("Completed add with error " + t1);
-                        }
-                    });
-
-                    // Call the procedure with invalid values
-                    Observable<Long> result2 = client2.call("com.example.add/k", Long.class, 1, "dafs");
-                    result2.subscribe(new Action1<Long>() {
-                        @Override
-                        public void call(Long t1) {
-                            System.out.println("Completed add with result " + t1);
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable t1) {
-                            System.out.println("Completed add with error " + t1);
-                        }
-                    });
-
-                    eventSubscription = client2.makeSubscription("test.event/k", String.class)
-                            .subscribe(new Action1<String>() {
-                                @Override
-                                public void call(String t1) {
-                                    System.out.println("Received event test.event with value " + t1);
-                                }
-                            }, new Action1<Throwable>() {
-                                @Override
-                                public void call(Throwable t1) {
-                                    System.out.println("Completed event test.event with error " + t1);
-                                }
-                            }, new Action0() {
-                                @Override
-                                public void call() {
-                                    System.out.println("Completed event test.event");
-                                }
-                            });
-
-                    // Subscribe on the topic
-
-                }
-            }
-        }, new Action1<Throwable>() {
-            @Override
-            public void call(Throwable t) {
-                System.out.println("Session2 ended with error " + t);
-            }
-        }, new Action0() {
-            @Override
-            public void call() {
-                System.out.println("Session2 ended normally");
-            }
-        });
-
-        client1.open();
-        client2.open();
+        client.open();
 
         // Publish an event regularly
         eventPublication = Schedulers.computation().createWorker().schedulePeriodically(new Action0() {
             @Override
             public void call() {
-                client1.publish("test.event/k", "Hello " + lastEventValue);
+                client.publish("test.event/k", "Hello " + lastEventValue);
                 lastEventValue++;
             }
         }, eventInterval, eventInterval, TimeUnit.MILLISECONDS);
@@ -203,11 +129,95 @@ public class RiffleSession {
 
         waitUntilKeypressed();
         System.out.println("Closing the client 1");
-        client1.close().toBlocking().last();
+        client.close().toBlocking().last();
+    }//end start method
 
-        waitUntilKeypressed();
-        System.out.println("Closing the client 2");
-        client2.close().toBlocking().last();
+    /*
+     * Determine whether player is the czar right now
+     *
+     * @param PID - player id of player
+     */
+    public boolean isCzar(int PID){
+
+    }//end isCzar method
+
+    /*
+     * Adds a player to a game. Should go to exec, who then
+     * communicates with dealer.
+     *
+     * @return Player object added to dealer's game
+     */
+    public Player addPlayer(){
+
+    }//end addPlayer method
+
+    /*
+     * Punt.
+     *
+     * @return Dealer for this player
+     */
+    public Dealer join(){
+
+    }//end join method
+
+    /*
+     * Get the current question for this game
+     *
+     * @return Card with the current question
+     */
+    public Card getQuestion(){
+
+    }//end getQuestion method
+
+    /*
+     * Get this player's hand
+     *
+     * @param   PID ID of player
+     * @return  ArrayList of their cards
+     */
+    public ArrayList<Card> getHand(int PID){
+
+    }//end getHand method
+
+    /*
+     * Player sending card to dealer
+     *
+     * @param   card    The card to be submitted
+     * @return  true    Success
+     * @return  false   Error
+     */
+    public boolean submit(Card card){
+
+    }//end submit method
+
+    /*
+     * Removes player from room
+     *
+     * @param   player  The player
+     */
+    public void leave(Player player){
+
+    }//end leave method
+
+    /*
+     * Dealer sends card to player
+     */
+    public void sendCard(int PID, Card card){
+
+    }
+
+    public Card receiveCard(){
+
+    }//end receiveCard method
+
+    /*
+     * Report error to Exec
+     *
+     * @param   errID
+     * @param   msg     Error message
+     */
+    public void reportError(int errID, String msg){
+
     }
 
     private void waitUntilKeypressed() {
@@ -219,5 +229,5 @@ public class RiffleSession {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }//end waitUntilKeypressed method
 }
