@@ -71,7 +71,7 @@ public class Exec {
         return (int)key;
     }
 
-    public void addPoint(Player player){
+    public static void addPoint(Player player){
 
     }
 

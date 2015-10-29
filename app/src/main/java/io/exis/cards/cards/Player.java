@@ -17,7 +17,7 @@ public class Player {
     ArrayList<Card> hand = new ArrayList<Card>();
     boolean isCzar;
 
-    private RiffleSession riffle = new RiffleSession(playerID + "");
+    private RiffleSession riffle = new RiffleSession();
 
     public Player(int ID, ArrayList<Card> cards, boolean czar){
         playerID = ID;
@@ -38,7 +38,7 @@ public class Player {
             }
         }
 
-        Card newCard = riffle.sendCard(getPlayerID());
+        Card newCard = riffle.drawCard(getPlayerID());
 
         if(removed){
             addCard(newCard);

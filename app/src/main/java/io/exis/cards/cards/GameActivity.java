@@ -81,6 +81,6 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        riffle.leave(player.getPlayerID());
+        riffle.leave(player);
     }
 }

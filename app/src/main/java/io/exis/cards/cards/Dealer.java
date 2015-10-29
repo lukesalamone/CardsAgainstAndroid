@@ -90,7 +90,7 @@ public class Dealer {
 
             //give that player a point
             if (picked != null){
-                Player winner = getPlayerByID(picked.getPID())
+                Player winner = getPlayerByID(picked.getPID());
                 Exec.addPoint(winner);
             }
 
@@ -119,7 +119,7 @@ public class Dealer {
         inPlay.add(card);
 
         //send card to player
-        riffle.sendCard(card, player.getPlayerID());
+        riffle.sendCard(player.getPlayerID(), card);
 
         return card;
 

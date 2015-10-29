@@ -206,17 +206,29 @@ public class RiffleSession {
 
     }
 
+    /*
+     * Dealer receives card from player
+     */
     public Card receiveCard(){
 
     }//end receiveCard method
+
+    /*
+     * Player draws card from dealer's deck
+     */
+    public Card drawCard(int PID){
+
+    }
 
     /*
      * Report error to Exec
      *
      * @param   errID
      * @param   msg     Error message
+     * @param   card    Card involved
+     * @param   hand    The player's hand
      */
-    public void reportError(int errID, String msg){
+    public void reportError(int errID, String msg, Card card, ArrayList<Card> hand){
 
     }
 
