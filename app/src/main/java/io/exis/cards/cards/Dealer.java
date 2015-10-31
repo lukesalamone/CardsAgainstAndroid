@@ -10,6 +10,11 @@ import android.os.CountDownTimer;
  * Manages decks and player points
  * May report corrupted players
  *
+ * Several placeholder methods have been used in place
+ * of Riffle methods:
+ * sendCard()
+ * receiveCard()
+ *
  * Created by luke on 10/13/15.
  */
 public class Dealer {
@@ -23,9 +28,13 @@ public class Dealer {
     ArrayList<Card> inPlay = new ArrayList<>();
 
     //keep track of cards not in play
-    ArrayList<Card> deck = new ArrayList<>();
+    ArrayList<Card> questions = new ArrayList<>();
+    ArrayList<Card> answers = new ArrayList<>();
 
     RiffleSession riffle = new RiffleSession();
+
+    //always know question card
+    Card questionCard;
 
     //pg13 or R
     boolean rating;
@@ -52,6 +61,13 @@ public class Dealer {
     }
 
     public void beginGame(){
+
+        //load all questions into questions ArrayList
+        questions = Card.getQuestions(rating);
+
+        //load all answers into answers ArrayList
+        answers = Card.getAnswers(rating);
+
         //set first player as czar
         int czarNum = getCzarPos();
         players.get(czarNum).setCzar(true);
@@ -67,15 +83,22 @@ public class Dealer {
                 }
             }
 
+            //set question card
+            questionCard = generateQuestion();
+
             //players submit cards
             timer.start();
             while(getTimeRemaining() != 0){
                 ArrayList<Card> submitted = new ArrayList<>();
-                Card card = riffle.receiveCard();
+                //Card card = riffle.receiveCard();
+
+                Card card = receiveCard(generateAnswer());
                 submitted.add(card);
 
                 //send card to czar
-                riffle.sendCard(players.get(czarNum).getPlayerID(), card);
+                //riffle.sendCard(players.get(czarNum).getPlayerID(), card);
+
+                sendCard(players.get(czarNum).getPlayerID(), card);
             }
 
             //czar picks card
@@ -85,7 +108,7 @@ public class Dealer {
 
             //announce winner & give a point
             while(getTimeRemaining() != 0){
-                picked = riffle.receiveCard();
+                picked = receiveCard(generateAnswer());
             }
 
             //give that player a point
@@ -105,12 +128,12 @@ public class Dealer {
     public Card dealCard(Player player){
 
         //generate new card to give to player
-        Card card = generateCard();
+        Card card = generateAnswer();
 
         card.PID = player.getPlayerID();
 
         //remove card from deck
-        deck.remove(card);
+        answers.remove(card);
 
         //add card to player's hand
         player.hand.add(card);
@@ -119,7 +142,7 @@ public class Dealer {
         inPlay.add(card);
 
         //send card to player
-        riffle.sendCard(player.getPlayerID(), card);
+        sendCard(player.getPlayerID(), card);
 
         return card;
 
@@ -127,6 +150,29 @@ public class Dealer {
 
     public boolean full(){
         return (getGameSize() + 1 > this.ROOMCAP);
+    }
+
+    /*************************************************************************/
+    /*                           PLACEHOLDER METHODS                         */
+    /*************************************************************************/
+
+    //placeholder method for now...
+    public Card receiveCard(Card card){
+        return card;
+    }
+
+    //placeholder method for now...
+    //send card to player
+    public void sendCard(int PID, Card card){
+
+    }
+
+    /*************************************************************************/
+    /*                        END PLACEHOLDER METHODS                        */
+    /*************************************************************************/
+
+    public Card getQuestion(){
+        return questionCard;
     }
 
     public boolean addPlayer(Player player){
@@ -181,9 +227,25 @@ public class Dealer {
         return null;
     }//end getPlayerByID
 
-    private Card generateCard(){
-        Collections.shuffle(deck);
-        return deck.get(0);
+    public boolean isCzar(Player player){
+        for(Player iterator : players){
+            if(iterator.getPlayerID() == player.getPlayerID()){
+                return iterator.isCzar();
+            }
+        }
+
+        //hopefully we found the player, but...
+        return false;
+    }//end isCzar method
+
+    private Card generateQuestion(){
+        Collections.shuffle(questions);
+        return questions.get(0);
+    }//end generateCard method
+
+    private Card generateAnswer(){
+        Collections.shuffle(answers);
+        return answers.get(0);
     }//end generateCard method
 
 }//end Dealer class

@@ -10,13 +10,13 @@ import java.util.ArrayList;
  */
 public class Exec {
 
-    ArrayList<Dealer> dealers = new ArrayList<>();
+    static ArrayList<Dealer> dealers = new ArrayList<>();
 
-    int counter = 0;
+    static int counter = 0;
 
     //create new dealer and add to dealer list
     //return dealer ID
-    public Dealer addDealer(boolean R){
+    public static Dealer addDealer(boolean R){
         Dealer dealer = new Dealer(R, getNewID());
         dealers.add(dealer);
         return dealer;
@@ -26,7 +26,7 @@ public class Exec {
         dealers.remove(dealer);
     }
 
-    public void addPlayer(boolean R){
+    public static void addPlayer(boolean R){
         Player newbie = new Player(getNewID(),
                 new ArrayList<Card>(),
                 false);
@@ -34,7 +34,7 @@ public class Exec {
     }
 
     //finds a dealer of appropriate game not at max capacity
-    public Dealer findDealer(boolean R){
+    public static Dealer findDealer(boolean R){
         //look for an open rating-appropriate dealer
         for(int i=0; i<dealers.size(); i++){
             if(dealers.get(i).getRating() == R && !dealers.get(i).full()){
@@ -53,7 +53,7 @@ public class Exec {
         return true;
     }//end auth method
 
-    public int getNewID(){
+    public static int getNewID(){
         return counter++;
     }//end getNewID method
 

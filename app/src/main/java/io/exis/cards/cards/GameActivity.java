@@ -22,14 +22,18 @@ public class GameActivity extends AppCompatActivity {
     private Context context;
     private Player player;
     public Chronometer chronometer;
-    public RiffleSession riffle;
+    //public RiffleSession riffle;
+    Dealer dealer = new Dealer(MainActivity.adult, Exec.getNewID());
 
     public GameActivity(Context context){
-        riffle = new RiffleSession();
+        /*riffle = new RiffleSession();
         player = riffle.addPlayer();
 
         //ask dealer if player is czar, set appropriately
-        player.setCzar(riffle.isCzar(player.getPlayerID()));
+        player.setCzar(riffle.isCzar(player.getPlayerID()));*/
+
+        Exec.addPlayer(MainActivity.adult);
+        player.setCzar(dealer.isCzar(player));
     }
 
     View view;
@@ -40,7 +44,7 @@ public class GameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_game);
 
         //find game & join
-        riffle.join();
+        //riffle.join();
 
         //set question TextView
         setQuestion();
@@ -58,14 +62,17 @@ public class GameActivity extends AppCompatActivity {
     }//end playGame method
 
     private void setQuestion(){
-        Card card = riffle.getQuestion();
+        //Card card = riffle.getQuestion();
+        Card card = dealer.getQuestion();
+
         String questionText = card.getText();
         TextView textView = (TextView)view.findViewById(R.id.question);
         textView.setText(questionText);
     }//end setQuestion method
 
     private void setAnswers(){
-        ArrayList<Card> hand = riffle.getHand(player.getPlayerID());
+        //ArrayList<Card> hand = riffle.getHand(player.getPlayerID());
+        ArrayList<Card> hand = player.getHand();
 
         //change card texts to text of cards in hand
         for(int i=0; i<5; i++){
@@ -80,6 +87,9 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        riffle.leave(player);
+        //riffle.leave(player);
+
+        dealer.removePlayer(player);
+
     }
 }

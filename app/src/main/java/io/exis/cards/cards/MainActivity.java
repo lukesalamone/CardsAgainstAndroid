@@ -13,15 +13,15 @@ import android.widget.RadioButton;
 public class MainActivity extends AppCompatActivity {
 
     static final String CONTENT_RATING = "contentRating";
-    public boolean adult = false;
-    public RiffleSession riffle = new RiffleSession();
+    public static boolean adult = false;
+    //public RiffleSession riffle = new RiffleSession();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (savedInstanceState != null) {
+        if (savedInstanceState.getBoolean(CONTENT_RATING)) {
             adult = savedInstanceState.getBoolean(CONTENT_RATING);
         }
 

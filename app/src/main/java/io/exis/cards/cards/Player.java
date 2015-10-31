@@ -14,23 +14,29 @@ public class Player {
     private int playerID;
 
     //list of a player's cards
-    ArrayList<Card> hand = new ArrayList<Card>();
+    ArrayList<Card> hand = new ArrayList<>();
     boolean isCzar;
 
     private RiffleSession riffle = new RiffleSession();
+
+    Dealer dealer;
 
     public Player(int ID, ArrayList<Card> cards, boolean czar){
         playerID = ID;
         hand = cards;
         boolean isCzar = czar;
+        dealer = Exec.findDealer(true);
     }//end Player constructor
 
+    /*
     //allows player to submit to dealer
     public void submitCard(Card card){
         boolean removed = false;
 
+
+
         //get a receipt
-        boolean received = riffle.submit(card);
+        boolean received = dealer.submit(card);
         while(!received){
             if(received){
                 removed = removeCard(card);
@@ -38,17 +44,17 @@ public class Player {
             }
         }
 
-        Card newCard = riffle.drawCard(getPlayerID());
+        Card newCard = dealer.dealCard(this);
 
         if(removed){
             addCard(newCard);
         } else {
-            riffle.reportError(0, getPlayerID(), "Unable to add new card" +
-                " due to riffle response error", null, hand);
+            //riffle.reportError(0, getPlayerID(), "Unable to add new card" +
+            //    " due to riffle response error", null, hand);
         }
     }//end submitCard method
-
-    public ArrayList<Card> getCards(){
+*/
+    public ArrayList<Card> getHand(){
         return this.hand;
     }//end getCards method
 
@@ -65,7 +71,8 @@ public class Player {
     }
 
     public void leaveRoom(){
-        riffle.leave(this);
+        //riffle.leave(this);
+        dealer.removePlayer(this);
     }
 
     public Card czarPicks(ArrayList<Card> czarList){
@@ -78,8 +85,8 @@ public class Player {
     private void addCard(Card card){
         hand.add(card);
         if(hand.size() != 5) {
-            riffle.reportError(1, getPlayerID(), "Card desync error" +
-                " in addCard method!", card, hand);
+            //riffle.reportError(1, getPlayerID(), "Card desync error" +
+            //    " in addCard method!", card, hand);
         }
     }//end addCard method
 
@@ -89,8 +96,8 @@ public class Player {
         removed = hand.remove(card);
 
         if(!removed){
-            riffle.reportError(2, getPlayerID(), "Unable to remove " +
-                    "card from hand.", card, hand);
+            //riffle.reportError(2, getPlayerID(), "Unable to remove " +
+            //        "card from hand.", card, hand);
         }
 
         return removed;

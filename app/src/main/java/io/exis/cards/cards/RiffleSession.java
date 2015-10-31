@@ -131,106 +131,130 @@ public class RiffleSession {
         System.out.println("Closing the client 1");
         client.close().toBlocking().last();
     }//end start method
+/*
 
-    /*
+    */
+/*
      * Determine whether player is the czar right now
      *
      * @param PID - player id of player
-     */
+     *//*
+
     public boolean isCzar(int PID){
 
     }//end isCzar method
 
-    /*
+    */
+/*
      * Adds a player to a game. Should go to exec, who then
      * communicates with dealer.
      *
      * @return Player object added to dealer's game
-     */
+     *//*
+
     public Player addPlayer(){
 
     }//end addPlayer method
 
-    /*
+    */
+/*
      * Punt.
      *
      * @return Dealer for this player
-     */
+     *//*
+
     public Dealer join(){
 
     }//end join method
 
-    /*
+    */
+/*
      * Get the current question for this game
      *
      * @return Card with the current question
-     */
+     *//*
+
     public Card getQuestion(){
 
     }//end getQuestion method
 
-    /*
+    */
+/*
      * Get this player's hand
      *
      * @param   PID ID of player
      * @return  ArrayList of their cards
-     */
+     *//*
+
     public ArrayList<Card> getHand(int PID){
 
     }//end getHand method
 
-    /*
+    */
+/*
      * Player sending card to dealer
      *
      * @param   card    The card to be submitted
      * @return  true    Success
      * @return  false   Error
-     */
+     *//*
+
     public boolean submit(Card card){
 
     }//end submit method
 
-    /*
+    */
+/*
      * Removes player from room
      *
      * @param   player  The player
-     */
+     *//*
+
     public void leave(Player player){
 
     }//end leave method
 
-    /*
+    */
+/*
      * Dealer sends card to player
-     */
+     *//*
+
     public void sendCard(int PID, Card card){
 
     }
 
-    /*
+    */
+/*
      * Dealer receives card from player
-     */
+     *//*
+
     public Card receiveCard(){
 
     }//end receiveCard method
 
-    /*
+    */
+/*
      * Player draws card from dealer's deck
-     */
+     *//*
+
     public Card drawCard(int PID){
 
     }
 
-    /*
+    */
+/*
      * Report error to Exec
      *
      * @param   errID
      * @param   msg     Error message
      * @param   card    Card involved
      * @param   hand    The player's hand
-     */
+     *//*
+
     public void reportError(int errID, int PID, String msg, Card card, ArrayList<Card> hand){
 
     }
+*/
 
     private void waitUntilKeypressed() {
         try {
