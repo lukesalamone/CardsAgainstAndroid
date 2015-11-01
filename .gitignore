@@ -14,3 +14,7 @@
 *.swp
 *.idea
 *.iml
+
+#Helper files
+###############
+game_logic.txt
