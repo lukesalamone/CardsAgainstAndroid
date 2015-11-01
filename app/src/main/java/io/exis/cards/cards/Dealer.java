@@ -1,5 +1,6 @@
 package io.exis.cards.cards;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -27,6 +28,8 @@ public class Dealer {
     //keep track of cards in play
     ArrayList<Card> inPlay = new ArrayList<>();
 
+    ArrayList<Card> forCzar = new ArrayList<>();
+
     //keep track of cards not in play
     ArrayList<Card> questions = new ArrayList<>();
     ArrayList<Card> answers = new ArrayList<>();
@@ -36,93 +39,23 @@ public class Dealer {
     //always know question card
     Card questionCard;
 
-    //pg13 or R
-    boolean rating;
+    boolean rating;             //pg13 or R
     int dealerID;
+    int czarNum;
 
     //seconds remaining
     long timeRemaining;
 
-    CountDownTimer timer = new CountDownTimer(15000, 1000) {
-
-        public void onTick(long millisUntilFinished) {
-            timeRemaining = (millisUntilFinished / 1000);
-        }
-
-        public void onFinish() {
-            //Do something...
-        }
-    };
-
     public Dealer(boolean R, int ID){
         rating = R;
         dealerID = ID;
+        czarNum = 0;
         beginGame();
     }
 
     public void beginGame(){
-
-        //load all questions into questions ArrayList
-        questions = Card.getQuestions(rating);
-
-        //load all answers into answers ArrayList
-        answers = Card.getAnswers(rating);
-
-        //set first player as czar
-        int czarNum = getCzarPos();
-        players.get(czarNum).setCzar(true);
-
-        //game continues until taken down by exec
-        while(true) {
-            //make sure all players have 5 cards
-            for(int i=0; i<players.size(); i++){
-                while(players.get(i).hand.size() < 5){
-                    Card newCard = dealCard(players.get(i));
-                    players.get(i).hand.add(newCard);
-                    inPlay.add(newCard);
-                }
-            }
-
-            //set question card
-            questionCard = generateQuestion();
-
-            //players submit cards
-            timer.start();
-            while(getTimeRemaining() != 0){
-                ArrayList<Card> submitted = new ArrayList<>();
-                //Card card = riffle.receiveCard();
-
-                Card card = receiveCard(generateAnswer());
-                submitted.add(card);
-
-                //send card to czar
-                //riffle.sendCard(players.get(czarNum).getPlayerID(), card);
-
-                sendCard(players.get(czarNum).getPlayerID(), card);
-            }
-
-            //czar picks card
-            timer.start();
-
-            Card picked = null;
-
-            //announce winner & give a point
-            while(getTimeRemaining() != 0){
-                picked = receiveCard(generateAnswer());
-            }
-
-            //give that player a point
-            if (picked != null){
-                Player winner = getPlayerByID(picked.getPID());
-                Exec.addPoint(winner);
-            }
-
-            //set czar to next player
-            players.get(czarNum).setCzar(false);
-            czarNum++;
-            czarNum = czarNum % getGameSize();
-            players.get(czarNum).setCzar(true);
-        }
+        questions = Card.getQuestions(rating);          //load all questions
+        answers = Card.getAnswers(rating);              //load all answers
     }
 
     public Card dealCard(Player player){
@@ -156,9 +89,25 @@ public class Dealer {
     /*                           PLACEHOLDER METHODS                         */
     /*************************************************************************/
 
-    //placeholder method for now...
-    public Card receiveCard(Card card){
-        return card;
+    //when players send cards to dealer
+    public Card receiveCard(Player player, Card card){
+        //add card to submitted list
+        forCzar.add(card);
+
+        return dealCard(player);
+    }
+
+    //need to overload for czar situation
+    public void czarPick(Card card){
+        //give winner a point
+        Player winner = getPlayerByID(card.getPID());
+        Exec.addPoint(winner);
+
+        //set czar to next player
+        players.get(czarNum).setCzar(false);
+        czarNum++;
+        czarNum = czarNum % getGameSize();
+        players.get(czarNum).setCzar(true);
     }
 
     //placeholder method for now...
@@ -171,8 +120,33 @@ public class Dealer {
     /*                        END PLACEHOLDER METHODS                        */
     /*************************************************************************/
 
+    //make sure all players have 5 cards
+    public void setPlayers(){
+        for(int i=0; i<players.size(); i++){
+            while(players.get(i).hand.size() < 5){
+                Card newCard = dealCard(players.get(i));
+                players.get(i).hand.add(newCard);
+                inPlay.add(newCard);
+            }
+        }
+    }
+
+    public ArrayList<Card> getNewHand(Player player){
+        ArrayList<Card> hand = new ArrayList<>();
+
+        for(int i=0; i<5; i++){
+            hand.add(this.dealCard(player));
+        }
+
+        return hand;
+    }//end getNewHand method
+
     public Card getQuestion(){
         return questionCard;
+    }
+
+    public ArrayList<Card> getSubmitted(){
+        return forCzar;
     }
 
     public boolean addPlayer(Player player){

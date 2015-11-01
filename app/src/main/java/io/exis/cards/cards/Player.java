@@ -10,15 +10,10 @@ import java.util.ArrayList;
  */
 public class Player {
 
-    //unique to every player
-    private int playerID;
-
-    //list of a player's cards
-    ArrayList<Card> hand = new ArrayList<>();
-    boolean isCzar;
-
-    private RiffleSession riffle = new RiffleSession();
-
+    private int playerID;           //unique to every player
+    ArrayList<Card> hand;           //list of a player's cards
+    boolean isCzar;                 //whether the player is card czar
+    //private RiffleSession riffle = new RiffleSession();
     Dealer dealer;
 
     public Player(int ID, ArrayList<Card> cards, boolean czar){
@@ -70,6 +65,10 @@ public class Player {
         this.isCzar = isCzar;
     }
 
+    public void setHand(ArrayList<Card> hand){
+        this.hand = hand;
+    }
+
     public void leaveRoom(){
         //riffle.leave(this);
         dealer.removePlayer(this);
@@ -81,7 +80,7 @@ public class Player {
         return czarList.get(x);
     }//end czarPicks method
 
-    //add a card to player's hand at position pos
+    //add a card to player's hand
     private void addCard(Card card){
         hand.add(card);
         if(hand.size() != 5) {
@@ -102,5 +101,4 @@ public class Player {
 
         return removed;
     }//end removeCard method
-
 }

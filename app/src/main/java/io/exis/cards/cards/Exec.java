@@ -26,11 +26,11 @@ public class Exec {
         dealers.remove(dealer);
     }
 
-    public static void addPlayer(boolean R){
-        Player newbie = new Player(getNewID(),
-                new ArrayList<Card>(),
-                false);
-        findDealer(R).addPlayer(newbie);
+    public static Dealer addPlayer(Player player, boolean R){
+        Dealer dealer = findDealer(R);
+        dealer.addPlayer(player);
+
+        return dealer;
     }
 
     //finds a dealer of appropriate game not at max capacity
