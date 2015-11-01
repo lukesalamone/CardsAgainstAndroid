@@ -15,3 +15,5 @@ Remove gameplay logic from Dealer
 Pass pg-13 / R param to GameActivity
 
 Interface stuff for card submission
+
+OnClick listener for card submissions...
