@@ -8,7 +8,7 @@ Created by Luke Salamone
 
 Networking with Riffle
 
-Adding dummy CPU players
+Dummy CPU players: added by Dealer if game has fewer than 5 players. Simply submits first (or random) card in hand.
 
 Remove gameplay logic from Dealer
 
