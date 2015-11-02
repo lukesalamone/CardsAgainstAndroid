@@ -2,6 +2,8 @@ package io.exis.cards.cards;
 
 import android.app.Activity;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
@@ -77,14 +79,20 @@ public class GameActivity extends Activity {
             //15 second timer for submission
             CountDownTimer timer = new CountDownTimer(15000, 1000) {
                 Card chosen = player.getHand().get(0);      //default to submitting first card
-
+                TextView textView = (TextView)view.findViewById(R.id.room_id);
                 public void onTick(long millisUntilFinished) {
                     long timeRemaining = (millisUntilFinished / 1000);
 
                     //probably should do some interface things here
 
-                    //OnClick listener for card submissions
-                }
+                    textView.setText(timeRemaining + " seconds remain to choose!");
+
+                    if(timeRemaining > 5){
+                        textView.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
+                    } else {
+                        textView.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
+                    }
+                }//end onTick method
 
                 public void onFinish() {
                     //submit chosen card
@@ -104,9 +112,20 @@ public class GameActivity extends Activity {
             //15 second timer for czar
             CountDownTimer czarTimer = new CountDownTimer(15000, 1000) {
                 Card chosen = submitted.get(0);             //default to submitting first card
+                TextView textView = (TextView)view.findViewById(R.id.room_id);
 
                 public void onTick(long millisUntilFinished) {
-                    //probably should do some interface things here
+                    long timeRemaining = (millisUntilFinished / 1000);
+
+                    //my amazing interface
+
+                    textView.setText(timeRemaining + " seconds remain to choose!");
+
+                    if(timeRemaining > 5){
+                        textView.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
+                    } else {
+                        textView.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
+                    }
 
                     //OnClick listener for card submissions
                 }
