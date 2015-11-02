@@ -5,7 +5,7 @@
     android:paddingRight="0dp"
     android:paddingTop="0dp"
     android:paddingBottom="0dp"
-    tools:context=".MainActivity">
+    tools:context=".GameActivity">
 
     <TextView android:text="@string/question" android:layout_width="fill_parent"
         android:layout_height="100sp"
@@ -31,6 +31,8 @@
 
     <TextView
         android:text="@string/answer"
+        android:clickable="true"
+        android:onClick="submitCard1"
         android:layout_width="fill_parent"
         android:layout_height="50sp"
         android:id="@+id/card1"
@@ -45,6 +47,8 @@
 
     <TextView
         android:text="@string/answer"
+        android:clickable="true"
+        android:onClick="submitCard2"
         android:layout_width="fill_parent"
         android:layout_height="50sp"
         android:id="@+id/card2"
@@ -56,6 +60,8 @@
 
     <TextView
         android:text="@string/answer"
+        android:clickable="true"
+        android:onClick="submitCard3"
         android:layout_width="fill_parent"
         android:layout_height="50sp"
         android:id="@+id/card3"
@@ -67,6 +73,8 @@
 
     <TextView
         android:text="@string/answer"
+        android:clickable="true"
+        android:onClick="submitCard4"
         android:layout_width="fill_parent"
         android:layout_height="50sp"
         android:id="@+id/card4"
@@ -78,6 +86,8 @@
 
     <TextView
         android:text="@string/answer"
+        android:clickable="true"
+        android:onClick="submitCard5"
         android:layout_width="fill_parent"
         android:layout_height="50sp"
         android:id="@+id/card5"

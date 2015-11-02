@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RadioButton;
 
 public class MainActivity extends Activity {
@@ -13,6 +14,9 @@ public class MainActivity extends Activity {
     public static boolean adult = false;
     //public RiffleSession riffle = new RiffleSession();
 
+    View view;
+    Button gameButton = (Button)view.findViewById(R.id.button);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,6 +24,8 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState.getBoolean(CONTENT_RATING)) {
             adult = savedInstanceState.getBoolean(CONTENT_RATING);
+        } else {
+            gameButton.setEnabled(false);
         }
 
         setPoints();
@@ -38,6 +44,7 @@ public class MainActivity extends Activity {
     }
 
     public void onRadioButtonClicked(View view){
+        gameButton.setEnabled(true);
         boolean checked = ((RadioButton) view).isChecked();
         switch(view.getId()) {
             case R.id.radio_pg13:

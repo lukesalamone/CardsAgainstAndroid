@@ -28,6 +28,12 @@ public class GameActivity extends Activity {
     public Dealer dealer;
     public Chronometer chronometer;
 
+    TextView card1;
+    TextView card2;
+    TextView card3;
+    TextView card4;
+    TextView card5;
+
     //public RiffleSession riffle;
 
     public GameActivity(){
@@ -45,6 +51,12 @@ public class GameActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        card1 = (TextView)view.findViewById(R.id.card1);
+        card2 = (TextView)view.findViewById(R.id.card2);
+        card3 = (TextView)view.findViewById(R.id.card3);
+        card4 = (TextView)view.findViewById(R.id.card4);
+        card5 = (TextView)view.findViewById(R.id.card5);
 
         //find game & join
         //riffle.join();
@@ -101,7 +113,11 @@ public class GameActivity extends Activity {
                 }
             };
 
-            timer.start();
+            if(!dealer.isCzar(player)) {
+                timer.start();
+            } else {
+                //if they are czar, wait for submitted cards to judge
+            }
 
             //deal another card back to player
             Card freshCard = dealer.dealCard(player);
@@ -141,7 +157,11 @@ public class GameActivity extends Activity {
                 }
             };
 
-            czarTimer.start();
+            if(dealer.isCzar(player)) {
+                czarTimer.start();
+            } else {
+                //if player is not czar, wait for czar's pick
+            }
 
             //give point to winner
             Exec.addPoint(player);
@@ -181,4 +201,47 @@ public class GameActivity extends Activity {
 
         dealer.removePlayer(player);
     }
+
+    public void submitCard1(View view){
+        dealer.receiveCard(player, player.getHand().get(0));
+
+        //set background colors
+        setBackgrounds(1, view);
+    }
+
+    public void submitCard2(View view){
+        dealer.receiveCard(player, player.getHand().get(1));
+        setBackgrounds(2, view);
+    }
+
+    public void submitCard3(View view){
+        dealer.receiveCard(player, player.getHand().get(2));
+        setBackgrounds(3, view);
+    }
+
+    public void submitCard4(View view){
+        dealer.receiveCard(player, player.getHand().get(3));
+        setBackgrounds(4, view);
+    }
+
+    public void submitCard5(View view){
+        dealer.receiveCard(player, player.getHand().get(4));
+        setBackgrounds(5, view);
+    }
+
+    //whiten card backgrounds other than card c
+    private void setBackgrounds(int c, View v){
+        v.getBackground().setColorFilter(Color.parseColor("#e5ffff"), PorterDuff.Mode.DARKEN);
+
+        String str;
+        for(int i=1; i<=5; i++){
+            str = "card" + i;
+            if(i != c){//if i != c change background to white
+                int resID = context.getResources().getIdentifier(str, "id",
+                        context.getPackageName());
+                TextView view = (TextView)(new TextView(this.context)).findViewById(resID);
+                view.getBackground().setColorFilter(Color.parseColor("#ffffff"), PorterDuff.Mode.LIGHTEN);
+            }
+        }
+    }//end setBackgrounds method
 }
