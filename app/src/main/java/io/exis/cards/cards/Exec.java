@@ -63,7 +63,7 @@ public class Exec {
         double rand = Math.random()*Double.MAX_VALUE;
 
         //get SYS time
-        double time = System.currentTimeMillis();;
+        double time = System.currentTimeMillis();
 
         //multiply by random number
         key = time*rand;

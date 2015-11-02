@@ -65,10 +65,7 @@ public class Card {
         if (!this.getText().equals(card.getText())){
             return false;
         }
-        if(this.getType() != card.getType()){
-            return false;
-        }
-        return true;
+        return this.getType() == card.getType();
     }
 
     //returns a Card from an ID. When R is true return normal card set
@@ -148,17 +145,6 @@ public class Card {
         return answers;
     }
 
-    //load file into string and return it
-    private static String getCardString(String name) {
-
-        int resID = context.getResources().getIdentifier(name, "values", context.getPackageName());
-
-        Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
-
-        return fileIn.nextLine();
-
-    }//end getCardString method
-
     private static JSONObject getCardsJSON(String name){
 
         if(cardsJSON.length() == 0){
@@ -174,5 +160,16 @@ public class Card {
         return cardsJSON;
 
     }//end getCardJSON method
+
+    //load file into string and return it
+    private static String getCardString(String name) {
+
+        int resID = context.getResources().getIdentifier(name, "values", context.getPackageName());
+
+        Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
+
+        return fileIn.nextLine();
+
+    }//end getCardString method
 
 }

@@ -1,16 +1,13 @@
 package io.exis.cards.cards;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.RadioButton;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     static final String CONTENT_RATING = "contentRating";
     public static boolean adult = false;
@@ -25,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
             adult = savedInstanceState.getBoolean(CONTENT_RATING);
         }
 
-        this.setPoints();
+        setPoints();
     }
 
     public void startGame(View view) {

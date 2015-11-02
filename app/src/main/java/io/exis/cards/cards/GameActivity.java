@@ -1,9 +1,9 @@
 package io.exis.cards.cards;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Chronometer;
 import android.widget.Button;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
  *
  * Created by luke on 10/22/15.
  */
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends Activity {
 
     private Context context;
     private boolean adult;
