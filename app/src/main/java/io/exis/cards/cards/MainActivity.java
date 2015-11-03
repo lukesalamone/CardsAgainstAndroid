@@ -14,15 +14,16 @@ public class MainActivity extends Activity {
     public static boolean adult = false;
     //public RiffleSession riffle = new RiffleSession();
 
-    View view;
-    Button gameButton = (Button)view.findViewById(R.id.button);
+    Button gameButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (savedInstanceState.getBoolean(CONTENT_RATING)) {
+        gameButton  = (Button) findViewById(R.id.button);
+
+        if (savedInstanceState != null && savedInstanceState.getBoolean(CONTENT_RATING)) {
             adult = savedInstanceState.getBoolean(CONTENT_RATING);
         } else {
             gameButton.setEnabled(false);
