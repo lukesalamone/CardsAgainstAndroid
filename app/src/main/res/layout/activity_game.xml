@@ -7,7 +7,8 @@
     android:paddingBottom="0dp"
     tools:context=".GameActivity">
 
-    <TextView android:text="@string/question" android:layout_width="fill_parent"
+    <TextView android:text="@string/question"
+        android:layout_width="fill_parent"
         android:layout_height="100sp"
         android:id="@+id/question"
         android:textSize="20sp"
@@ -15,8 +16,8 @@
         android:textColor="#fff"
         android:layout_alignParentTop="true"
         android:background="#000"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
         android:padding="5dp" />
 
     <Chronometer
@@ -40,9 +41,9 @@
         android:background="#eee"
         android:textColor="#000"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@string/card_spacing"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
+        android:layout_marginTop="@dimen/card_spacing"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_below="@+id/chronometer" />
 
     <TextView
@@ -56,7 +57,7 @@
         android:background="#eee"
         android:textColor="#000"
         android:layout_below="@+id/card1"
-        android:layout_marginTop="@string/card_spacing" />
+        android:layout_marginTop="@dimen/card_spacing" />
 
     <TextView
         android:text="@string/answer"
@@ -69,7 +70,7 @@
         android:background="#eee"
         android:textColor="#000"
         android:layout_below="@+id/card2"
-        android:layout_marginTop="@string/card_spacing" />
+        android:layout_marginTop="@dimen/card_spacing" />
 
     <TextView
         android:text="@string/answer"
@@ -82,7 +83,7 @@
         android:background="#eee"
         android:textColor="#000"
         android:layout_below="@+id/card3"
-        android:layout_marginTop="@string/card_spacing" />
+        android:layout_marginTop="@dimen/card_spacing" />
 
     <TextView
         android:text="@string/answer"
@@ -95,7 +96,7 @@
         android:background="#eee"
         android:textColor="#000"
         android:layout_below="@+id/card4"
-        android:layout_marginTop="@string/card_spacing" />
+        android:layout_marginTop="@dimen/card_spacing" />
 
     <TextView
         android:text="@string/room"
@@ -106,8 +107,8 @@
         android:background="#000"
         android:textColor="#fff"
         android:padding="5dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"/>
 
 </RelativeLayout>

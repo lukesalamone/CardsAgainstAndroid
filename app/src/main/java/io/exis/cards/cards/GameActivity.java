@@ -38,15 +38,19 @@ public class GameActivity extends Activity {
     //public RiffleSession riffle;
 
     public GameActivity(){
+        adult = MainActivity.adult;
+
+        Log.i("GameActivity", "Setting adult to " + adult);
+
+        context = MainActivity.getAppContext();
+
         /*riffle = new RiffleSession();
         player = riffle.addPlayer();
 
         //ask dealer if player is czar, set appropriately
         player.setCzar(riffle.isCzar(player.getPlayerID()));*/
 
-        Log.i("GameActivity", "Setting adult to MainActivity.adult");
-
-        adult = MainActivity.adult;
+        dealer = Exec.addPlayer(player, adult);
     }
 
     View view;
@@ -64,6 +68,8 @@ public class GameActivity extends Activity {
         card3 = (TextView) findViewById(R.id.card3);
         card4 = (TextView) findViewById(R.id.card4);
         card5 = (TextView) findViewById(R.id.card5);
+
+        chronometer = (Chronometer) findViewById(R.id.chronometer);
 
         //find game & join
         //riffle.join();
@@ -86,7 +92,6 @@ public class GameActivity extends Activity {
     }
 
     private void playGame(){
-        dealer = Exec.addPlayer(player, adult);
         player.setCzar(dealer.isCzar(player));
         player.setHand(dealer.getNewHand(player));
         dealer.setPlayers();
@@ -98,13 +103,14 @@ public class GameActivity extends Activity {
             //15 second timer for submission
             CountDownTimer timer = new CountDownTimer(15000, 1000) {
                 Card chosen = player.getHand().get(0);      //default to submitting first card
-                Chronometer chronometer = (Chronometer)view.findViewById(R.id.chronometer);
+                String s;
+
                 public void onTick(long millisUntilFinished) {
                     long timeRemaining = (millisUntilFinished / 1000);
 
-                    //probably should do some interface things here
-
-                    chronometer.setText(timeRemaining + " seconds remain to choose!");
+                    //interface stuff
+                    s = timeRemaining + " seconds remain to choose!";
+                    chronometer.setText(s);
 
                     if(timeRemaining > 5){
                         chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
@@ -135,14 +141,13 @@ public class GameActivity extends Activity {
             //15 second timer for czar
             CountDownTimer czarTimer = new CountDownTimer(15000, 1000) {
                 Card chosen = submitted.get(0);             //default to submitting first card
-                Chronometer chronometer = (Chronometer)view.findViewById(R.id.chronometer);
-
+                String s;
                 public void onTick(long millisUntilFinished) {
                     long timeRemaining = (millisUntilFinished / 1000);
 
                     //my amazing interface
-
-                    chronometer.setText(timeRemaining + " seconds remain to choose!");
+                    s = timeRemaining + " seconds remain to choose!";
+                    chronometer.setText(s);
 
                     if(timeRemaining > 5){
                         chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
@@ -183,7 +188,7 @@ public class GameActivity extends Activity {
         Card card = dealer.getQuestion();
 
         String questionText = card.getText();
-        TextView textView = (TextView)view.findViewById(R.id.question);
+        TextView textView = (TextView) findViewById(R.id.question);
         textView.setText(questionText);
     }//end setQuestion method
 

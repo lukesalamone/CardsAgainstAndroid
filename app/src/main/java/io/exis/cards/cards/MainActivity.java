@@ -4,14 +4,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
+
+import org.json.JSONObject;
 
 public class MainActivity extends Activity {
 
     static final String CONTENT_RATING = "contentRating";
     public static boolean adult = false;
+    private static Context context;
+
     //public RiffleSession riffle = new RiffleSession();
 
     Button gameButton;
@@ -20,6 +25,17 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        MainActivity.context = getApplicationContext();
+
+        //create cards as json object
+        JSONObject json = Card.getCardsJSON("../../../../../", this.context);
+
+        if(context == null) {
+            Log.v("MainActivity", "context is null");
+        }else{
+            Log.v("MainActivity", "context not null");
+        }
 
         gameButton  = (Button) findViewById(R.id.button);
 
@@ -61,6 +77,10 @@ public class MainActivity extends Activity {
         }
     }//end onRadioButtonClicked method
 
+    public static Context getAppContext(){
+        return MainActivity.context;
+    }
+
     /*
      * @TODO
      * Set points to previously saved value
@@ -71,5 +91,7 @@ public class MainActivity extends Activity {
 
         // 2. Display correct number in activity
     }
+
+
 
 }

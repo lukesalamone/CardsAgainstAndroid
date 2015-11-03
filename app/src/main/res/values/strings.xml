@@ -11,5 +11,4 @@
     <string name="question">QUESTIONS GO HERE</string>
     <string name="answer">ANSWERS GO HERE</string>
     <string name="room">ROOM NAME</string>
-    <string name="card_spacing">10dp</string>
 </resources>

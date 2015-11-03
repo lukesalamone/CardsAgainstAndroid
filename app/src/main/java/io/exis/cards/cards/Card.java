@@ -16,7 +16,13 @@ import android.provider.MediaStore;
 
 import org.json.*;
 import android.content.Context;
+import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -40,6 +46,7 @@ public class Card {
         text = cardText;
         type = cardType;
         PID = playerID;
+        context = MainActivity.getAppContext();
     }//end Card constructor
 
     public int getID(){
@@ -145,7 +152,7 @@ public class Card {
         return answers;
     }
 
-    private static JSONObject getCardsJSON(String name){
+    public static JSONObject getCardsJSON(String name){
 
         if(cardsJSON.length() == 0){
             String cardString = getCardString(name);
@@ -162,14 +169,46 @@ public class Card {
     }//end getCardJSON method
 
     //load file into string and return it
-    private static String getCardString(String name) {
-
+    private static String getCardString(String name){
+        /*
         int resID = context.getResources().getIdentifier(name, "values", context.getPackageName());
 
         Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
 
         return fileIn.nextLine();
+        */
 
+        String path = "../../../../../res/raw" + name;
+
+        try {
+            return getStringFromFile(path);
+        } catch(Exception e){
+            return "";
+        }
     }//end getCardString method
 
+    /*
+     *        MAY NOT NEED THESE...
+     */
+
+    //from http://stackoverflow.com/questions/12910503/read-file-as-string
+    public static String getStringFromFile (String filePath) throws Exception {
+        File fl = new File(filePath);
+        FileInputStream fin = new FileInputStream(fl);
+        String ret = streamToString(fin);
+        //Make sure you close all streams.
+        fin.close();
+        return ret;
+    }
+
+    public static String streamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
 }
