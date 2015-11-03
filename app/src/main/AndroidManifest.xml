@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.exis.cards.cards"
-    android:versionName="1">
-    <uses-sdk android:minSdkVersion="15"
-        android:targetSdkVersion="16"
+    android:versionName="1"
+    android:versionCode="1">
+    <uses-sdk android:minSdkVersion="17"
+        android:targetSdkVersion="23"
         android:maxSdkVersion="23" />
 
     <uses-permission android:name="android.permission.INTERNET">

@@ -7,6 +7,7 @@
     <string name="pg13">PG-13</string>
     <string name="adult">Adult</string>
     <string name="score">Score</string>
+    <string name="your_score">0</string>
     <string name="question">QUESTIONS GO HERE</string>
     <string name="answer">ANSWERS GO HERE</string>
     <string name="room">ROOM NAME</string>

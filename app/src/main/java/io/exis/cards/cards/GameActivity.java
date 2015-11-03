@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.View;
 import android.widget.Chronometer;
 import android.widget.Button;
@@ -42,6 +43,9 @@ public class GameActivity extends Activity {
 
         //ask dealer if player is czar, set appropriately
         player.setCzar(riffle.isCzar(player.getPlayerID()));*/
+
+        Log.i("GameActivity", "Setting adult to MainActivity.adult");
+
         adult = MainActivity.adult;
     }
 
@@ -49,14 +53,17 @@ public class GameActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        Log.i("onCreate", "Setting views");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        card1 = (TextView)view.findViewById(R.id.card1);
-        card2 = (TextView)view.findViewById(R.id.card2);
-        card3 = (TextView)view.findViewById(R.id.card3);
-        card4 = (TextView)view.findViewById(R.id.card4);
-        card5 = (TextView)view.findViewById(R.id.card5);
+        card1 = (TextView) findViewById(R.id.card1);
+        card2 = (TextView) findViewById(R.id.card2);
+        card3 = (TextView) findViewById(R.id.card3);
+        card4 = (TextView) findViewById(R.id.card4);
+        card5 = (TextView) findViewById(R.id.card5);
 
         //find game & join
         //riffle.join();
