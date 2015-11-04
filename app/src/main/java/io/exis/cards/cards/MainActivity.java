@@ -29,13 +29,7 @@ public class MainActivity extends Activity {
         MainActivity.context = getApplicationContext();
 
         //create cards as json object
-        JSONObject json = Card.getCardsJSON("../../../../../", this.context);
-
-        if(context == null) {
-            Log.v("MainActivity", "context is null");
-        }else{
-            Log.v("MainActivity", "context not null");
-        }
+        //JSONObject json = Card.getCardsJSON("../../../../../", this.context);
 
         gameButton  = (Button) findViewById(R.id.button);
 

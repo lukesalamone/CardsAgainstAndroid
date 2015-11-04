@@ -53,8 +53,6 @@ public class GameActivity extends Activity {
         dealer = Exec.addPlayer(player, adult);
     }
 
-    View view;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -80,7 +78,7 @@ public class GameActivity extends Activity {
         //populate answers TextViews
         showCards();
 
-        dealer.beginGame();
+        dealer.beginGame(context);
         playGame();
 
         //create player and dealer

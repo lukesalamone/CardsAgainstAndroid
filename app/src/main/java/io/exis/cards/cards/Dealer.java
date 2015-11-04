@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import android.content.Context;
 import android.os.CountDownTimer;
 
 /**
@@ -43,6 +44,8 @@ public class Dealer {
     int dealerID;
     int czarNum;
 
+    Context context;
+
     //seconds remaining
     long timeRemaining;
 
@@ -50,12 +53,12 @@ public class Dealer {
         rating = R;
         dealerID = ID;
         czarNum = 0;
-        beginGame();
     }
 
-    public void beginGame(){
-        questions = Card.getQuestions(rating);          //load all questions
-        answers = Card.getAnswers(rating);              //load all answers
+    public void beginGame(Context c){
+        context = c;
+        questions = Card.getQuestions(rating, context);          //load all questions
+        answers = Card.getAnswers(rating, context);//load all answers
     }
 
     public Card dealCard(Player player){
