@@ -93,10 +93,10 @@ public class MainActivity extends Activity {
 
     //load file into string and return it
     public static String getCardString(String name){
-        if(context == null){
-            Log.w("Card.getCardString", "context is null");
-        }
-        int resID = context.getResources().getIdentifier(name, "values", context.getPackageName());
+        //name = name + ".txt";
+        Log.i("Card.getCardString", "name = " + name);
+        int resID = context.getResources().getIdentifier(name, "raw", context.getPackageName());
+        Log.i("Card.getCardString", "resID = " + resID);
         Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
         return fileIn.nextLine();
     }//end getCardString method

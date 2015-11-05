@@ -154,12 +154,11 @@ public class Card {
 
             String cardString = MainActivity.getCardString(name);
 
-            Log.i("cardString", cardString);
-
             try {
                 cardsJSON = new JSONObject(cardString);
                 return cardsJSON;
             } catch (JSONException e){
+                Log.wtf("Card::getCardsJson", "JSON exception thrown");
                 throw new RuntimeException(e);
             }
         }
