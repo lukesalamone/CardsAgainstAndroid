@@ -50,7 +50,9 @@ public class GameActivity extends Activity {
         //ask dealer if player is czar, set appropriately
         player.setCzar(riffle.isCzar(player.getPlayerID()));*/
 
-        dealer = Exec.addPlayer(player, adult);
+        dealer = Exec.findDealer(adult);
+        dealer.prepareGame(context);
+        Exec.addPlayer(player, dealer);
     }
 
     @Override
@@ -71,8 +73,6 @@ public class GameActivity extends Activity {
 
         //find game & join
         //riffle.join();
-
-        dealer.beginGame(context);
 
         //set question TextView
         setQuestion();

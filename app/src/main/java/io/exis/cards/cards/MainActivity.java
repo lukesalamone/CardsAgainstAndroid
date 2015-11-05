@@ -11,11 +11,17 @@ import android.widget.RadioButton;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Scanner;
+
 public class MainActivity extends Activity {
 
     static final String CONTENT_RATING = "contentRating";
     public static boolean adult = false;
     private static Context context;
+    private static ArrayList<Card> answers;
+    private static ArrayList<Card> questions;
 
     //public RiffleSession riffle = new RiffleSession();
 
@@ -55,6 +61,9 @@ public class MainActivity extends Activity {
         // The activity is about to be destroyed.
     }
 
+    /*
+     * TODO add loading text when loading cards?
+     */
     public void onRadioButtonClicked(View view){
         gameButton.setEnabled(true);
         boolean checked = ((RadioButton) view).isChecked();
@@ -62,11 +71,17 @@ public class MainActivity extends Activity {
             case R.id.radio_pg13:
                 if (checked) {
                     adult = false;
+                    //load R-rated cards
+                    questions = Card.getQuestions(adult);
+                    answers = Card.getAnswers(adult);
                     break;
                 }
             case R.id.radio_adult:
                 if (checked) {
                     adult = true;
+                    //load PG-13 cards
+                    questions = Card.getQuestions(adult);
+                    answers = Card.getAnswers(adult);
                     break;
                 }
         }
@@ -74,6 +89,24 @@ public class MainActivity extends Activity {
 
     public static Context getAppContext(){
         return MainActivity.context;
+    }
+
+    //load file into string and return it
+    public static String getCardString(String name){
+        if(context == null){
+            Log.w("Card.getCardString", "context is null");
+        }
+        int resID = context.getResources().getIdentifier(name, "values", context.getPackageName());
+        Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
+        return fileIn.nextLine();
+    }//end getCardString method
+
+    public static ArrayList<Card> getQuestions(){
+        return questions;
+    }
+
+    public static ArrayList<Card> getAnswers(){
+        return answers;
     }
 
     /*

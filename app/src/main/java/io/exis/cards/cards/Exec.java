@@ -33,6 +33,12 @@ public class Exec {
         return dealer;
     }
 
+    //overloaded method
+    //adds player to given dealer
+    public static void addPlayer(Player player, Dealer dealer){
+        dealer.addPlayer(player);
+    }
+
     //finds a dealer of appropriate game not at max capacity
     public static Dealer findDealer(boolean R){
         //look for an open rating-appropriate dealer

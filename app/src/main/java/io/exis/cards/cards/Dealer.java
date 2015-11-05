@@ -24,18 +24,18 @@ public class Dealer {
     final int ROOMCAP = 6;
 
     //keep track of players playing
-    ArrayList<Player> players = new ArrayList<>();
+    ArrayList<Player> players;
 
     //keep track of cards in play
-    ArrayList<Card> inPlay = new ArrayList<>();
+    ArrayList<Card> inPlay;
 
-    ArrayList<Card> forCzar = new ArrayList<>();
+    ArrayList<Card> forCzar;
 
     //keep track of cards not in play
-    ArrayList<Card> questions = new ArrayList<>();
-    ArrayList<Card> answers = new ArrayList<>();
+    ArrayList<Card> questions;
+    ArrayList<Card> answers;
 
-    RiffleSession riffle = new RiffleSession();
+    //RiffleSession riffle = new RiffleSession();
 
     //always know question card
     Card questionCard;
@@ -53,12 +53,21 @@ public class Dealer {
         rating = R;
         dealerID = ID;
         czarNum = 0;
+        players  = new ArrayList<>();
+        inPlay = new ArrayList<>();
+        forCzar = new ArrayList<>();
+        questions = new ArrayList<>();
+        answers = new ArrayList<>();
     }
 
-    public void beginGame(Context c){
+    public void setContext(Context c){
         context = c;
-        questions = Card.getQuestions(rating, context);          //load all questions
-        answers = Card.getAnswers(rating);//load all answers
+    }
+
+    public void prepareGame(Context c){
+        context = c;                                            //I hate this line
+        questions = MainActivity.getQuestions();                //load all questions
+        answers = MainActivity.getAnswers();                      //load all answers
     }
 
     public Card dealCard(Player player){

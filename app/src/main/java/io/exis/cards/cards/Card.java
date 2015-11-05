@@ -74,34 +74,7 @@ public class Card {
         return this.getType() == card.getType();
     }
 
-    //returns a Card from an ID. When R is true return normal card set
-    //Card cannot set PID! Receiving party must set it.
-    public static Card getCardByID(int ID, boolean R, char type) throws JSONException{
-
-        if(R){
-            //requesting a question card
-            if(type == 'q'){
-                cardsJSON = getCardsJSON("q21");
-            //requesting an answer card
-            } else {
-                cardsJSON = getCardsJSON("a21");
-            }
-        } else { //pg-13 card set
-            if(type == 'q'){
-                cardsJSON = getCardsJSON("q13");
-            } else {
-                cardsJSON = getCardsJSON("a13");
-            }
-        }
-
-        String cardText = cardsJSON.names().getString(ID);
-
-        Card card = new Card(ID, cardText, type, -1);
-
-        return card;
-    }//end getCardByID method
-
-    public static ArrayList<Card> getQuestions(boolean R, Context context){
+    public static ArrayList<Card> getQuestions(boolean R){
         ArrayList<Card> questions = new ArrayList<>();
 
         try {
@@ -143,7 +116,34 @@ public class Card {
         }
 
         return answers;
-    }
+    }//end getAnswers method
+
+    //returns a Card from an ID. When R is true return normal card set
+    //Card cannot set PID! Receiving party must set it.
+    public static Card getCardByID(int ID, boolean R, char type) throws JSONException{
+
+        if(R){
+            //requesting a question card
+            if(type == 'q'){
+                cardsJSON = getCardsJSON("q21");
+                //requesting an answer card
+            } else {
+                cardsJSON = getCardsJSON("a21");
+            }
+        } else { //pg-13 card set
+            if(type == 'q'){
+                cardsJSON = getCardsJSON("q13");
+            } else {
+                cardsJSON = getCardsJSON("a13");
+            }
+        }
+
+        String cardText = cardsJSON.names().getString(ID);
+
+        Card card = new Card(ID, cardText, type, -1);
+
+        return card;
+    }//end getCardByID method
 
     public static JSONObject getCardsJSON(String name){
 
@@ -152,7 +152,7 @@ public class Card {
         if(cardsJSON.length() == 0){
             Log.i("getCardsJSON", "entering conditional");
 
-            String cardString = getCardString(name);
+            String cardString = MainActivity.getCardString(name);
 
             Log.i("cardString", cardString);
 
@@ -167,27 +167,6 @@ public class Card {
         return cardsJSON;
 
     }//end getCardJSON method
-
-    //load file into string and return it
-    private static String getCardString(String name){
-        /*
-        int resID = context.getResources().getIdentifier(name, "values", context.getPackageName());
-
-        Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
-
-        return fileIn.nextLine();
-        */
-
-        String path = "../../res/raw/" + name + ".txt";
-
-        try {
-            return getStringFromFile(path);
-        } catch(Exception e){
-            Log.i("getCardString", "Exception thrown.");
-            e.printStackTrace();
-            return "";
-        }
-    }//end getCardString method
 
     /*
      *        MAY NOT NEED THESE...
