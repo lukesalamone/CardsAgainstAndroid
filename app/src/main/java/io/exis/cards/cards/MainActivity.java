@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
     }
 
     public void startGame(View view) {
+        Log.v("MainActivity", "startGame");
         Intent intent = new Intent(view.getContext(), GameActivity.class);
         view.getContext().startActivity(intent);
     }

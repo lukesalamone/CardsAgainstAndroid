@@ -58,7 +58,7 @@ public class Dealer {
     public void beginGame(Context c){
         context = c;
         questions = Card.getQuestions(rating, context);          //load all questions
-        answers = Card.getAnswers(rating, context);//load all answers
+        answers = Card.getAnswers(rating);//load all answers
     }
 
     public Card dealCard(Player player){

@@ -5,12 +5,13 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="#000000">
 
     <TextView android:text="@string/game_name" android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textView"
-        android:textSize="30dp"
+        android:textSize="30sp"
         android:layout_centerHorizontal="true"
         android:textAlignment="center" />
 
@@ -21,7 +22,7 @@
         android:id="@+id/your_score"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:textSize="20dp" />
+        android:textSize="20sp" />
 
     <TextView
         android:text="@string/your_score"
@@ -45,7 +46,10 @@
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
         android:id="@+id/button"
-        android:onClick="startGame" />
+        android:onClick="startGame"
+        android:background="@drawable/play_button"
+        android:textColor="#fff"
+        android:textSize="40sp" />
 
     <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
@@ -60,12 +64,16 @@
             android:layout_height="wrap_content"
             android:text="@string/pg13"
             android:onClick="onRadioButtonClicked"
-            android:layout_gravity="center_vertical" />
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="50dp"
+            android:checked="false"
+            android:backgroundTint="#00a4e1" />
         <RadioButton android:id="@+id/radio_adult"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/adult"
-            android:onClick="onRadioButtonClicked" />
+            android:onClick="onRadioButtonClicked"
+            android:backgroundTint="#00a4e1" />
     </RadioGroup>
 
 </RelativeLayout>

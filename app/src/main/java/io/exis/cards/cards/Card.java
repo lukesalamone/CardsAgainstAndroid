@@ -123,7 +123,7 @@ public class Card {
         return questions;
     }//end getQuestions method
 
-    public static ArrayList<Card> getAnswers(boolean R, Context context){
+    public static ArrayList<Card> getAnswers(boolean R){
         ArrayList<Card> answers = new ArrayList<>();
 
         try {

@@ -72,13 +72,14 @@ public class GameActivity extends Activity {
         //find game & join
         //riffle.join();
 
+        dealer.beginGame(context);
+
         //set question TextView
         setQuestion();
 
         //populate answers TextViews
         showCards();
 
-        dealer.beginGame(context);
         playGame();
 
         //create player and dealer
