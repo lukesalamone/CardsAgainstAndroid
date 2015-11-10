@@ -35,7 +35,10 @@ public class Card {
     String text;
     char type;
     int PID;
+    static JSONArray cardsArray;
     static JSONObject cardsJSON = new JSONObject();
+    static String[] keys = {"text", "id"};                      //keys for JSON array
+
     static Context context;
 
     //Every card has an ID, associated text, and type
@@ -90,6 +93,7 @@ public class Card {
                 }
             }
         } catch(JSONException e){
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
 
@@ -120,32 +124,38 @@ public class Card {
 
     //returns a Card from an ID. When R is true return normal card set
     //Card cannot set PID! Receiving party must set it.
+    //
     public static Card getCardByID(int ID, boolean R, char type) throws JSONException{
-
-        if(R){
-            //requesting a question card
-            if(type == 'q'){
-                cardsJSON = getCardsJSON("q21");
-                //requesting an answer card
-            } else {
-                cardsJSON = getCardsJSON("a21");
+            if (R) {
+                //requesting a question card
+                if (type == 'q') {
+                    cardsArray = getCardsJSON("q21");
+                    //requesting an answer card
+                } else {
+                    cardsArray = getCardsJSON("a21");
+                }
+            } else { //pg-13 card set
+                if (type == 'q') {
+                    cardsArray = getCardsJSON("q13");
+                } else {
+                    cardsArray = getCardsJSON("a13");
+                }
             }
-        } else { //pg-13 card set
-            if(type == 'q'){
-                cardsJSON = getCardsJSON("q13");
-            } else {
-                cardsJSON = getCardsJSON("a13");
-            }
-        }
+        Log.i("getCardByID", cardsJSON.length() + "");
+        Log.i("getCardByID", cardsJSON.toString(4));
 
-        String cardText = cardsJSON.names().getString(ID);
+        //create JSON Object from JSON Array
+        cardsJSON = new JSONObject(cardsArray.getJSONObject(ID - 494), keys);
+
+        Log.i("getCardByID", "retrieved cards JSONObject:\n\n" + cardsJSON.toString(4));
+        String cardText = cardsJSON.getString("text");
 
         Card card = new Card(ID, cardText, type, -1);
 
         return card;
     }//end getCardByID method
 
-    public static JSONObject getCardsJSON(String name){
+    public static JSONArray getCardsJSON(String name){
 
         Log.i("getCardsJSON", "cardsJSON has length " + cardsJSON.length());
 
@@ -155,40 +165,17 @@ public class Card {
             String cardString = MainActivity.getCardString(name);
 
             try {
-                cardsJSON = new JSONObject(cardString);
-                return cardsJSON;
-            } catch (JSONException e){
-                Log.wtf("Card::getCardsJson", "JSON exception thrown");
-                throw new RuntimeException(e);
+                cardsArray = new JSONArray(cardString);
+                Log.i("getCardsJSON", "cardsArray:\n\n" + cardsArray.toString(4));
+            } catch(JSONException e){
+                Log.wtf("getCardsJSON", "JSON Exception thrown.");
+                e.printStackTrace();
             }
+
+            return cardsArray;
         }
 
-        return cardsJSON;
+        return cardsArray;
 
     }//end getCardJSON method
-
-    /*
-     *        MAY NOT NEED THESE...
-     */
-
-    //from http://stackoverflow.com/questions/12910503/read-file-as-string
-    public static String getStringFromFile (String filePath) throws Exception {
-        File fl = new File(filePath);
-        FileInputStream fin = new FileInputStream(fl);
-        String ret = streamToString(fin);
-        //Make sure you close all streams.
-        fin.close();
-        return ret;
-    }
-
-    public static String streamToString(InputStream is) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
-        reader.close();
-        return sb.toString();
-    }
 }
