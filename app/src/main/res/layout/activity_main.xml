@@ -42,7 +42,7 @@
         android:layout_height="wrap_content"
         android:layout_width="300dp"
         android:text="@string/play"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="70dp"
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
         android:id="@+id/button"
@@ -75,5 +75,15 @@
             android:onClick="onRadioButtonClicked"
             android:backgroundTint="#00a4e1" />
     </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/info"
+        android:id="@+id/info"
+        android:layout_below="@+id/button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp" />
 
 </RelativeLayout>

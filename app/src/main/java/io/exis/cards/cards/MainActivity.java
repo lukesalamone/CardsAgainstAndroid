@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
+import android.widget.TextView;
 
 import org.json.JSONObject;
 
@@ -26,6 +27,7 @@ public class MainActivity extends Activity {
     //public RiffleSession riffle = new RiffleSession();
 
     Button gameButton;
+    TextView infoText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +40,7 @@ public class MainActivity extends Activity {
         //JSONObject json = Card.getCardsJSON("../../../../../", this.context);
 
         gameButton  = (Button) findViewById(R.id.button);
+        infoText = (TextView) findViewById(R.id.info);
 
         if (savedInstanceState != null && savedInstanceState.getBoolean(CONTENT_RATING)) {
             adult = savedInstanceState.getBoolean(CONTENT_RATING);
@@ -71,17 +74,25 @@ public class MainActivity extends Activity {
             case R.id.radio_pg13:
                 if (checked) {
                     adult = false;
-                    //load R-rated cards
+
+                    //load PG-13 cards
+                    infoText.setText("Loading Questions...");
                     questions = Card.getQuestions(adult);
+
+                    infoText.setText("Loading Answers...");
                     answers = Card.getAnswers(adult);
+                    Log.i("MainActivity:onRadioButtonClicked", "Finished loading cards!");
                     break;
                 }
             case R.id.radio_adult:
                 if (checked) {
                     adult = true;
-                    //load PG-13 cards
+                    //load R-rated cards
+                    infoText.setText("Loading Questions...");
                     questions = Card.getQuestions(adult);
+                    infoText.setText("Loading Answers...");
                     answers = Card.getAnswers(adult);
+                    Log.i("MainActivity", "Finished loading cards!");
                     break;
                 }
         }

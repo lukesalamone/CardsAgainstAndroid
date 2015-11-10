@@ -11,4 +11,5 @@
     <string name="question">QUESTIONS GO HERE</string>
     <string name="answer">ANSWERS GO HERE</string>
     <string name="room">ROOM NAME</string>
+    <string name="info">Please select an age rating below.</string>
 </resources>

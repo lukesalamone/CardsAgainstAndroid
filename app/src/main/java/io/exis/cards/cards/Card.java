@@ -5,7 +5,10 @@ package io.exis.cards.cards;
  * Card.java
  * Create a card from a card ID
  *
- * NOTE it will be difficult to easily extend the number of cards due to the
+ * NOTE: Card IDs are completely fucked up in the text files and will probably
+ * need to be redone at some point. There are large gaps in their numbering.
+ *
+ * NOTE: It will be difficult to easily extend the number of cards due to the
  * way they IDs are numbered.
  *
  * Created by luke on 10/8/15.
@@ -38,6 +41,10 @@ public class Card {
     static JSONArray cardsArray;
     static JSONObject cardsJSON = new JSONObject();
     static String[] keys = {"text", "id"};                      //keys for JSON array
+    static ArrayList<Card> questions;
+    static ArrayList<Card> answers;
+
+    static char arrType;
 
     static Context context;
 
@@ -78,17 +85,18 @@ public class Card {
     }
 
     public static ArrayList<Card> getQuestions(boolean R){
-        ArrayList<Card> questions = new ArrayList<>();
+        questions = new ArrayList<>();
 
         try {
-            //R questions number 494 - 2889
+            //There are 595 R-rated questions
             if (R) {
-                for (int i = 494; i <= 2889; i++) {
+                for (int i = 0; i < 595; i++) {
                     questions.add(getCardByID(i, R, 'q'));
+                    Log.i("getQuestions", "Added question card " + i);
                 }
             //pg13 questions number 28 - 35
             } else {
-                for(int i = 28; i <= 35; i++){
+                for(int i = 28; i < 35; i++){
                     questions.add(getCardByID(i, R, 'q'));
                 }
             }
@@ -97,41 +105,49 @@ public class Card {
             throw new RuntimeException(e);
         }
 
+        Log.i("getQuestions", "Nullifying cardsArray...");
+        cardsArray = null;
         return questions;
     }//end getQuestions method
 
     public static ArrayList<Card> getAnswers(boolean R){
-        ArrayList<Card> answers = new ArrayList<>();
-
+        Log.i("getAnswers", "Loading answers...");
+        answers = new ArrayList<>();
         try {
             //R answers number from 36 to 2864
             if (R) {
-                for (int i = 36; i <= 2864; i++) {
+                for (int i = 0; i < 2259; i++) {
                     answers.add(getCardByID(i, R, 'a'));
+                    Log.i("getAnswers", "Added answer card " + i);
                 }
             //pg13 answers number from 0 - 27
             } else {
-                for(int i = 0; i <= 27; i++){
+                for(int i = 0; i < 27; i++){
                     answers.add(getCardByID(i, R, 'a'));
                 }
             }
         } catch(JSONException e){
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
 
+        Log.i("getAnswers", "Nullifying cardsArray...");
+        cardsArray = null;
         return answers;
     }//end getAnswers method
 
     //returns a Card from an ID. When R is true return normal card set
     //Card cannot set PID! Receiving party must set it.
-    //
     public static Card getCardByID(int ID, boolean R, char type) throws JSONException{
+        //load card text files into JSON array
+        if(cardsArray == null) {
             if (R) {
                 //requesting a question card
                 if (type == 'q') {
+                    Log.i("getCardByID", "Loading questions into cardsArray.");
                     cardsArray = getCardsJSON("q21");
-                    //requesting an answer card
-                } else {
+                } else {    //requesting an answer card
+                    Log.i("getCardByID", "Loading answers into cardsArray.");
                     cardsArray = getCardsJSON("a21");
                 }
             } else { //pg-13 card set
@@ -141,25 +157,41 @@ public class Card {
                     cardsArray = getCardsJSON("a13");
                 }
             }
-        Log.i("getCardByID", cardsJSON.length() + "");
-        Log.i("getCardByID", cardsJSON.toString(4));
+        }
 
-        //create JSON Object from JSON Array
-        cardsJSON = new JSONObject(cardsArray.getJSONObject(ID - 494), keys);
+        if(type == 'q' && cardsArray != null) {
+            Log.i("getCardByID", "Questions card array has length " + cardsArray.length());
+        } else if(cardsArray != null){
+            Log.i("getCardByID", "Answers card array has length " + cardsArray.length());
+        } else if(cardsArray == null){
+            Log.wtf("getCardByID", "Array is null!");
+        }
 
-        Log.i("getCardByID", "retrieved cards JSONObject:\n\n" + cardsJSON.toString(4));
+        try{
+            //retrieve JSONObject from JSONArray
+            cardsJSON = new JSONObject( cardsArray.getJSONObject(ID), keys );
+        } catch(JSONException e){
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+        Log.i("getCardByID", "cards JSONObject has length " + cardsJSON.length());
+        Log.i("getCardByID", "retrieved cards JSONObject: " + cardsJSON.toString(4));
         String cardText = cardsJSON.getString("text");
 
-        Card card = new Card(ID, cardText, type, -1);
-
-        return card;
+        //return card created with cardText
+        return new Card(ID, cardText, type, -1);
     }//end getCardByID method
 
+    /*
+     * Gets a JSON Array of JSON Objects which contain card texts and irrelevant IDs
+     *
+     * @param name The name of the file to be retrieved
+     * @return The JSONArray
+     */
     public static JSONArray getCardsJSON(String name){
 
-        Log.i("getCardsJSON", "cardsJSON has length " + cardsJSON.length());
-
-        if(cardsJSON.length() == 0){
+        if(cardsArray == null || cardsJSON.length() == 0){
             Log.i("getCardsJSON", "entering conditional");
 
             String cardString = MainActivity.getCardString(name);
