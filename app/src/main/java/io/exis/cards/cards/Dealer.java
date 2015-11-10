@@ -6,6 +6,7 @@ import java.util.Collections;
 
 import android.content.Context;
 import android.os.CountDownTimer;
+import android.util.Log;
 
 /**
  * Dealer.java
@@ -67,7 +68,9 @@ public class Dealer {
     public void prepareGame(Context c){
         context = c;                                            //I hate this line
         questions = MainActivity.getQuestions();                //load all questions
-        answers = MainActivity.getAnswers();                      //load all answers
+        answers = MainActivity.getAnswers();                    //load all answers
+        Log.i("prepareGame", "questions has size " + questions.size() +
+                ", answers has size " + answers.size());
     }
 
     public Card dealCard(Player player){
@@ -154,6 +157,9 @@ public class Dealer {
     }//end getNewHand method
 
     public Card getQuestion(){
+        if(questionCard == null){
+            questionCard = generateQuestion();
+        }
         return questionCard;
     }
 
@@ -230,6 +236,7 @@ public class Dealer {
     }//end generateCard method
 
     private Card generateAnswer(){
+        Log.i("generateAnswer", "answers has length " + answers.size());
         Collections.shuffle(answers);
         return answers.get(0);
     }//end generateCard method

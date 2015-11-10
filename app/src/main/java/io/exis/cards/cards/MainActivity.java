@@ -19,6 +19,8 @@ import java.util.Scanner;
 public class MainActivity extends Activity {
 
     static final String CONTENT_RATING = "contentRating";
+    static final String QUESTION_CARDS = "questionCards";
+    static final String ANSWER_CARDS = "answerCards";
     public static boolean adult = false;
     private static Context context;
     private static ArrayList<Card> answers;
@@ -35,9 +37,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         MainActivity.context = getApplicationContext();
-
-        //create cards as json object
-        //JSONObject json = Card.getCardsJSON("../../../../../", this.context);
 
         gameButton  = (Button) findViewById(R.id.button);
         infoText = (TextView) findViewById(R.id.info);
@@ -57,6 +56,18 @@ public class MainActivity extends Activity {
         view.getContext().startActivity(intent);
     }
 
+    /*
+     * TODO
+     */
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        /*
+        savedInstanceState.putInt(QUESTION_CARDS, questions);
+        savedInstanceState.putInt(ANSWER_CARDS, answers);
+        */
+
+        super.onSaveInstanceState(savedInstanceState);
+    }
 
     @Override
     protected void onDestroy() {
@@ -64,9 +75,6 @@ public class MainActivity extends Activity {
         // The activity is about to be destroyed.
     }
 
-    /*
-     * TODO add loading text when loading cards?
-     */
     public void onRadioButtonClicked(View view){
         gameButton.setEnabled(true);
         boolean checked = ((RadioButton) view).isChecked();
@@ -81,7 +89,7 @@ public class MainActivity extends Activity {
 
                     infoText.setText("Loading Answers...");
                     answers = Card.getAnswers(adult);
-                    Log.i("MainActivity:onRadioButtonClicked", "Finished loading cards!");
+                    Log.i("MainActivity", "Finished loading cards!");
                     break;
                 }
             case R.id.radio_adult:
@@ -96,6 +104,7 @@ public class MainActivity extends Activity {
                     break;
                 }
         }
+
     }//end onRadioButtonClicked method
 
     public static Context getAppContext(){

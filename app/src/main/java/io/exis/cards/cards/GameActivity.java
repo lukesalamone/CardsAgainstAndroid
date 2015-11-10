@@ -1,7 +1,6 @@
 package io.exis.cards.cards;
 
 import android.app.Activity;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -9,7 +8,6 @@ import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Chronometer;
-import android.widget.Button;
 import android.widget.TextView;
 import android.content.Context;
 import java.util.ArrayList;
@@ -44,14 +42,19 @@ public class GameActivity extends Activity {
 
         context = MainActivity.getAppContext();
 
-        /*riffle = new RiffleSession();
-        player = riffle.addPlayer();
+        player = new Player(
+                Exec.getNewID(),
+                new ArrayList<Card>(),
+                false
+        );
 
-        //ask dealer if player is czar, set appropriately
-        player.setCzar(riffle.isCzar(player.getPlayerID()));*/
-
+        //gets a dealer for the player
         dealer = Exec.findDealer(adult);
+
+        //load questions and answers
         dealer.prepareGame(context);
+
+        //adds player to dealer
         Exec.addPlayer(player, dealer);
     }
 
@@ -99,79 +102,84 @@ public class GameActivity extends Activity {
             //draw question card
             setQuestion();
 
-            //15 second timer for submission
-            CountDownTimer timer = new CountDownTimer(15000, 1000) {
-                Card chosen = player.getHand().get(0);      //default to submitting first card
-                String s;
+            if(!player.isCzar()){
+                //15 second timer for submission
+                CountDownTimer timer = new CountDownTimer(15000, 1000) {
+                    Card chosen = player.getHand().get(0);      //default to submitting first card
+                    String s;
 
-                public void onTick(long millisUntilFinished) {
-                    long timeRemaining = (millisUntilFinished / 1000);
+                    public void onTick(long millisUntilFinished) {
+                        long timeRemaining = (millisUntilFinished / 1000);
 
-                    //interface stuff
-                    s = timeRemaining + " seconds remain to choose!";
-                    chronometer.setText(s);
+                        //interface stuff
+                        s = timeRemaining + " seconds remain to choose!";
+                        chronometer.setText(s);
 
-                    if(timeRemaining > 5){
-                        chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
-                    } else {
-                        chronometer.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
+                        if(timeRemaining > 5){
+                            chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
+                        } else {
+                            chronometer.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
+                        }
+                    }//end onTick method
+
+                    public void onFinish() {
+                        //submit chosen card
+                        Card newCard = dealer.receiveCard(player, chosen);
+                        player.getHand().add(newCard);
                     }
-                }//end onTick method
+                };
 
-                public void onFinish() {
-                    //submit chosen card
-                    Card newCard = dealer.receiveCard(player, chosen);
-                    player.getHand().add(newCard);
-                }
-            };
-
-            if(!dealer.isCzar(player)) {
+                //start the submission timer
                 timer.start();
-            } else {
-                //if they are czar, wait for submitted cards to judge
-            }
 
-            //deal another card back to player
-            Card freshCard = dealer.dealCard(player);
-            player.hand.add(freshCard);
+                //deal another card back to player
+                Card freshCard = dealer.dealCard(player);
+                player.hand.add(freshCard);
+            }//end submission timer
+
+
 
             final ArrayList<Card> submitted = dealer.getSubmitted();
 
-            //15 second timer for czar
-            CountDownTimer czarTimer = new CountDownTimer(15000, 1000) {
-                Card chosen = submitted.get(0);             //default to submitting first card
-                String s;
-                public void onTick(long millisUntilFinished) {
-                    long timeRemaining = (millisUntilFinished / 1000);
+            if(player.isCzar()) {
+                //15 second timer for czar
+                CountDownTimer czarTimer = new CountDownTimer(15000, 1000) {
+                    Card chosen = submitted.get(0);             //default to submitting first card
+                    String s;
 
-                    //my amazing interface
-                    s = timeRemaining + " seconds remain to choose!";
-                    chronometer.setText(s);
+                    public void onTick(long millisUntilFinished) {
+                        long timeRemaining = (millisUntilFinished / 1000);
 
-                    if(timeRemaining > 5){
-                        chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
-                    } else {
-                        chronometer.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
+                        //my amazing interface
+                        s = timeRemaining + " seconds remain to choose!";
+                        chronometer.setText(s);
+
+                        if (timeRemaining > 5) {
+                            chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
+                        } else {
+                            chronometer.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
+                        }
+
+                        //OnClick listener for card submissions
                     }
 
-                    //OnClick listener for card submissions
-                }
+                    public void onFinish() {
+                        //submit chosen card
+                        if (player.isCzar()) {
+                            dealer.czarPick(chosen);
+                        }
 
-                public void onFinish() {
-                    //submit chosen card
-                    if(player.isCzar()){
-                        dealer.czarPick(chosen);
+                        Card newCard = dealer.receiveCard(player, chosen);
+                        player.getHand().add(newCard);
                     }
+                };//end czarTimer
 
-                    Card newCard = dealer.receiveCard(player, chosen);
-                    player.getHand().add(newCard);
-                }
-            };
-
-            if(dealer.isCzar(player)) {
+                //start the timer
                 czarTimer.start();
-            } else {
-                //if player is not czar, wait for czar's pick
+            }//end
+
+            if(!player.isCzar()) {
+                //TODO set a dummy timer here
             }
 
             //give point to winner
@@ -200,7 +208,7 @@ public class GameActivity extends Activity {
             String str = "card" + (i + 1);
             int resID = context.getResources().getIdentifier(str,
                     "id", context.getPackageName());
-            TextView view = (TextView)(new TextView(this.context)).findViewById(resID);
+            TextView view = (TextView) findViewById(resID);
             view.setText(hand.get(i).getText());
         }
     }//end setAnswers method
@@ -250,7 +258,7 @@ public class GameActivity extends Activity {
             if(i != c){//if i != c change background to white
                 int resID = context.getResources().getIdentifier(str, "id",
                         context.getPackageName());
-                TextView view = (TextView)(new TextView(this.context)).findViewById(resID);
+                TextView view = (TextView) findViewById(resID);
                 view.getBackground().setColorFilter(Color.parseColor("#ffffff"), PorterDuff.Mode.LIGHTEN);
             }
         }
