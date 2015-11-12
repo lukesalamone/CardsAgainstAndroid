@@ -10,11 +10,11 @@ import java.util.ArrayList;
  */
 public class Player {
 
-    private int playerID;           //unique to every player
-    ArrayList<Card> hand;           //list of a player's cards
-    boolean isCzar;                 //whether the player is card czar
+    private int playerID;                   //unique to every player
+    private ArrayList<Card> hand;           //list of a player's cards
+    private boolean isCzar;                 //whether the player is card czar
     //private RiffleSession riffle = new RiffleSession();
-    Dealer dealer;
+    private Dealer dealer;
 
     public Player(int ID, ArrayList<Card> cards, boolean czar){
         playerID = ID;
@@ -50,7 +50,7 @@ public class Player {
     }//end submitCard method
 */
     public ArrayList<Card> getHand(){
-        return this.hand;
+        return hand;
     }//end getCards method
 
     public int getPlayerID(){
@@ -81,16 +81,12 @@ public class Player {
     }//end czarPicks method
 
     //add a card to player's hand
-    private void addCard(Card card){
+    public void addCard(Card card){
         hand.add(card);
-        if(hand.size() != 5) {
-            //riffle.reportError(1, getPlayerID(), "Card desync error" +
-            //    " in addCard method!", card, hand);
-        }
     }//end addCard method
 
     //removes card from player's hand
-    private boolean removeCard(Card card){
+    public boolean removeCard(Card card){
         boolean removed;
         removed = hand.remove(card);
 

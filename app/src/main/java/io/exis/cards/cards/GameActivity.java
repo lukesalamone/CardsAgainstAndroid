@@ -98,11 +98,14 @@ public class GameActivity extends Activity {
         player.setHand(dealer.getNewHand(player));
         dealer.setPlayers();
 
-        while(true){
+        do{
             //draw question card
             setQuestion();
 
             if(!player.isCzar()){
+
+                Log.i("playGame", "player is not czar");
+
                 //15 second timer for submission
                 CountDownTimer timer = new CountDownTimer(15000, 1000) {
                     Card chosen = player.getHand().get(0);      //default to submitting first card
@@ -110,6 +113,8 @@ public class GameActivity extends Activity {
 
                     public void onTick(long millisUntilFinished) {
                         long timeRemaining = (millisUntilFinished / 1000);
+
+                        Log.i("playGame", "submission timer onTick");
 
                         //interface stuff
                         s = timeRemaining + " seconds remain to choose!";
@@ -125,7 +130,7 @@ public class GameActivity extends Activity {
                     public void onFinish() {
                         //submit chosen card
                         Card newCard = dealer.receiveCard(player, chosen);
-                        player.getHand().add(newCard);
+                        player.addCard(newCard);
                     }
                 };
 
@@ -134,14 +139,12 @@ public class GameActivity extends Activity {
 
                 //deal another card back to player
                 Card freshCard = dealer.dealCard(player);
-                player.hand.add(freshCard);
+                player.addCard(freshCard);
             }//end submission timer
 
-
-
-            final ArrayList<Card> submitted = dealer.getSubmitted();
-
             if(player.isCzar()) {
+                final ArrayList<Card> submitted = dealer.getSubmitted();
+
                 //15 second timer for czar
                 CountDownTimer czarTimer = new CountDownTimer(15000, 1000) {
                     Card chosen = submitted.get(0);             //default to submitting first card
@@ -170,7 +173,7 @@ public class GameActivity extends Activity {
                         }
 
                         Card newCard = dealer.receiveCard(player, chosen);
-                        player.getHand().add(newCard);
+                        player.addCard(newCard);
                     }
                 };//end czarTimer
 
@@ -187,10 +190,12 @@ public class GameActivity extends Activity {
 
             player.setCzar(dealer.isCzar(player));          //update whether player is czar
 
-        }//end game loop
+        }while(true);
     }//end playGame method
 
     private void setQuestion(){
+        Log.i("setQuestion", "Entering setQuestion() method");
+
         //Card card = riffle.getQuestion();
         Card card = dealer.getQuestion();
 

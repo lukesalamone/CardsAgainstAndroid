@@ -22,26 +22,19 @@ import android.util.Log;
  */
 public class Dealer {
 
-    final int ROOMCAP = 6;
+    final int ROOMCAP = 5;
 
-    //keep track of players playing
-    ArrayList<Player> players;
-
-    //keep track of cards in play
-    ArrayList<Card> inPlay;
-
-    ArrayList<Card> forCzar;
+    private ArrayList<Player> players;                      //keep track of players playing
+    private ArrayList<Card> inPlay;                         //keep track of cards in play
+    private ArrayList<Card> forCzar;                        //cards we send to czar
 
     //keep track of cards not in play
-    ArrayList<Card> questions;
-    ArrayList<Card> answers;
+    private ArrayList<Card> questions;
+    private ArrayList<Card> answers;
 
-    //RiffleSession riffle = new RiffleSession();
+    private Card questionCard;                              //always know question card
 
-    //always know question card
-    Card questionCard;
-
-    boolean rating;             //pg13 or R
+    boolean rating;                                         //pg13 or R
     int dealerID;
     int czarNum;
 
@@ -84,7 +77,7 @@ public class Dealer {
         answers.remove(card);
 
         //add card to player's hand
-        player.hand.add(card);
+        player.addCard(card);
 
         //add card to cards in play
         inPlay.add(card);
@@ -138,9 +131,9 @@ public class Dealer {
     //make sure all players have 5 cards
     public void setPlayers(){
         for(int i=0; i<players.size(); i++){
-            while(players.get(i).hand.size() < 5){
+            while(players.get(i).getHand().size() < 5){
                 Card newCard = dealCard(players.get(i));
-                players.get(i).hand.add(newCard);
+                players.get(i).addCard(newCard);
                 inPlay.add(newCard);
             }
         }
