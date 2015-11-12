@@ -130,8 +130,6 @@ public class Card {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-
-        Log.i("getAnswers", "Nullifying cardsArray...");
         cardsArray = null;
         return answers;
     }//end getAnswers method
@@ -144,10 +142,8 @@ public class Card {
             if (R) {
                 //requesting a question card
                 if (type == 'q') {
-                    Log.i("getCardByID", "Loading questions into cardsArray.");
                     cardsArray = getCardsJSON("q21");
                 } else {    //requesting an answer card
-                    Log.i("getCardByID", "Loading answers into cardsArray.");
                     cardsArray = getCardsJSON("a21");
                 }
             } else { //pg-13 card set
@@ -159,14 +155,6 @@ public class Card {
             }
         }
 
-        if(type == 'q' && cardsArray != null) {
-            Log.i("getCardByID", "Questions card array has length " + cardsArray.length());
-        } else if(cardsArray != null){
-            Log.i("getCardByID", "Answers card array has length " + cardsArray.length());
-        } else if(cardsArray == null){
-            Log.wtf("getCardByID", "Array is null!");
-        }
-
         try{
             //retrieve JSONObject from JSONArray
             cardsJSON = new JSONObject( cardsArray.getJSONObject(ID), keys );
@@ -175,8 +163,6 @@ public class Card {
             throw new RuntimeException(e);
         }
 
-        Log.i("getCardByID", "cards JSONObject has length " + cardsJSON.length());
-        Log.i("getCardByID", "retrieved cards JSONObject: " + cardsJSON.toString(4));
         String cardText = cardsJSON.getString("text");
 
         //return card created with cardText

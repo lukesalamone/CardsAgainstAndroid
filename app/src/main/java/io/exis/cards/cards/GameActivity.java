@@ -23,17 +23,16 @@ public class GameActivity extends Activity {
 
     private Context context;
     private boolean adult;
-    public Player player;
-    public Dealer dealer;
-    public Chronometer chronometer;
+    private Player player;
+    private Dealer dealer;
+    private Chronometer chronometer;
+    private boolean finished;
 
     TextView card1;
     TextView card2;
     TextView card3;
     TextView card4;
     TextView card5;
-
-    //public RiffleSession riffle;
 
     public GameActivity(){
         adult = MainActivity.adult;
@@ -74,9 +73,6 @@ public class GameActivity extends Activity {
 
         chronometer = (Chronometer) findViewById(R.id.chronometer);
 
-        //find game & join
-        //riffle.join();
-
         //set question TextView
         setQuestion();
 
@@ -103,95 +99,56 @@ public class GameActivity extends Activity {
             setQuestion();
 
             if(!player.isCzar()){
-
                 Log.i("playGame", "player is not czar");
 
                 //15 second timer for submission
-                CountDownTimer timer = new CountDownTimer(15000, 1000) {
-                    Card chosen = player.getHand().get(0);      //default to submitting first card
-                    String s;
+                GameTimer submissionTimer = new GameTimer(15000, 1000);
 
-                    public void onTick(long millisUntilFinished) {
-                        long timeRemaining = (millisUntilFinished / 1000);
+                //default to submitting first card
+                submissionTimer.setChosen(player.getHand().get(0));
+                submissionTimer.start();
 
-                        Log.i("playGame", "submission timer onTick");
-
-                        //interface stuff
-                        s = timeRemaining + " seconds remain to choose!";
-                        chronometer.setText(s);
-
-                        if(timeRemaining > 5){
-                            chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
-                        } else {
-                            chronometer.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
-                        }
-                    }//end onTick method
-
-                    public void onFinish() {
-                        //submit chosen card
-                        Card newCard = dealer.receiveCard(player, chosen);
-                        player.addCard(newCard);
-                    }
-                };
-
-                //start the submission timer
-                timer.start();
+                while(!submissionTimer.isFinished()){
+                    //waiting for player submission
+                    Log.i("playGame", "inside submission timer");
+                }
 
                 //deal another card back to player
                 Card freshCard = dealer.dealCard(player);
                 player.addCard(freshCard);
-            }//end submission timer
+
+                dummyTimer();
+            }//end submission case
 
             if(player.isCzar()) {
+                Log.i("playGame", "player is czar");
+                dummyTimer();
                 final ArrayList<Card> submitted = dealer.getSubmitted();
 
-                //15 second timer for czar
-                CountDownTimer czarTimer = new CountDownTimer(15000, 1000) {
-                    Card chosen = submitted.get(0);             //default to submitting first card
-                    String s;
-
-                    public void onTick(long millisUntilFinished) {
-                        long timeRemaining = (millisUntilFinished / 1000);
-
-                        //my amazing interface
-                        s = timeRemaining + " seconds remain to choose!";
-                        chronometer.setText(s);
-
-                        if (timeRemaining > 5) {
-                            chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
-                        } else {
-                            chronometer.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
-                        }
-
-                        //OnClick listener for card submissions
-                    }
-
-                    public void onFinish() {
-                        //submit chosen card
-                        if (player.isCzar()) {
-                            dealer.czarPick(chosen);
-                        }
-
-                        Card newCard = dealer.receiveCard(player, chosen);
-                        player.addCard(newCard);
-                    }
-                };//end czarTimer
-
-                //start the timer
+                GameTimer czarTimer = new GameTimer(15000, 1000);
+                czarTimer.setChosen(submitted.get(0));
                 czarTimer.start();
-            }//end
 
-            if(!player.isCzar()) {
-                //TODO set a dummy timer here
-            }
+                while(!czarTimer.isFinished()){
 
-            //give point to winner
-            Exec.addPoint(player);
+                }
 
+            }//end czar case
+
+            Exec.addPoint(player);                          //give point to winner
             player.setCzar(dealer.isCzar(player));          //update whether player is czar
-
         }while(true);
     }//end playGame method
+
+    //creates and runs 15 second waiting timer
+    private void dummyTimer(){
+        GameTimer dummy = new GameTimer(15000, 1000);
+        dummy.setType(true);
+        dummy.start();
+        while(!dummy.isFinished()){
+            Log.i("playGame", "Dummy timer onTick");
+        }
+    }
 
     private void setQuestion(){
         Log.i("setQuestion", "Entering setQuestion() method");
@@ -268,4 +225,62 @@ public class GameActivity extends Activity {
             }
         }
     }//end setBackgrounds method
-}
+
+    public class GameTimer extends CountDownTimer{
+        private String s;
+        private boolean waiting;                        //allows us to create dummy timer
+        private boolean finished;                       //whether the timer is finished
+        private Card chosen;
+
+        public GameTimer(long startTime, long interval){
+            super(startTime, interval);
+            finished = false;
+            waiting = false;
+        }
+
+        @Override
+        public void onFinish(){
+            finished = true;
+
+            if(!waiting){
+                if(player.isCzar()){
+                    //submit chosen card
+                    Card newCard = dealer.receiveCard(player, chosen);
+                    player.addCard(newCard);
+                }else{
+                    //submit chosen card
+                    dealer.czarPick(chosen);
+                }
+            }
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished){
+            long timeRemaining = (millisUntilFinished / 1000);
+
+            if(!waiting){
+                //my amazing interface
+                s = timeRemaining + " seconds remain to choose!";
+                chronometer.setText(s);
+
+                if (timeRemaining > 5) {
+                    chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
+                } else {
+                    chronometer.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
+                }
+            }
+        }
+
+        public void setType(boolean isWaiting){
+            waiting = isWaiting;
+        }
+
+        public void setChosen(Card card){
+            chosen = card;
+        }
+
+        public boolean isFinished(){
+            return finished;
+        }
+    }//end GameTimer subclass
+}//end GameActivity class
