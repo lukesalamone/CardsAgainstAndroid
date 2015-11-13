@@ -3,6 +3,7 @@ package io.exis.cards.cards;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import org.json.JSONObject;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -25,8 +27,9 @@ public class MainActivity extends Activity {
     private static Context context;
     private static ArrayList<Card> answers;
     private static ArrayList<Card> questions;
-
-    //public RiffleSession riffle = new RiffleSession();
+    private static Typeface LibSans;
+    private static Typeface LibSansBold;
+    private static Typeface LibSansItalic;
 
     Button gameButton;
     TextView infoText;
@@ -35,11 +38,17 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         MainActivity.context = getApplicationContext();
 
+        //set typefaces
+        LibSans = Typeface.createFromAsset(getAssets(),"LiberationSans-Regular.ttf");
+        LibSansBold = Typeface.createFromAsset(getAssets(),"LiberationSans-Bold.ttf");
+        LibSansItalic = Typeface.createFromAsset(getAssets(),"LiberationSans-Italic.ttf");
+
         gameButton  = (Button) findViewById(R.id.button);
+        gameButton.setTypeface(LibSansBold);
         infoText = (TextView) findViewById(R.id.info);
+        infoText.setTypeface(LibSansItalic);
 
         if (savedInstanceState != null && savedInstanceState.getBoolean(CONTENT_RATING)) {
             adult = savedInstanceState.getBoolean(CONTENT_RATING);
@@ -56,17 +65,31 @@ public class MainActivity extends Activity {
         view.getContext().startActivity(intent);
     }
 
+    public static Typeface getTypeface(String tf){
+        if(tf.equals("LibSans")){
+            return LibSans;
+        }
+        if(tf.equals("LibSansBold")){
+            return LibSansBold;
+        }
+        if(tf.equals("LibSansItalic")){
+            return LibSansItalic;
+        }
+        //default to returning regular
+        return LibSans;
+    }
+
     /*
      * TODO
      */
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+
         /*
         savedInstanceState.putInt(QUESTION_CARDS, questions);
         savedInstanceState.putInt(ANSWER_CARDS, answers);
         */
-
-        super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override

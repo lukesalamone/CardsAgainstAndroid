@@ -96,7 +96,7 @@ public class Card {
                 }
             //pg13 questions number 28 - 35
             } else {
-                for(int i = 28; i < 35; i++){
+                for(int i=0; i < 8; i++){
                     questions.add(getCardByID(i, R, 'q'));
                 }
             }

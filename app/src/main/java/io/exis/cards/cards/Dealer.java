@@ -98,11 +98,9 @@ public class Dealer {
     /*************************************************************************/
 
     //when players send cards to dealer
-    public Card receiveCard(Player player, Card card){
+    public void receiveCard(Card card){
         //add card to submitted list
         forCzar.add(card);
-
-        return dealCard(player);
     }
 
     //need to overload for czar situation

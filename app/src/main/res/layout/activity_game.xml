@@ -5,7 +5,8 @@
     android:paddingRight="0dp"
     android:paddingTop="0dp"
     android:paddingBottom="0dp"
-    tools:context=".GameActivity">
+    tools:context=".GameActivity"
+    android:background="#000">
 
     <TextView android:text="@string/question"
         android:layout_width="fill_parent"
@@ -18,7 +19,7 @@
         android:background="#000"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:padding="5dp" />
+        android:padding="10dp" />
 
     <Chronometer
         android:layout_width="match_parent"
@@ -39,69 +40,74 @@
         android:id="@+id/card1"
         android:textSize="20sp"
         android:background="#eee"
-        android:textColor="#000"
+        android:textColor="#555"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/card_spacing"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/chronometer" />
+        android:layout_below="@+id/chronometer"
+        android:padding="5dp" />
 
     <TextView
         android:text="@string/answer"
         android:clickable="true"
         android:onClick="submitCard2"
         android:layout_width="fill_parent"
-        android:layout_height="50sp"
+        android:layout_height="@dimen/card_height"
         android:id="@+id/card2"
         android:textSize="20sp"
         android:background="#eee"
-        android:textColor="#000"
+        android:textColor="#555"
         android:layout_below="@+id/card1"
-        android:layout_marginTop="@dimen/card_spacing" />
+        android:layout_marginTop="@dimen/card_spacing"
+        android:padding="5dp" />
 
     <TextView
         android:text="@string/answer"
         android:clickable="true"
         android:onClick="submitCard3"
         android:layout_width="fill_parent"
-        android:layout_height="50sp"
+        android:layout_height="@dimen/card_height"
         android:id="@+id/card3"
         android:textSize="20sp"
         android:background="#eee"
-        android:textColor="#000"
+        android:textColor="#555"
         android:layout_below="@+id/card2"
-        android:layout_marginTop="@dimen/card_spacing" />
+        android:layout_marginTop="@dimen/card_spacing"
+        android:padding="5dp" />
 
     <TextView
         android:text="@string/answer"
         android:clickable="true"
         android:onClick="submitCard4"
         android:layout_width="fill_parent"
-        android:layout_height="50sp"
+        android:layout_height="@dimen/card_height"
         android:id="@+id/card4"
         android:textSize="20sp"
         android:background="#eee"
-        android:textColor="#000"
+        android:textColor="#555"
         android:layout_below="@+id/card3"
-        android:layout_marginTop="@dimen/card_spacing" />
+        android:layout_marginTop="@dimen/card_spacing"
+        android:padding="5dp" />
 
     <TextView
         android:text="@string/answer"
         android:clickable="true"
         android:onClick="submitCard5"
         android:layout_width="fill_parent"
-        android:layout_height="50sp"
+        android:layout_height="@dimen/card_height"
         android:id="@+id/card5"
         android:textSize="20sp"
         android:background="#eee"
-        android:textColor="#000"
+        android:textColor="#555"
         android:layout_below="@+id/card4"
-        android:layout_marginTop="@dimen/card_spacing" />
+        android:layout_marginTop="@dimen/card_spacing"
+        android:padding="5dp" />
 
     <TextView
         android:text="@string/room"
         android:layout_width="fill_parent"
-        android:layout_height="50sp"
+        android:layout_height="@dimen/card_height"
         android:id="@+id/room_id"
         android:textSize="20sp"
         android:background="#000"

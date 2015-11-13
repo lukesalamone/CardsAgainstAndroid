@@ -27,6 +27,7 @@ public class GameActivity extends Activity {
     private Dealer dealer;
     private Chronometer chronometer;
     private boolean finished;
+    private int numTimers = 0;
 
     TextView card1;
     TextView card2;
@@ -66,78 +67,55 @@ public class GameActivity extends Activity {
         setContentView(R.layout.activity_game);
 
         card1 = (TextView) findViewById(R.id.card1);
+        card1.setTypeface(MainActivity.getTypeface(""));
         card2 = (TextView) findViewById(R.id.card2);
+        card2.setTypeface(MainActivity.getTypeface(""));
         card3 = (TextView) findViewById(R.id.card3);
+        card3.setTypeface(MainActivity.getTypeface(""));
         card4 = (TextView) findViewById(R.id.card4);
+        card4.setTypeface(MainActivity.getTypeface(""));
         card5 = (TextView) findViewById(R.id.card5);
+        card5.setTypeface(MainActivity.getTypeface(""));
 
         chronometer = (Chronometer) findViewById(R.id.chronometer);
 
-        //set question TextView
-        setQuestion();
+        setQuestion();              //set question TextView
+        showCards();                //populate answers TextViews
 
-        //populate answers TextViews
-        showCards();
-
-        playGame();
-
-        //create player and dealer
-        player = new Player(
-                Exec.getNewID(),
-                null,
-                false
-        );
+        playAGame();
     }
 
-    private void playGame(){
+    private void playAGame(){
         player.setCzar(dealer.isCzar(player));
         player.setHand(dealer.getNewHand(player));
         dealer.setPlayers();
+        //draw question card
+        setQuestion();
 
-        do{
-            //draw question card
-            setQuestion();
+        if(!player.isCzar()){
+            Log.i("playGame", "player is not czar");
 
-            if(!player.isCzar()){
-                Log.i("playGame", "player is not czar");
+            //15 second timer for submission
+            GameTimer submissionTimer = new GameTimer(15000, 1000);
 
-                //15 second timer for submission
-                GameTimer submissionTimer = new GameTimer(15000, 1000);
+            //default to submitting first card
+            submissionTimer.setChosen(player.getHand().get(0));
+            submissionTimer.start();
 
-                //default to submitting first card
-                submissionTimer.setChosen(player.getHand().get(0));
-                submissionTimer.start();
+        }//end submission case
 
-                while(!submissionTimer.isFinished()){
-                    //waiting for player submission
-                    Log.i("playGame", "inside submission timer");
-                }
+        if(player.isCzar()) {
+            Log.i("playGame", "player is czar");
+            dummyTimer();
+            final ArrayList<Card> submitted = dealer.getSubmitted();
 
-                //deal another card back to player
-                Card freshCard = dealer.dealCard(player);
-                player.addCard(freshCard);
+            GameTimer czarTimer = new GameTimer(15000, 1000);
+            czarTimer.setChosen(submitted.get(0));
+            czarTimer.start();
+        }//end czar case
 
-                dummyTimer();
-            }//end submission case
-
-            if(player.isCzar()) {
-                Log.i("playGame", "player is czar");
-                dummyTimer();
-                final ArrayList<Card> submitted = dealer.getSubmitted();
-
-                GameTimer czarTimer = new GameTimer(15000, 1000);
-                czarTimer.setChosen(submitted.get(0));
-                czarTimer.start();
-
-                while(!czarTimer.isFinished()){
-
-                }
-
-            }//end czar case
-
-            Exec.addPoint(player);                          //give point to winner
-            player.setCzar(dealer.isCzar(player));          //update whether player is czar
-        }while(true);
+        Exec.addPoint(player);                          //give point to winner
+        player.setCzar(dealer.isCzar(player));          //update whether player is czar
     }//end playGame method
 
     //creates and runs 15 second waiting timer
@@ -145,9 +123,6 @@ public class GameActivity extends Activity {
         GameTimer dummy = new GameTimer(15000, 1000);
         dummy.setType(true);
         dummy.start();
-        while(!dummy.isFinished()){
-            Log.i("playGame", "Dummy timer onTick");
-        }
     }
 
     private void setQuestion(){
@@ -159,6 +134,7 @@ public class GameActivity extends Activity {
         String questionText = card.getText();
         TextView textView = (TextView) findViewById(R.id.question);
         textView.setText(questionText);
+        textView.setTypeface(MainActivity.getTypeface("LibSansBold"));
     }//end setQuestion method
 
     private void showCards(){
@@ -179,49 +155,54 @@ public class GameActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         //riffle.leave(player);
-
         dealer.removePlayer(player);
     }
 
     public void submitCard1(View view){
-        dealer.receiveCard(player, player.getHand().get(0));
-
+        Log.i("submitCard1", "submitting card 1");
+        dealer.receiveCard(player.getHand().get(0));
         //set background colors
         setBackgrounds(1, view);
+
+
     }
 
     public void submitCard2(View view){
-        dealer.receiveCard(player, player.getHand().get(1));
+        dealer.receiveCard(player.getHand().get(1));
         setBackgrounds(2, view);
     }
 
     public void submitCard3(View view){
-        dealer.receiveCard(player, player.getHand().get(2));
+        dealer.receiveCard(player.getHand().get(2));
         setBackgrounds(3, view);
     }
 
     public void submitCard4(View view){
-        dealer.receiveCard(player, player.getHand().get(3));
+        dealer.receiveCard(player.getHand().get(3));
         setBackgrounds(4, view);
     }
 
     public void submitCard5(View view){
-        dealer.receiveCard(player, player.getHand().get(4));
+        dealer.receiveCard(player.getHand().get(4));
         setBackgrounds(5, view);
     }
 
     //whiten card backgrounds other than card c
     private void setBackgrounds(int c, View v){
-        v.getBackground().setColorFilter(Color.parseColor("#e5ffff"), PorterDuff.Mode.DARKEN);
+        Log.v("setBackgrounds", "entering function");
+        v.setBackgroundColor(Color.parseColor("#ff30b2c1"));
 
         String str;
+        //set only selected card to blue
         for(int i=1; i<=5; i++){
+            Log.v("setBackgrounds", "entering loop");
             str = "card" + i;
             if(i != c){//if i != c change background to white
+                Log.v("setBackgrounds", "setting card " + i + " to white");
                 int resID = context.getResources().getIdentifier(str, "id",
                         context.getPackageName());
                 TextView view = (TextView) findViewById(resID);
-                view.getBackground().setColorFilter(Color.parseColor("#ffffff"), PorterDuff.Mode.LIGHTEN);
+                view.setBackgroundColor(Color.parseColor("#ffffffff"));
             }
         }
     }//end setBackgrounds method
@@ -231,26 +212,37 @@ public class GameActivity extends Activity {
         private boolean waiting;                        //allows us to create dummy timer
         private boolean finished;                       //whether the timer is finished
         private Card chosen;
+        private boolean warning;                        //when less than 5 seconds remain
 
         public GameTimer(long startTime, long interval){
             super(startTime, interval);
             finished = false;
             waiting = false;
+            warning = false;
         }
 
         @Override
         public void onFinish(){
+            Log.i("GameTimer", "Entering onFinish()");
             finished = true;
 
             if(!waiting){
                 if(player.isCzar()){
                     //submit chosen card
-                    Card newCard = dealer.receiveCard(player, chosen);
+                    dealer.receiveCard(chosen);
+                    Card newCard = dealer.dealCard(player);
                     player.addCard(newCard);
                 }else{
                     //submit chosen card
                     dealer.czarPick(chosen);
                 }
+            }
+
+            numTimers++;
+
+            if(numTimers == 2){
+                Exec.addPoint(player);                          //give point to winner
+                player.setCzar(dealer.isCzar(player));          //update whether player is czar
             }
         }
 
@@ -264,9 +256,9 @@ public class GameActivity extends Activity {
                 chronometer.setText(s);
 
                 if (timeRemaining > 5) {
-                    chronometer.getBackground().setColorFilter(Color.parseColor("#009900"), PorterDuff.Mode.DARKEN);
+                    chronometer.getBackground().setColorFilter(Color.parseColor("#ff009900"), PorterDuff.Mode.DARKEN);
                 } else {
-                    chronometer.getBackground().setColorFilter(Color.parseColor("#ff6600"), PorterDuff.Mode.DARKEN);
+                    chronometer.getBackground().setColorFilter(Color.parseColor("#ffff6600"), PorterDuff.Mode.DARKEN);
                 }
             }
         }
