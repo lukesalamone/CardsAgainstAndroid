@@ -48,7 +48,7 @@ public class GameActivity extends Activity {
         riffle = new RiffleSession(player.getPlayerID());       //create unique riffle session
         dealer = Exec.findDealer(adult);                        //gets a dealer for the player
         dealer.prepareGame(context);                            //load questions and answers
-        Exec.addPlayer(player, dealer);                         //adds player to dealer
+        dealer.addPlayer(player);                               //adds player to dealer
     }
 
     @Override

@@ -26,18 +26,10 @@ public class Exec {
         dealers.remove(dealer);
     }
 
-    public static Dealer addPlayer(Player player, boolean R){
-        Dealer dealer = findDealer(R);
-        dealer.addPlayer(player);
-
-        return dealer;
-    }
-
-    //overloaded method
-    //adds player to given dealer
+/*    //adds player to given dealer
     public static void addPlayer(Player player, Dealer dealer){
         dealer.addPlayer(player);
-    }
+    }*/
 
     //finds a dealer of appropriate game not at max capacity
     public static Dealer findDealer(boolean R){
