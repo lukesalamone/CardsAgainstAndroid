@@ -38,14 +38,16 @@ public class GameActivity extends Activity {
     public GameActivity(){
         adult = MainActivity.adult;
         context = MainActivity.getAppContext();
+        riffle = new RiffleSession();                         //create unique riffle session
+        int PID = riffle.getNewID();
 
+        //int PID = Exec.getNewID();
         player = new Player(
-                Exec.getNewID(),
+                PID,
                 new ArrayList<Card>(),
                 false
         );
 
-        riffle = new RiffleSession(player.getPlayerID());       //create unique riffle session
         dealer = Exec.findDealer(adult);                        //gets a dealer for the player
         dealer.prepareGame(context);                            //load questions and answers
         dealer.addPlayer(player);                               //adds player to dealer

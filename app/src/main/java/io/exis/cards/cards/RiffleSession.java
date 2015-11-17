@@ -33,13 +33,43 @@ import ws.wamp.jawampa.connection.IWampConnectorProvider;
 public class RiffleSession {
 
     private static int playerID;
+    private WampClient app;                       //application domain
+    private WampClient user;                      //user domain
 
-    public RiffleSession(int PID){
-        playerID = PID;
+    public RiffleSession(){
+        URI serverUri = URI.create("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
+
+        IWampConnectorProvider connectorProvider = new NettyWampClientConnectorProvider();
+        WampClientBuilder builder = new WampClientBuilder();
+        //build application domain
+        try {
+            builder.withConnectorProvider(connectorProvider)
+                    .withUri("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws")
+                    .withRealm("xs.luke.Cards")
+                    .withInfiniteReconnects()
+                    .withReconnectInterval(3, TimeUnit.SECONDS);
+            app = builder.build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        //build user domain
+        try {
+            builder.withConnectorProvider(connectorProvider)
+                    .withUri("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws")
+                    .withRealm("xs.luke.Cards.u" + Math.random()*1000000)
+                    .withInfiniteReconnects()
+                    .withReconnectInterval(3, TimeUnit.SECONDS);
+            user = builder.build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
     }
 
     public static void main(String[] args) {
-        new RiffleSession( playerID ).start();
+        new RiffleSession().start();
     }
 
     Subscription addProcSubscription;
@@ -50,34 +80,14 @@ public class RiffleSession {
     int lastEventValue = 0;
 
     public void start() {
-
-        URI serverUri = URI.create("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-
-        IWampConnectorProvider connectorProvider = new NettyWampClientConnectorProvider();
-        WampClientBuilder builder = new WampClientBuilder();
-
-        final WampClient client;
-
-        try {
-            builder.withConnectorProvider(connectorProvider)
-                    .withUri("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws")
-                    .withRealm("xs.luke")
-                    .withInfiniteReconnects()
-                    .withReconnectInterval(3, TimeUnit.SECONDS);
-            client = builder.build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-
-        client.statusChanged().subscribe(new Action1<WampClient.State>() {
+        app.statusChanged().subscribe(new Action1<WampClient.State>() {
             @Override
             public void call(WampClient.State t1) {
                 System.out.println("Session1 status changed to " + t1);
 
                 if (t1 instanceof WampClient.ConnectedState) {
                     // Register a procedure
-                    addProcSubscription = client.registerProcedure("com.example.add/k").subscribe(new Action1<Request>() {
+                    addProcSubscription = app.registerProcedure("com.example.add/k").subscribe(new Action1<Request>() {
                         @Override
                         public void call(Request request) {
                             if (request.arguments() == null || request.arguments().size() != 2
@@ -111,13 +121,13 @@ public class RiffleSession {
             }
         });
 
-        client.open();
+        app.open();
 
         // Publish an event regularly
         eventPublication = Schedulers.computation().createWorker().schedulePeriodically(new Action0() {
             @Override
             public void call() {
-                client.publish("test.event/k", "Hello " + lastEventValue);
+                app.publish("test.event/k", "Hello " + lastEventValue);
                 lastEventValue++;
             }
         }, eventInterval, eventInterval, TimeUnit.MILLISECONDS);
@@ -135,132 +145,15 @@ public class RiffleSession {
 
         waitUntilKeypressed();
         System.out.println("Closing the client 1");
-        client.close().toBlocking().last();
+        app.close().toBlocking().last();
     }//end start method
-/*
 
-    */
-/*
-     * Determine whether player is the czar right now
-     *
-     * @param PID - player id of player
-     *//*
+    /*
+     * Need to implement WAMP call to Exec.getNewID()
+     */
+    public int getNewID(){
 
-    public boolean isCzar(int PID){
-
-    }//end isCzar method
-
-    */
-/*
-     * Adds a player to a game. Should go to exec, who then
-     * communicates with dealer.
-     *
-     * @return Player object added to dealer's game
-     *//*
-
-    public Player addPlayer(){
-
-    }//end addPlayer method
-
-    */
-/*
-     * Punt.
-     *
-     * @return Dealer for this player
-     *//*
-
-    public Dealer join(){
-
-    }//end join method
-
-    */
-/*
-     * Get the current question for this game
-     *
-     * @return Card with the current question
-     *//*
-
-    public Card getQuestion(){
-
-    }//end getQuestion method
-
-    */
-/*
-     * Get this player's hand
-     *
-     * @param   PID ID of player
-     * @return  ArrayList of their cards
-     *//*
-
-    public ArrayList<Card> getHand(int PID){
-
-    }//end getHand method
-
-    */
-/*
-     * Player sending card to dealer
-     *
-     * @param   card    The card to be submitted
-     * @return  true    Success
-     * @return  false   Error
-     *//*
-
-    public boolean submit(Card card){
-
-    }//end submit method
-
-    */
-/*
-     * Removes player from room
-     *
-     * @param   player  The player
-     *//*
-
-    public void leave(Player player){
-
-    }//end leave method
-
-    */
-/*
-     * Dealer sends card to player
-     *//*
-
-    public void sendCard(int PID, Card card){
-
-    }
-
-    */
-/*
-     * Dealer receives card from player
-     *//*
-
-    public Card receiveCard(){
-
-    }//end receiveCard method
-
-    */
-/*
-     * Player draws card from dealer's deck
-     *//*
-
-    public Card drawCard(int PID){
-
-    }
-
-    */
-/*
-     * Report error to Exec
-     *
-     * @param   errID
-     * @param   msg     Error message
-     * @param   card    Card involved
-     * @param   hand    The player's hand
-     *//*
-
-    public void reportError(int errID, int PID, String msg, Card card, ArrayList<Card> hand){
-
-    }
-*/
+    }//end getNewID method
 
     private void waitUntilKeypressed() {
         try {
