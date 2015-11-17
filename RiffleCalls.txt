@@ -1,0 +1,22 @@
+The following are calls that will need to be implemented across the Riffle
+between Player and Dealer and Player and Exec:
+
+Player -> Dealer
+void receiveCard(Card)
+Card dealCard(Player)
+void czarPick(Card)
+bool isCzar(Player)
+void prepareGame(Context) //bad apple
+void setPlayers()
+ArrayList<Card> getNewHand(Player)
+ArrayList<Card> getSubmitted()
+Card getQuestion()
+void removePlayer(Player)
+void receiveCard(Card)
+void addPlayer(Player)
+
+Player -> Exec
+Dealer findDealer(bool)
+int getNewID()
+void addPoint(Player)
+void removePlayer(Player)
