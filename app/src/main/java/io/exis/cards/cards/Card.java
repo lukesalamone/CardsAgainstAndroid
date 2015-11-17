@@ -104,8 +104,6 @@ public class Card {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-
-        Log.i("getQuestions", "Nullifying cardsArray...");
         cardsArray = null;
         return questions;
     }//end getQuestions method
@@ -118,7 +116,6 @@ public class Card {
             if (R) {
                 for (int i = 0; i < 2259; i++) {
                     answers.add(getCardByID(i, R, 'a'));
-                    Log.i("getAnswers", "Added answer card " + i);
                 }
             //pg13 answers number from 0 - 27
             } else {

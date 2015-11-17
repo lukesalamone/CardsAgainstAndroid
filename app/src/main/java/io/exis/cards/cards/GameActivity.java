@@ -8,6 +8,7 @@ import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Chronometer;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.content.Context;
 import java.util.ArrayList;
@@ -27,7 +28,8 @@ public class GameActivity extends Activity {
     private Dealer dealer;
     private Chronometer chronometer;
     private boolean finished;
-    private int numTimers = 0;
+    private int numTimers;
+    private int chronoWidth;
 
     TextView card1;
     TextView card2;
@@ -60,7 +62,6 @@ public class GameActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         Log.i("onCreate", "Setting views");
 
         super.onCreate(savedInstanceState);
@@ -78,9 +79,10 @@ public class GameActivity extends Activity {
         card5.setTypeface(MainActivity.getTypeface(""));
 
         chronometer = (Chronometer) findViewById(R.id.chronometer);
+        chronoWidth = chronometer.getWidth();       //this SHOULD work
 
-        setQuestion();              //set question TextView
-        showCards();                //populate answers TextViews
+        setQuestion();                              //set question TextView
+        showCards();                                //populate answers TextViews
 
         playAGame();
     }
@@ -91,6 +93,7 @@ public class GameActivity extends Activity {
         dealer.setPlayers();
         //draw question card
         setQuestion();
+        numTimers = 0;
 
         if(!player.isCzar()){
             Log.i("playGame", "player is not czar");
@@ -126,9 +129,6 @@ public class GameActivity extends Activity {
     }
 
     private void setQuestion(){
-        Log.i("setQuestion", "Entering setQuestion() method");
-
-        //Card card = riffle.getQuestion();
         Card card = dealer.getQuestion();
 
         String questionText = card.getText();
@@ -159,7 +159,6 @@ public class GameActivity extends Activity {
     }
 
     public void submitCard1(View view){
-        Log.i("submitCard1", "submitting card 1");
         dealer.receiveCard(player.getHand().get(0));
         //set background colors
         setBackgrounds(1, view);
@@ -191,6 +190,7 @@ public class GameActivity extends Activity {
     private void setBackgrounds(int c, View v){
         Log.v("setBackgrounds", "entering function");
         v.setBackgroundColor(Color.parseColor("#ff30b2c1"));
+        ((TextView) v).setTextColor(Color.parseColor("#ff000000"));
 
         String str;
         //set only selected card to blue
@@ -203,6 +203,7 @@ public class GameActivity extends Activity {
                         context.getPackageName());
                 TextView view = (TextView) findViewById(resID);
                 view.setBackgroundColor(Color.parseColor("#ffffffff"));
+                view.setTextColor(Color.parseColor("#55000000"));
             }
         }
     }//end setBackgrounds method
@@ -250,15 +251,19 @@ public class GameActivity extends Activity {
         public void onTick(long millisUntilFinished){
             long timeRemaining = (millisUntilFinished / 1000);
 
+            //set chronometer width proportionally to time remaining
+            chronometer.setWidth( (int) (chronoWidth * (timeRemaining/15)) );
+
             if(!waiting){
                 //my amazing interface
+                /*
                 s = timeRemaining + " seconds remain to choose!";
                 chronometer.setText(s);
-
+                */
                 if (timeRemaining > 5) {
-                    chronometer.getBackground().setColorFilter(Color.parseColor("#ff009900"), PorterDuff.Mode.DARKEN);
+                    chronometer.setBackgroundColor(Color.parseColor("#55009900"));
                 } else {
-                    chronometer.getBackground().setColorFilter(Color.parseColor("#ffff6600"), PorterDuff.Mode.DARKEN);
+                    chronometer.setBackgroundColor(Color.parseColor("#55ff6600"));
                 }
             }
         }
