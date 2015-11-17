@@ -32,8 +32,14 @@ import ws.wamp.jawampa.connection.IWampConnectorProvider;
 
 public class RiffleSession {
 
+    private static int playerID;
+
+    public RiffleSession(int PID){
+        playerID = PID;
+    }
+
     public static void main(String[] args) {
-        new RiffleSession().start();
+        new RiffleSession( playerID ).start();
     }
 
     Subscription addProcSubscription;

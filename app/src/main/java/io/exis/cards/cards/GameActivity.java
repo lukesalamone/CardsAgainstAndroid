@@ -2,13 +2,11 @@ package io.exis.cards.cards;
 
 import android.app.Activity;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Chronometer;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.content.Context;
 import java.util.ArrayList;
@@ -27,7 +25,7 @@ public class GameActivity extends Activity {
     private Player player;
     private Dealer dealer;
     private Chronometer chronometer;
-    private boolean finished;
+    private RiffleSession riffle;
     private int numTimers;
     private int chronoWidth;
 
@@ -39,9 +37,6 @@ public class GameActivity extends Activity {
 
     public GameActivity(){
         adult = MainActivity.adult;
-
-        Log.i("GameActivity", "Setting adult to " + adult);
-
         context = MainActivity.getAppContext();
 
         player = new Player(
@@ -50,14 +45,10 @@ public class GameActivity extends Activity {
                 false
         );
 
-        //gets a dealer for the player
-        dealer = Exec.findDealer(adult);
-
-        //load questions and answers
-        dealer.prepareGame(context);
-
-        //adds player to dealer
-        Exec.addPlayer(player, dealer);
+        riffle = new RiffleSession(player.getPlayerID());       //create unique riffle session
+        dealer = Exec.findDealer(adult);                        //gets a dealer for the player
+        dealer.prepareGame(context);                            //load questions and answers
+        Exec.addPlayer(player, dealer);                         //adds player to dealer
     }
 
     @Override
@@ -80,10 +71,22 @@ public class GameActivity extends Activity {
 
         chronometer = (Chronometer) findViewById(R.id.chronometer);
         chronoWidth = chronometer.getWidth();       //this SHOULD work
+    }
 
+    @Override
+    public void onStart(){
+        Log.i("onStart", "Entering onStart()");
+        super.onStart();
         setQuestion();                              //set question TextView
         showCards();                                //populate answers TextViews
+    }
 
+    @Override
+    public void onResume() {
+        Log.i("onResume", "Entering onResume()");
+        super.onResume();
+
+        //play while the window is still in focus
         playAGame();
     }
 
@@ -162,8 +165,6 @@ public class GameActivity extends Activity {
         dealer.receiveCard(player.getHand().get(0));
         //set background colors
         setBackgrounds(1, view);
-
-
     }
 
     public void submitCard2(View view){
@@ -225,6 +226,8 @@ public class GameActivity extends Activity {
         @Override
         public void onFinish(){
             Log.i("GameTimer", "Entering onFinish()");
+            chronometer.setText("Submitting...");
+            chronometer.setBackgroundColor(Color.parseColor("#ff30b2c1"));
             finished = true;
 
             if(!waiting){
@@ -256,15 +259,16 @@ public class GameActivity extends Activity {
 
             if(!waiting){
                 //my amazing interface
-                /*
                 s = timeRemaining + " seconds remain to choose!";
                 chronometer.setText(s);
-                */
+
+                /*
                 if (timeRemaining > 5) {
                     chronometer.setBackgroundColor(Color.parseColor("#55009900"));
                 } else {
                     chronometer.setBackgroundColor(Color.parseColor("#55ff6600"));
                 }
+                */
             }
         }
 
