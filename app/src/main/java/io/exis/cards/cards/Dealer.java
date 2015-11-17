@@ -1,11 +1,9 @@
 package io.exis.cards.cards;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import android.content.Context;
-import android.os.CountDownTimer;
 import android.util.Log;
 
 /**
@@ -141,7 +139,7 @@ public class Dealer {
         ArrayList<Card> hand = new ArrayList<>();
 
         for(int i=0; i<5; i++){
-            hand.add(this.dealCard(player));
+            hand.add(dealCard(player));
         }
 
         return hand;

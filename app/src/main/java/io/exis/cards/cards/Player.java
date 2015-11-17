@@ -23,32 +23,6 @@ public class Player {
         dealer = Exec.findDealer(true);
     }//end Player constructor
 
-    /*
-    //allows player to submit to dealer
-    public void submitCard(Card card){
-        boolean removed = false;
-
-
-
-        //get a receipt
-        boolean received = dealer.submit(card);
-        while(!received){
-            if(received){
-                removed = removeCard(card);
-                break;
-            }
-        }
-
-        Card newCard = dealer.dealCard(this);
-
-        if(removed){
-            addCard(newCard);
-        } else {
-            //riffle.reportError(0, getPlayerID(), "Unable to add new card" +
-            //    " due to riffle response error", null, hand);
-        }
-    }//end submitCard method
-*/
     public ArrayList<Card> getHand(){
         return hand;
     }//end getCards method
