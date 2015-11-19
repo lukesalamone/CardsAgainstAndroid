@@ -14,13 +14,11 @@ public class Player {
     private ArrayList<Card> hand;           //list of a player's cards
     private boolean isCzar;                 //whether the player is card czar
     //private RiffleSession riffle = new RiffleSession();
-    private Dealer dealer;
 
     public Player(int ID, ArrayList<Card> cards, boolean czar){
         playerID = ID;
         hand = cards;
         boolean isCzar = czar;
-        dealer = Exec.findDealer(true);
     }//end Player constructor
 
     public ArrayList<Card> getHand(){
@@ -41,11 +39,6 @@ public class Player {
 
     public void setHand(ArrayList<Card> hand){
         this.hand = hand;
-    }
-
-    public void leaveRoom(){
-        //riffle.leave(this);
-        dealer.removePlayer(this);
     }
 
     public Card czarPicks(ArrayList<Card> czarList){

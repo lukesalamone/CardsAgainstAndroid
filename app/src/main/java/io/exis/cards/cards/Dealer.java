@@ -230,4 +230,48 @@ public class Dealer {
         return answers.get(0);
     }//end generateCard method
 
+    /*
+     * The dummyPlayer class is used when we need to fill a room with players. They can
+     * be removed once a human is found to replace them.
+     *
+     * Functionality: If player, submit random card. If czar, submit random card.
+     */
+    private class DummyPlayer extends Player{
+        private int playerID;                   //unique to every player
+        private ArrayList<Card> hand;           //list of a player's cards
+        private boolean isCzar;
+        private Dealer dealer;
+
+        public DummyPlayer(int ID, ArrayList<Card> cards, boolean czar, Dealer theDealer){
+            super(ID, cards, czar);
+            dealer = theDealer;
+        }
+
+        @Override
+        public void setHand(ArrayList<Card> cards){
+            hand = cards;
+        }
+
+        //submit a random card from hand and deal new card
+        public Card submit(){
+            Card picked;
+            int x = getRandom();
+            picked =  hand.get(x);
+            hand.remove(x);
+            hand.add(dealer.dealCard(this));
+            return picked;
+        }
+
+        @Override
+        public Card czarPicks(ArrayList<Card> cards){
+            return cards.get(getRandom());
+        }
+
+        //return random number from 0 - 5
+        private int getRandom(){
+            return (int)(Math.random() * 5);
+        }
+
+    }//end DummyPlayer subclass
+
 }//end Dealer class
