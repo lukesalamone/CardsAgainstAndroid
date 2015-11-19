@@ -39,9 +39,9 @@ public class GameActivity extends Activity {
         adult = MainActivity.adult;
         context = MainActivity.getAppContext();
         riffle = new RiffleSession();                         //create unique riffle session
-        int PID = riffle.getNewID();
+        //int PID = riffle.getNewID();
 
-        //int PID = Exec.getNewID();
+        int PID = Exec.getNewID();
         player = new Player(
                 PID,
                 new ArrayList<Card>(),

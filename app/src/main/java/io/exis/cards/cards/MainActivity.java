@@ -109,9 +109,9 @@ public class MainActivity extends Activity {
                     //load PG-13 cards
                     infoText.setText("Loading Questions...");
                     questions = Card.getQuestions(adult);
-
                     infoText.setText("Loading Answers...");
                     answers = Card.getAnswers(adult);
+                    infoText.setText("Finished loading cards!");
                     Log.i("MainActivity", "Finished loading cards!");
                     break;
                 }
@@ -123,6 +123,7 @@ public class MainActivity extends Activity {
                     questions = Card.getQuestions(adult);
                     infoText.setText("Loading Answers...");
                     answers = Card.getAnswers(adult);
+                    infoText.setText("Finished loading cards!");
                     Log.i("MainActivity", "Finished loading cards!");
                     break;
                 }

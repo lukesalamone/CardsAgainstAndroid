@@ -35,12 +35,18 @@ public class RiffleSession {
     private static int playerID;
     private WampClient app;                       //application domain
     private WampClient user;                      //user domain
+    Subscription addProcSubscription;
+    Subscription eventPublication;
+    Subscription eventSubscription;
+
+    static final int eventInterval = 2000;
+    int lastEventValue = 0;
 
     public RiffleSession(){
         URI serverUri = URI.create("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-
         IWampConnectorProvider connectorProvider = new NettyWampClientConnectorProvider();
         WampClientBuilder builder = new WampClientBuilder();
+
         //build application domain
         try {
             builder.withConnectorProvider(connectorProvider)
@@ -71,13 +77,6 @@ public class RiffleSession {
     public static void main(String[] args) {
         new RiffleSession().start();
     }
-
-    Subscription addProcSubscription;
-    Subscription eventPublication;
-    Subscription eventSubscription;
-
-    static final int eventInterval = 2000;
-    int lastEventValue = 0;
 
     public void start() {
         app.statusChanged().subscribe(new Action1<WampClient.State>() {
@@ -152,7 +151,50 @@ public class RiffleSession {
      * Need to implement WAMP call to Exec.getNewID()
      */
     public int getNewID(){
+        int ID = -1;
 
+        app.statusChanged().subscribe(new Action1<WampClient.State>() {
+            @Override
+            public void call(WampClient.State t1) {
+                System.out.println("Session1 status changed to " + t1);
+
+                if (t1 instanceof WampClient.ConnectedState) {
+                    // Register a procedure
+                    addProcSubscription = app.registerProcedure("io.exis.cards/getNewID").subscribe(new Action1<Request>() {
+                        @Override
+                        public void call(Request request) {
+                            if (request.arguments() == null || request.arguments().size() != 2
+                                    || !request.arguments().get(0).canConvertToLong()
+                                    || !request.arguments().get(1).canConvertToLong())
+                            {
+                                try {
+                                    request.replyError(new ApplicationError(ApplicationError.INVALID_PARAMETER));
+                                } catch (ApplicationError e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            else {
+                                long a = request.arguments().get(0).asLong();
+                                long b = request.arguments().get(1).asLong();
+                                request.reply(a + b);
+                            }
+                        }
+                    });
+                }
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable t) {
+                System.out.println("Session1 ended with error " + t);
+            }
+        }, new Action0() {
+            @Override
+            public void call() {
+                System.out.println("Session1 ended normally");
+            }
+        });
+
+        return ID;
     }//end getNewID method
 
     private void waitUntilKeypressed() {
