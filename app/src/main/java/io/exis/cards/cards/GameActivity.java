@@ -49,7 +49,7 @@ public class GameActivity extends Activity {
         );
 
         dealer = Exec.findDealer(adult);                        //gets a dealer for the player
-        dealer.prepareGame(context);                            //load questions and answers
+        dealer.prepareGame();                            //load questions and answers
         dealer.addPlayer(player);                               //adds player to dealer
     }
 
@@ -96,8 +96,7 @@ public class GameActivity extends Activity {
         player.setCzar(dealer.isCzar(player));
         player.setHand(dealer.getNewHand(player));
         dealer.setPlayers();
-        //draw question card
-        setQuestion();
+        setQuestion();                          //draw question card
         numTimers = 0;
 
         if(!player.isCzar()){
@@ -109,7 +108,6 @@ public class GameActivity extends Activity {
             //default to submitting first card
             submissionTimer.setChosen(player.getHand().get(0));
             submissionTimer.start();
-
         }//end submission case
 
         if(player.isCzar()) {

@@ -52,6 +52,10 @@ public class Player {
         hand.add(card);
     }//end addCard method
 
+    public Card submit(){
+        return null;
+    }
+
     //removes card from player's hand
     public boolean removeCard(Card card){
         boolean removed;

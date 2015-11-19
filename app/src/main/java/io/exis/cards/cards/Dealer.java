@@ -35,11 +35,7 @@ public class Dealer {
     boolean rating;                                         //pg13 or R
     int dealerID;
     int czarNum;
-
-    Context context;
-
-    //seconds remaining
-    long timeRemaining;
+    int numDummies;
 
     public Dealer(boolean R, int ID){
         rating = R;
@@ -50,41 +46,26 @@ public class Dealer {
         forCzar = new ArrayList<>();
         questions = new ArrayList<>();
         answers = new ArrayList<>();
+        numDummies = 0;
     }
 
-    public void setContext(Context c){
-        context = c;
-    }
-
-    public void prepareGame(Context c){
-        context = c;                                            //I hate this line
+    public void prepareGame(){
         questions = MainActivity.getQuestions();                //load all questions
         answers = MainActivity.getAnswers();                    //load all answers
         Log.i("prepareGame", "questions has size " + questions.size() +
                 ", answers has size " + answers.size());
+
+        //add dummies to fill room
+
     }
 
     public Card dealCard(Player player){
-
-        //generate new card to give to player
-        Card card = generateAnswer();
-
+        Card card = generateAnswer();                       //generate new card to give to player
         card.PID = player.getPlayerID();
-
-        //remove card from deck
-        answers.remove(card);
-
-        //add card to player's hand
-        player.addCard(card);
-
-        //add card to cards in play
-        inPlay.add(card);
-
-        //send card to player
-        sendCard(player.getPlayerID(), card);
-
+        answers.remove(card);                               //remove card from deck
+        player.addCard(card);                               //add card to player's hand
+        inPlay.add(card);                                   //add card to cards in play
         return card;
-
     }//end dealCard method
 
     public boolean full(){
@@ -114,26 +95,39 @@ public class Dealer {
         players.get(czarNum).setCzar(true);
     }
 
-    //placeholder method for now...
-    //send card to player
-    public void sendCard(int PID, Card card){
-
-    }
-
     /*************************************************************************/
     /*                        END PLACEHOLDER METHODS                        */
     /*************************************************************************/
 
-    //make sure all players have 5 cards
+    //add dummies to make sure there are always 5 players
     public void setPlayers(){
+        while(players.size() < ROOMCAP){
+            //add dummy player
+            DummyPlayer dummy = new DummyPlayer(Exec.getNewID(), null, false, this);
+            dummy.setHand(getNewHand(dummy));
+            players.add(dummy);
+            numDummies++;
+        }
+
         for(int i=0; i<players.size(); i++){
+            //give everyone 5 cards
             while(players.get(i).getHand().size() < 5){
                 Card newCard = dealCard(players.get(i));
                 players.get(i).addCard(newCard);
                 inPlay.add(newCard);
             }
         }
-    }
+    }//end setPlayers function
+
+    public void removeDummy(){
+        if(full()){
+            return;
+        }
+
+        //remove first dummy in players list
+        players.remove(players.size() - numDummies);
+        numDummies--;
+    }//end removeDummy function
 
     public ArrayList<Card> getNewHand(Player player){
         ArrayList<Card> hand = new ArrayList<>();
@@ -153,6 +147,13 @@ public class Dealer {
     }
 
     public ArrayList<Card> getSubmitted(){
+        //get choices from dummies if they aren't czars
+        for(int i=(players.size()-numDummies - 1); i<players.size(); i++){
+            if(!players.get(i).isCzar()){
+                players.get(i).submit();
+            }
+        }
+
         return forCzar;
     }
 
@@ -162,14 +163,16 @@ public class Dealer {
         if(full()){
             return false;
         }
-
-        //add to local player list
-        players.add(player);
+        removeDummy();
 
         //deal them 5 cards
         for(int i=0; i<5; i++){
             dealCard(player);
         }
+
+        //add as last player in player list (but before dummies)
+        //i.e. player, player, new_player, dummy, dummy
+        players.add((players.size() - numDummies), player);
 
         return true;
     }//end addPlayer method
@@ -185,10 +188,6 @@ public class Dealer {
     public void removePlayer(Player player){
         players.remove(player);
     }//end remove player method
-
-    public long getTimeRemaining(){
-        return timeRemaining;
-    }
 
     public int getCzarPos(){
         for(int i=0; i<players.size(); i++){
@@ -244,6 +243,7 @@ public class Dealer {
 
         public DummyPlayer(int ID, ArrayList<Card> cards, boolean czar, Dealer theDealer){
             super(ID, cards, czar);
+            playerID = -1;
             dealer = theDealer;
         }
 
@@ -252,6 +252,7 @@ public class Dealer {
             hand = cards;
         }
 
+        @Override
         //submit a random card from hand and deal new card
         public Card submit(){
             Card picked;
