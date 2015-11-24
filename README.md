@@ -8,12 +8,8 @@ Created by Luke Salamone
 
 Networking with Riffle
 
-Dummy CPU players: added by Dealer if game has fewer than 5 players. Simply submits first (or random) card in hand.
+Java futures & promises (jdererred)
 
-Remove gameplay logic from Dealer
+List players in GameActivity
 
-Pass pg-13 / R param to GameActivity
-
-Interface stuff for card submission
-
-OnClick listener for card submissions...
+Login / Registration
