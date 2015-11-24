@@ -5,9 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.widget.Chronometer;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.content.Context;
@@ -29,7 +27,6 @@ public class GameActivity extends Activity {
     //private Chronometer chronometer;
     private ProgressBar progressBar;
     private RiffleSession riffle;
-    private int progressWidth;
 
     TextView card1;
     TextView card2;
@@ -57,8 +54,6 @@ public class GameActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i("onCreate", "Setting views");
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
@@ -74,14 +69,10 @@ public class GameActivity extends Activity {
         card5.setTypeface(MainActivity.getTypeface(""));
 
         progressBar = (ProgressBar) findViewById(R.id.progress);
-        //progressBar.setForegroundGravity(Gravity.LEFT);                     //push to left
-        progressWidth = progressBar.getLayoutParams().width;                //this SHOULD work
-        Log.i("onCreate", "width set to " + progressWidth);
     }
 
     @Override
     public void onStart(){
-        Log.i("onStart", "Entering onStart()");
         super.onStart();
         setQuestion();                              //set question TextView
         showCards();                                //populate answers TextViews
@@ -89,7 +80,6 @@ public class GameActivity extends Activity {
 
     @Override
     public void onResume() {
-        Log.i("onResume", "Entering onResume()");
         super.onResume();
 
         //play while the window is still in focus
@@ -199,10 +189,8 @@ public class GameActivity extends Activity {
         String str;
         //set only selected card to blue
         for(int i=1; i<=5; i++){
-            Log.v("setBackgrounds", "entering loop");
             str = "card" + i;
             if(i != c){//if i != c change background to white
-                Log.v("setBackgrounds", "setting card " + i + " to white");
                 int resID = context.getResources().getIdentifier(str, "id",
                         context.getPackageName());
                 TextView view = (TextView) findViewById(resID);
@@ -213,22 +201,18 @@ public class GameActivity extends Activity {
     }//end setBackgrounds method
 
     public class GameTimer extends CountDownTimer{
-        private String s;
         private boolean waiting;                        //allows us to create dummy timer
         private boolean finished;                       //whether the timer is finished
         private Card chosen;
-        private boolean warning;                        //when less than 5 seconds remain
 
         public GameTimer(long startTime, long interval){
             super(startTime, interval);
             finished = false;
             waiting = false;
-            warning = false;
         }
 
         @Override
         public void onFinish(){
-            Log.i("GameTimer", "Entering onFinish()");
             finished = true;
             progressBar.setProgress(0);
 
@@ -253,13 +237,12 @@ public class GameActivity extends Activity {
 
             //set chronometer width proportionally to time remaining
             int progress = (int) (progressBar.getMax() * timeRemaining / 15);
-            Log.i("onTick", "setting width to " + progress);
             progressBar.setProgress(progress);
 
             if(!waiting){
                 //do something while we wait?
             }
-        }
+        }//end onTick method
 
         public void setType(boolean isWaiting){
             waiting = isWaiting;

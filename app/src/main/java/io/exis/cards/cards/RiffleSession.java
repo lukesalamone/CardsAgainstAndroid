@@ -3,13 +3,9 @@ package io.exis.cards.cards;
 import ws.wamp.jawampa.WampClient;
 import ws.wamp.jawampa.WampClientBuilder;
 import ws.wamp.jawampa.transport.netty.NettyWampClientConnectorProvider;
-
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.URI;
-
-import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -163,10 +159,8 @@ public class RiffleSession {
                     addProcSubscription = app.registerProcedure("io.exis.cards/getNewID").subscribe(new Action1<Request>() {
                         @Override
                         public void call(Request request) {
-                            if (request.arguments() == null || request.arguments().size() != 2
-                                    || !request.arguments().get(0).canConvertToLong()
-                                    || !request.arguments().get(1).canConvertToLong())
-                            {
+                            //getNewID() takes no arguments
+                            if (request.arguments() == null || request.arguments().size() != 0){
                                 try {
                                     request.replyError(new ApplicationError(ApplicationError.INVALID_PARAMETER));
                                 } catch (ApplicationError e) {
@@ -174,9 +168,7 @@ public class RiffleSession {
                                 }
                             }
                             else {
-                                long a = request.arguments().get(0).asLong();
-                                long b = request.arguments().get(1).asLong();
-                                request.reply(a + b);
+                                request.reply(Exec.getNewID());
                             }
                         }
                     });
@@ -185,12 +177,12 @@ public class RiffleSession {
         }, new Action1<Throwable>() {
             @Override
             public void call(Throwable t) {
-                System.out.println("Session1 ended with error " + t);
+                System.out.println("getNewID() ended with error " + t);
             }
         }, new Action0() {
             @Override
             public void call() {
-                System.out.println("Session1 ended normally");
+                System.out.println("getNewID() ended normally");
             }
         });
 
