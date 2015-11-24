@@ -5,8 +5,10 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Chronometer;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.content.Context;
 import java.util.ArrayList;
@@ -24,9 +26,10 @@ public class GameActivity extends Activity {
     private boolean adult;
     private Player player;
     private Dealer dealer;
-    private Chronometer chronometer;
+    //private Chronometer chronometer;
+    private ProgressBar progressBar;
     private RiffleSession riffle;
-    private int chronoWidth;
+    private int progressWidth;
 
     TextView card1;
     TextView card2;
@@ -70,8 +73,10 @@ public class GameActivity extends Activity {
         card5 = (TextView) findViewById(R.id.card5);
         card5.setTypeface(MainActivity.getTypeface(""));
 
-        chronometer = (Chronometer) findViewById(R.id.chronometer);
-        chronoWidth = chronometer.getWidth();       //this SHOULD work
+        progressBar = (ProgressBar) findViewById(R.id.progress);
+        //progressBar.setForegroundGravity(Gravity.LEFT);                     //push to left
+        progressWidth = progressBar.getLayoutParams().width;                //this SHOULD work
+        Log.i("onCreate", "width set to " + progressWidth);
     }
 
     @Override
@@ -224,9 +229,8 @@ public class GameActivity extends Activity {
         @Override
         public void onFinish(){
             Log.i("GameTimer", "Entering onFinish()");
-            chronometer.setText("Submitting...");
-            chronometer.setBackgroundColor(Color.parseColor("#ff30b2c1"));
             finished = true;
+            progressBar.setProgress(0);
 
             if(!waiting){
                 if(player.isCzar()){
@@ -248,20 +252,12 @@ public class GameActivity extends Activity {
             long timeRemaining = (millisUntilFinished / 1000);
 
             //set chronometer width proportionally to time remaining
-            chronometer.setWidth( (int) (chronoWidth * (timeRemaining/15)) );
+            int progress = (int) (progressBar.getMax() * timeRemaining / 15);
+            Log.i("onTick", "setting width to " + progress);
+            progressBar.setProgress(progress);
 
             if(!waiting){
-                //my amazing interface
-                s = timeRemaining + " seconds remain to choose!";
-                chronometer.setText(s);
-
-                /*
-                if (timeRemaining > 5) {
-                    chronometer.setBackgroundColor(Color.parseColor("#55009900"));
-                } else {
-                    chronometer.setBackgroundColor(Color.parseColor("#55ff6600"));
-                }
-                */
+                //do something while we wait?
             }
         }
 

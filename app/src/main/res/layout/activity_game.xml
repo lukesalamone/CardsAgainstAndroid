@@ -22,21 +22,27 @@
         android:padding="10dp"
         android:minHeight="100sp" />
 
-    <Chronometer
+    <ProgressBar
+        style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:id="@+id/chronometer"
+        android:layout_height="2dp"
+        android:id="@+id/progress"
         android:layout_below="@+id/question"
         android:layout_centerHorizontal="true"
-        android:background="#ff000000"
-        android:textAlignment="center" />
+        android:background="#ffffffff"
+        android:textAlignment="center"
+        android:foregroundTint="#ffffffff"
+        android:foregroundGravity="left"
+        android:backgroundTint="#ff000000"
+        android:progressBackgroundTint="#ff000000"
+        android:progressTint="#ffffffff" />
 
     <TextView
         android:text="@string/answer"
         android:clickable="true"
         android:onClick="submitCard1"
         android:layout_width="fill_parent"
-        android:layout_height="50sp"
+        android:layout_height="@dimen/card_height"
         android:id="@+id/card1"
         android:textSize="20sp"
         android:background="#eee"
@@ -45,7 +51,7 @@
         android:layout_marginTop="@dimen/card_spacing"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/chronometer"
+        android:layout_below="@+id/progress"
         android:padding="5dp" />
 
     <TextView
