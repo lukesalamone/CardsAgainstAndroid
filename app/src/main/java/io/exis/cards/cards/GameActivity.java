@@ -26,7 +26,6 @@ public class GameActivity extends Activity {
     private Dealer dealer;
     private Chronometer chronometer;
     private RiffleSession riffle;
-    private int numTimers;
     private int chronoWidth;
 
     TextView card1;
@@ -97,7 +96,6 @@ public class GameActivity extends Activity {
         player.setHand(dealer.getNewHand(player));
         dealer.setPlayers();
         setQuestion();                          //draw question card
-        numTimers = 0;
 
         if(!player.isCzar()){
             Log.i("playGame", "player is not czar");
@@ -241,13 +239,8 @@ public class GameActivity extends Activity {
                     dealer.czarPick(chosen);
                 }
             }
-
-            numTimers++;
-
-            if(numTimers == 2){
-                Exec.addPoint(player);                          //give point to winner
-                player.setCzar(dealer.isCzar(player));          //update whether player is czar
-            }
+            Exec.addPoint(player);                              //give point to winner
+            player.setCzar(dealer.isCzar(player));              //update whether player is czar
         }
 
         @Override
