@@ -3,6 +3,7 @@ package io.exis.cards.cards;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
@@ -99,13 +100,11 @@ public class MainActivity extends Activity {
     }
 
     public void onRadioButtonClicked(View view){
-        gameButton.setEnabled(true);
         boolean checked = ((RadioButton) view).isChecked();
         switch(view.getId()) {
             case R.id.radio_pg13:
                 if (checked) {
                     adult = false;
-
                     //load PG-13 cards
                     infoText.setText("Loading Questions...");
                     questions = Card.getQuestions(adult);
@@ -128,7 +127,8 @@ public class MainActivity extends Activity {
                     break;
                 }
         }
-
+        gameButton.setEnabled(true);
+        gameButton.setTextColor(Color.parseColor("#ffffff"));
     }//end onRadioButtonClicked method
 
     public static Context getAppContext(){

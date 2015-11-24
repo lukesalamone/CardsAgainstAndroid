@@ -38,9 +38,13 @@ public class GameActivity extends Activity {
         adult = MainActivity.adult;
         context = MainActivity.getAppContext();
         riffle = new RiffleSession();                         //create unique riffle session
-        //int PID = riffle.getNewID();
+        int PID = riffle.getNewID();
 
-        int PID = Exec.getNewID();
+        if(PID == 0 || PID == -1){
+            Log.i("GameActivity", "problem with riffle.getNewID");
+            PID = Exec.getNewID();
+        }
+
         player = new Player(
                 PID,
                 new ArrayList<Card>(),
@@ -182,8 +186,7 @@ public class GameActivity extends Activity {
 
     //whiten card backgrounds other than card c
     private void setBackgrounds(int c, View v){
-        Log.v("setBackgrounds", "entering function");
-        v.setBackgroundColor(Color.parseColor("#ff30b2c1"));
+        //v.setBackgroundColor(Color.parseColor("#ff30b2c1"));
         ((TextView) v).setTextColor(Color.parseColor("#ff000000"));
 
         String str;
@@ -194,7 +197,7 @@ public class GameActivity extends Activity {
                 int resID = context.getResources().getIdentifier(str, "id",
                         context.getPackageName());
                 TextView view = (TextView) findViewById(resID);
-                view.setBackgroundColor(Color.parseColor("#ffffffff"));
+                //view.setBackgroundColor(Color.parseColor("#ffffffff"));
                 view.setTextColor(Color.parseColor("#55000000"));
             }
         }

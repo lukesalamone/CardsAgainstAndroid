@@ -144,12 +144,11 @@ public class RiffleSession {
     }//end start method
 
     /*
-     * Need to implement WAMP call to Exec.getNewID()
+     * Implements WAMP call to Exec.getNewID()
      */
     public int getNewID(){
-        int ID = -1;
-
         app.statusChanged().subscribe(new Action1<WampClient.State>() {
+            int ID;
             @Override
             public void call(WampClient.State t1) {
                 System.out.println("Session1 status changed to " + t1);
@@ -168,7 +167,8 @@ public class RiffleSession {
                                 }
                             }
                             else {
-                                request.reply(Exec.getNewID());
+                                ID = Exec.getNewID();
+                                request.reply(ID);
                             }
                         }
                     });
@@ -186,7 +186,7 @@ public class RiffleSession {
             }
         });
 
-        return ID;
+        return 0;
     }//end getNewID method
 
     private void waitUntilKeypressed() {

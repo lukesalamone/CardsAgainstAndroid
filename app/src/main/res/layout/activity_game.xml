@@ -35,7 +35,8 @@
         android:foregroundGravity="left"
         android:backgroundTint="#ff000000"
         android:progressBackgroundTint="#ff000000"
-        android:progressTint="#ffffffff" />
+        android:progressTint="#ffffffff"
+        android:layout_marginBottom="5dp" />
 
     <TextView
         android:text="@string/answer"
