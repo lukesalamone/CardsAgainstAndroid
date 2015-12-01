@@ -40,8 +40,10 @@ public class GameActivity extends Activity {
     public GameActivity(){
         adult = MainActivity.adult;
         context = MainActivity.getAppContext();
-        riffle = new RiffleSession();                         //create unique riffle session
-        int PID = riffle.getNewID();
+        //riffle = new RiffleSession();                         //create unique riffle session
+        //int PID = riffle.getNewID();
+
+        int PID = Exec.getNewID();
 
         if(PID == 0 || PID == -1){
             Log.i("GameActivity", "problem with riffle.getNewID");
@@ -124,7 +126,6 @@ public class GameActivity extends Activity {
         }//end submission case
 
         if(player.isCzar()) {
-            Log.i("playGame", "player is czar");
             dummyTimer();
             final ArrayList<Card> submitted = dealer.getSubmitted();
 
