@@ -1,11 +1,13 @@
 package io.exis.cards.cards;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.content.Context;
@@ -27,6 +29,7 @@ public class GameActivity extends Activity {
     //private Chronometer chronometer;
     private ProgressBar progressBar;
     private RiffleSession riffle;
+    private boolean selected;                                 //whether card has been selected
 
     TextView card1;
     TextView card2;
@@ -52,7 +55,7 @@ public class GameActivity extends Activity {
         );
 
         dealer = Exec.findDealer(adult);                        //gets a dealer for the player
-        dealer.prepareGame();                            //load questions and answers
+        dealer.prepareGame();                                   //load questions and answers
         dealer.addPlayer(player);                               //adds player to dealer
     }
 
@@ -91,6 +94,7 @@ public class GameActivity extends Activity {
     }
 
     private void playAGame(){
+        selected = false;
         player.setCzar(dealer.isCzar(player));
         player.setHand(dealer.getNewHand(player));
         dealer.setPlayers();
@@ -105,6 +109,18 @@ public class GameActivity extends Activity {
             //default to submitting first card
             submissionTimer.setChosen(player.getHand().get(0));
             submissionTimer.start();
+
+            //sexy smooth progress bar
+            //stackoverflow.com/questions/6097795/android-make-a-progress-bar-update-smoothly
+            if(android.os.Build.VERSION.SDK_INT >= 11){
+                // will update the "progress" propriety of seekbar until it reaches progress
+                ObjectAnimator animation = ObjectAnimator.ofInt(progressBar,
+                        "progress",
+                        progressBar.getMax(), 0);
+                animation.setDuration(15000);
+                animation.setInterpolator(new DecelerateInterpolator());
+                animation.start();
+            }
         }//end submission case
 
         if(player.isCzar()) {
@@ -162,26 +178,31 @@ public class GameActivity extends Activity {
         dealer.receiveCard(player.getHand().get(0));
         //set background colors
         setBackgrounds(1, view);
+        selected = true;
     }
 
     public void submitCard2(View view){
         dealer.receiveCard(player.getHand().get(1));
         setBackgrounds(2, view);
+        selected = true;
     }
 
     public void submitCard3(View view){
         dealer.receiveCard(player.getHand().get(2));
         setBackgrounds(3, view);
+        selected = true;
     }
 
     public void submitCard4(View view){
         dealer.receiveCard(player.getHand().get(3));
         setBackgrounds(4, view);
+        selected = true;
     }
 
     public void submitCard5(View view){
         dealer.receiveCard(player.getHand().get(4));
         setBackgrounds(5, view);
+        selected = true;
     }
 
     //whiten card backgrounds other than card c
@@ -220,14 +241,18 @@ public class GameActivity extends Activity {
             progressBar.setProgress(0);
 
             if(!waiting){
+                //if player is idle
+                if(!selected){
+                    submitCard1(card1);
+                }
+
                 if(player.isCzar()){
                     //submit chosen card
+                    dealer.czarPick(chosen);
+                }else{
                     dealer.receiveCard(chosen);
                     Card newCard = dealer.dealCard(player);
                     player.addCard(newCard);
-                }else{
-                    //submit chosen card
-                    dealer.czarPick(chosen);
                 }
             }
             Exec.addPoint(player);                              //give point to winner
@@ -236,14 +261,11 @@ public class GameActivity extends Activity {
 
         @Override
         public void onTick(long millisUntilFinished){
-            long timeRemaining = (millisUntilFinished / 1000);
-
             //set chronometer width proportionally to time remaining
-            int progress = (int) (progressBar.getMax() * timeRemaining / 15);
-            progressBar.setProgress(progress);
-
-            if(!waiting){
-                //do something while we wait?
+            if(android.os.Build.VERSION.SDK_INT < 11) {
+                long timeRemaining = (millisUntilFinished / 1000);
+                int progress = (int) (progressBar.getMax() * timeRemaining / 15);
+                progressBar.setProgress(progress);
             }
         }//end onTick method
 
