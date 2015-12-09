@@ -27,57 +27,28 @@ import java.net.URL;
 
 public class RiffleSession {
 
-    URL serverURL = null;
-    JSONRPC2Session session = new JSONRPC2Session(serverURL);
-    protected AndroidDeferredManager manager = new AndroidDeferredManager();
+    private URL serverURL;
+    private JSONRPC2Session session;
+    protected AndroidDeferredManager manager;
 
     //Constructor
     RiffleSession(){
+        manager = new AndroidDeferredManager();
         try{
             serverURL = new URL("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
+            session = new JSONRPC2Session(serverURL);
         } catch (MalformedURLException e) {
             Log.wtf("RiffleSession constructor", "MalformedURLException thrown");
 
             //do some interface things...
         }
-
-
     }
 
-    public void testDeferredAsyncTask() {
-        final ValueHolder<String> backgroundThreadGroupName = new ValueHolder<String>();
-        final ValueHolder<String> doneThreadGroupName = new ValueHolder<String>();
-
-        try {
-            manager.when(new DeferredAsyncTask<Void, Integer, String>() {
-                @Override
-                protected String doInBackgroundSafe(Void... nil) throws Exception {
-                    backgroundThreadGroupName.set(Thread.currentThread()
-                            .getThreadGroup().getName());
-                    return "Done";
-                }
-            }).done(new DoneCallback<String>() {
-
-                @Override
-                public void onDone(String result) {
-                    doneThreadGroupName.set(Thread.currentThread()
-                            .getThreadGroup().getName());
-                }
-
-            }).waitSafely();
-        } catch (InterruptedException e) {
-            // Do nothing
-        }
-
-        doneThreadGroupName.assertEquals("main");
-        Assert.assertFalse(
-                String.format(
-                        "Background Thread Group [%s] shouldn't be the same as Thread Group in Done [%s]",
-                        backgroundThreadGroupName.get(),
-                        doneThreadGroupName.get()), backgroundThreadGroupName
-                        .equals(doneThreadGroupName));
-    }
-
+    /*
+     * Called in GameActivity. Must return result of call to Exec::getNewID()
+     *
+     * Needs to be reworked using wrapper for Jawampa. Not JSONRPC.
+     */
     public int getNewID(){
         final ValueHolder<Integer> ID = new ValueHolder<>();
         final int methodID = 0;                             //TODO: Create index of method IDs
@@ -89,8 +60,7 @@ public class RiffleSession {
                 protected String doInBackgroundSafe(Void... nil) throws Exception {
                     //insert RPC call here
                     JSONRPC2Request request = new JSONRPC2Request(method, methodID);
-                    JSONRPC2Response response = null;
-                    //String requestJSON = request.toString();
+                    JSONRPC2Response response;
 
                     //send to server...
                     try {
