@@ -1,9 +1,13 @@
 package io.exis.cards.cards;
 
+import android.util.Log;
+
 import rx.Observable;
 import ws.wamp.jawampa.WampClient;
 import ws.wamp.jawampa.WampClientBuilder;
 import ws.wamp.jawampa.transport.netty.NettyWampClientConnectorProvider;
+
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.URI;
@@ -35,6 +39,7 @@ public class WAMPWrapper {
     Subscription addProcSubscription;
     Subscription eventPublication;
     Subscription eventSubscription;
+    private ArrayList<Subscription> subscriptionList;
 
     private String URI;
     private String realm;
@@ -74,10 +79,14 @@ public class WAMPWrapper {
         }
     }
 
-    private static String randUser(){
-        return "user" + Math.random()*1000000;
-    }//end randUser method
+    public void main(String[] args){
+        String s = "a string";
+        Log.i("info", "i is of type " + s.getClass());
+    }
 
+    /*
+     * Return types cannot be guaranteed!
+     */
     public void publish(String procedure, Object...args){
         app.publish(procedure, args)
                 .subscribe(
@@ -107,15 +116,16 @@ public class WAMPWrapper {
     /*
      * As of now, we cannot guarantee return types.
      */
-    public void register(String procedure, Request request){
-        Observable proc = client.registerProcedure(procedure).subscribe(
+    public void register(String procedure){
+        Subscription proc = app.registerProcedure(procedure).subscribe(
                 request -> {
                     if (request.arguments() == null || request.arguments().size() != 1
-                            || !request.arguments().get(0).canConvertToLong())
-                    {
+                            || !request.arguments().get(0).canConvertToLong()){
                         try {
                             request.replyError(new ApplicationError(ApplicationError.INVALID_PARAMETER));
-                        } catch (ApplicationError e) { }
+                        } catch (ApplicationError e) {
+                            //error reporting the error
+                        }
                     } else {
                         long a = request.arguments().get(0).asLong();
                         request.reply(a);
@@ -125,19 +135,22 @@ public class WAMPWrapper {
     }//end register method
 
     /*
-     * Cannot guarantee return types.
+     * Cannot guarantee return types!
      */
     public void call(String procedure, Object...args){
-        Observable<String> result = app.call(procedure, Object...args);
-            // Subscribe for the result
+        Observable result = app.call(procedure, args);
+        // Subscribe for the result
         // onNext will be called in case of success with a String value
         // onError will be called in case of errors with a Throwable
         result.subscribe((txt) -> System.out.println(txt),
-                        (err) -> System.err.println(err));
+                (err) -> System.err.println(err));
     }//end call method
 
+    /*
+     * Unsubscribe from a procedure subscription
+     */
     public void unsub(String procedure){
-        Observable proc;
+        Subscription proc = findSubscription(procedure);
         proc.unsubscribe();
     }//end unsub method
 
@@ -153,15 +166,20 @@ public class WAMPWrapper {
     }//end close method
 
     /*
-    private void waitUntilKeypressed() {
-        try {
-            System.in.read();
-            while (System.in.available() > 0) {
-                System.in.read();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+     * Finds and returns a procedure by its name from procedureList
+     */
+    private Subscription findSubscription(String name){
+        for(Subscription s : subscriptionList){
+            //TODO
+            return s;
         }
-    }//end waitUntilKeypressed method
-    */
+
+        Log.wtf("findSubscription", "subscription " + name + " not found!");
+        return null;
+    }//end findProcedure method
+
+    private static String randUser(){
+        return "user" + Math.random()*1000000;
+    }//end randUser method
+
 }//end WAMPWrapper class
