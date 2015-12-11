@@ -20,6 +20,8 @@ public class Exec {
         Dealer dealer = new Dealer(R, getNewID());
         dealers.add(dealer);
         return dealer;
+
+        //TODO register all calls
     }//end addDealer method
 
     public void removeDealer(Dealer dealer){

@@ -8,8 +8,11 @@ import org.jdeferred.android.AndroidDeferredManager;
 import org.jdeferred.android.DeferredAsyncTask;
 import com.thetransactioncompany.jsonrpc2.*;
 import com.thetransactioncompany.jsonrpc2.client.*;
+
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 /*
  * RiffleSession.java
@@ -27,75 +30,141 @@ import java.net.URL;
 
 public class RiffleSession {
 
-    private URL serverURL;
-    private JSONRPC2Session session;
+    private WAMPWrapper session;
     protected AndroidDeferredManager manager;
 
     //Constructor
     RiffleSession(){
+        String URI = "ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws";
         manager = new AndroidDeferredManager();
-        try{
-            serverURL = new URL("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-            session = new JSONRPC2Session(serverURL);
-        } catch (MalformedURLException e) {
-            Log.wtf("RiffleSession constructor", "MalformedURLException thrown");
-
-            //do some interface things...
-        }
+        session = new WAMPWrapper(URI);
+    }
+    /*
+     * Call to Dealer::addPlayer
+     */
+    public void addPlayer(Player player){
+        call("addPlayer", player);
     }
 
     /*
-     * Called in GameActivity. Must return result of call to Exec::getNewID()
-     *
-     * Needs to be reworked using wrapper for Jawampa. Not JSONRPC.
+     * Call to Exec::addPoint
+     */
+    public void addPoint(Player player){
+        call("addPoint", player);
+    }
+
+    /*
+     * Called in GameActivity.
+     */
+    public void czarPick(Card card){
+        call("czarPick", card);
+    }
+
+    /*
+     * Called in GameActivity. Returns result of call to Dealer::dealCard
+    */
+    public Card dealCard(Player player){
+        return (Card) call("dealCard", player);
+    }
+
+    /*
+     * Called in GameActivity. Returns result of call of Exec::findDealer
+     */
+    Dealer findDealer(boolean adult){
+        return (Dealer) call("findDealer", adult);
+    }//end findDealer method
+
+    /*
+     * Calls to Dealer::getNewHand
+     */
+    ArrayList<Card> getNewHand(Player player){
+        return (ArrayList<Card>) call("getNewHand", player);
+    }//end getNewHand method
+
+    /*
+     * Called in GameActivity. Must return result of call to Exec::getNewID
      */
     public int getNewID(){
-        final ValueHolder<Integer> ID = new ValueHolder<>();
-        final int methodID = 0;                             //TODO: Create index of method IDs
-        final String method = "getNewID";
+        return (int) call("getNewID");
+    }//end getNewID method
+
+    /*
+     * Call to Dealer::getQuetion
+    */
+    public Card getQuestion(){
+        return (Card) call("getSubmitted");
+    }
+
+    /*
+     * Call to Dealer::getSubmitted
+     */
+    public ArrayList<Card> getSubmitted(){
+        return (ArrayList<Card>) call("getSubmitted");
+    }
+
+    /*
+     * Called in GameActivity. Returns Dealer::isCzar
+     */
+    public boolean isCzar(Player player){
+        return (boolean) call("isCzar", player);
+    }//end isCzar method
+
+    /*
+     * Call to Dealer::PrepareGame
+     */
+    void prepareGame(){
+        call("prepareGame");
+    }
+
+    /*
+     * Called in GameActivity when player sends card to dealer. Returns result of call to
+     * Dealer::ReceiveCard(card).
+     */
+    public void receiveCard(Card card){
+        call("receiveCard", card);
+    }
+
+    /*
+     * Call to Dealer::removePlayer
+    */
+    public void removePlayer(Player player){
+        call("removePlayer", player);
+    }
+
+    /*
+     * Call to Dealer::setPlayers
+     */
+    void setPlayers(){
+        call("setPlayers");
+    }
+
+    /*
+     * Allows Dealer and Exec to register their calls.
+     */
+    private void register(String method){
+        session.register(method);
+    }
+
+    private Object call(String method, Object...args){
+        final ValueHolder<Object> result = new ValueHolder<>();
 
         try {
             manager.when(new DeferredAsyncTask<Void, Integer, String>() {
                 @Override
                 protected String doInBackgroundSafe(Void... nil) throws Exception {
                     //insert RPC call here
-                    JSONRPC2Request request = new JSONRPC2Request(method, methodID);
-                    JSONRPC2Response response;
-
-                    //send to server...
-                    try {
-                        response = session.send(request);
-                    } catch (JSONRPC2SessionException e) {
-                        Log.wtf("getNewID", e.getMessage());
-                        return "Error";
-                        // handle exception...
-                    }
-
-                    //insert magic
-
-                    //receive from server
-                    String responseString = (String)response.getResult();
-                    if(response.indicatesSuccess()) {
-                        ID.set(Integer.parseInt( responseString ));
-                    } else{
-                        ID.set(0);
-                    }
+                    result.set(session.call(method, args));
 
                     return "Done";
                 }
-            }).done(new DoneCallback<String>() {
-
-                @Override
-                public void onDone(String result) {
-                    //do nothing
-                }
-
+            }).done(res -> {
+                //do nothing
             }).waitSafely();
         } catch (InterruptedException e) {
             // Do nothing
         }
 
-        return ID.get();
-    }//end getNewID function
+        return result.get();
+    }
 
 }

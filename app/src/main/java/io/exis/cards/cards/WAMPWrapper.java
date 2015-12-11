@@ -36,9 +36,6 @@ public class WAMPWrapper {
     private static int playerID;
     private WampClient app;                       //application domain
     private WampClient user;                      //user domain
-    Subscription addProcSubscription;
-    Subscription eventPublication;
-    Subscription eventSubscription;
     private ArrayList<Subscription> subscriptionList;
 
     private String URI;
@@ -46,11 +43,11 @@ public class WAMPWrapper {
     static final int eventInterval = 2000;
     int lastEventValue = 0;
 
-    public WAMPWrapper(String URI, String realm){
+    public WAMPWrapper(String URI){
+        realm = randUser();
         IWampConnectorProvider connectorProvider = new NettyWampClientConnectorProvider();
         WampClientBuilder builder = new WampClientBuilder();
         //URI = "ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws";
-        //realm = "xs.luke.Cards";
 
         //build application domain
         try {
@@ -75,7 +72,6 @@ public class WAMPWrapper {
             user = builder.build();
         } catch (Exception e) {
             e.printStackTrace();
-            return;
         }
     }
 
@@ -95,18 +91,21 @@ public class WAMPWrapper {
     }//end publish method
 
     /*
-     * Client subscribes to server
+     * Client subscribes to server procedure
      */
     public void subscribe(String procedure, Object...args){
         app.statusChanged()
                 .subscribe((WampClient.State newState) -> {
                             if (newState instanceof WampClient.ConnectedState) {
+                                Log.i("WAMPWrapper::subscribe", "Connected");
                                 // Client got connected to the remote router
                                 // and the session was established
                             } else if (newState instanceof WampClient.DisconnectedState) {
+                                Log.i("WAMPWrapper::subscribe", "Disconnected");
                                 // Client got disconnected from the remoute router
                                 // or the last possible connect attempt failed
                             } else if (newState instanceof WampClient.ConnectingState) {
+                                Log.i("WAMPWrapper::subscribe", "Connecting...");
                                 // Client starts connecting to the remote router
                             }
                         }
@@ -120,7 +119,7 @@ public class WAMPWrapper {
         Subscription proc = app.registerProcedure(procedure).subscribe(
                 request -> {
                     if (request.arguments() == null || request.arguments().size() != 1
-                            || !request.arguments().get(0).canConvertToLong()){
+                            || !request.arguments().get(0).canConvertToLong()) {
                         try {
                             request.replyError(new ApplicationError(ApplicationError.INVALID_PARAMETER));
                         } catch (ApplicationError e) {
@@ -131,19 +130,25 @@ public class WAMPWrapper {
                         request.reply(a);
                     }
                 },
-                e -> System.err.println(e));
+                System.err::println
+        );
+        subscriptionList.add(proc);
     }//end register method
 
     /*
      * Cannot guarantee return types!
      */
-    public void call(String procedure, Object...args){
+    public Object call(String procedure, Object...args){
+        //TODO
+        Object obj = null;
+
         Observable result = app.call(procedure, args);
         // Subscribe for the result
         // onNext will be called in case of success with a String value
         // onError will be called in case of errors with a Throwable
-        result.subscribe((txt) -> System.out.println(txt),
-                (err) -> System.err.println(err));
+        result.subscribe((response) -> call(procedure, args),
+                System.err::println);
+        return obj;
     }//end call method
 
     /*
@@ -151,11 +156,13 @@ public class WAMPWrapper {
      */
     public void unsub(String procedure){
         Subscription proc = findSubscription(procedure);
-        proc.unsubscribe();
-    }//end unsub method
-
-    public void unreg(){
-
+        try{
+            assert proc != null;
+            proc.unsubscribe();
+        } catch(NullPointerException e){
+            Log.wtf("WAMPWrapper::unsub", "failed to unsub from " + procedure);
+            //so be it
+        }
     }//end unreg method
 
     /*

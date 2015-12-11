@@ -19,6 +19,8 @@ public class Player {
         playerID = ID;
         hand = cards;
         boolean isCzar = czar;
+
+        //TODO register all riffle calls
     }//end Player constructor
 
     public ArrayList<Card> getHand(){

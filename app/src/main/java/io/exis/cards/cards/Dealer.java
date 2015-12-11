@@ -11,11 +11,6 @@ import android.util.Log;
  * Manages decks and player points
  * May report corrupted players
  *
- * Several placeholder methods have been used in place
- * of Riffle methods:
- * sendCard()
- * receiveCard()
- *
  * Created by luke on 10/13/15.
  */
 public class Dealer {
@@ -45,6 +40,8 @@ public class Dealer {
         questions = new ArrayList<>();
         answers = new ArrayList<>();
         dummy = new Player(-1, null, false);
+
+        //TODO register all calls with WAMPWrapper
     }
 
     public void prepareGame(){
@@ -70,10 +67,6 @@ public class Dealer {
         return (getGameSize() + 1 > this.ROOMCAP);
     }
 
-    /*************************************************************************/
-    /*                           PLACEHOLDER METHODS                         */
-    /*************************************************************************/
-
     //when players send cards to dealer
     public void receiveCard(Card card){
         //add card to submitted list
@@ -97,10 +90,6 @@ public class Dealer {
         //pub here
         players.get(czarNum).setCzar(true);
     }
-
-    /*************************************************************************/
-    /*                        END PLACEHOLDER METHODS                        */
-    /*************************************************************************/
 
     //deal cards to all players
     public void setPlayers(){
