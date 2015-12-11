@@ -19,4 +19,3 @@ Player -> Exec
 Dealer findDealer(bool)
 int getNewID()
 void addPoint(Player)
-void removePlayer(Player)
