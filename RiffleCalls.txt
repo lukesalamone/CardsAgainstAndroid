@@ -6,7 +6,7 @@ void receiveCard(Card)
 Card dealCard(Player)
 void czarPick(Card)
 bool isCzar(Player)
-void prepareGame(Context) //bad apple
+void prepareGame()
 void setPlayers()
 ArrayList<Card> getNewHand(Player)
 ArrayList<Card> getSubmitted()
