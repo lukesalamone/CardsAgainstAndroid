@@ -11,7 +11,6 @@ import java.util.ArrayList;
 public class Exec {
 
     static ArrayList<Dealer> dealers = new ArrayList<>();
-
     static int counter = 0;
 
     //create new dealer and add to dealer list
@@ -42,7 +41,7 @@ public class Exec {
             }
         }
 
-        return new Dealer(R, getNewID());
+        return new Dealer(false, getNewID());
     }//end findDealer method
 
     public boolean auth(String user, String pass){

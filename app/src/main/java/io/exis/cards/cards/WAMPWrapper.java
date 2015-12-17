@@ -11,10 +11,12 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.URI;
+
 import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
+
 import ws.wamp.jawampa.ApplicationError;
 import ws.wamp.jawampa.Request;
 import ws.wamp.jawampa.connection.IWampConnectorProvider;

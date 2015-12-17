@@ -40,10 +40,8 @@ public class GameActivity extends Activity {
     public GameActivity(){
         adult = MainActivity.adult;
         context = MainActivity.getAppContext();
-        //riffle = new RiffleSession();                         //create unique riffle session
-        //int PID = riffle.getNewID();
-
-        int PID = Exec.getNewID();
+        riffle = new RiffleSession();                         //create unique riffle session
+        int PID = riffle.getNewID();
 
         if(PID == 0 || PID == -1){
             Log.i("GameActivity", "problem with riffle.getNewID");
@@ -59,6 +57,13 @@ public class GameActivity extends Activity {
         dealer = Exec.findDealer(adult);                        //gets a dealer for the player
         dealer.prepareGame();                                   //load questions and answers
         dealer.addPlayer(player);                               //adds player to dealer
+
+        //damouse's method
+        Object[] playObject = riffle.play();
+        String[] hand = (String[]) playObject[0];
+        Player[] players = (Player[]) playObject[1];
+        String state = (String) playObject[2];
+        String roomName = (String) playObject[3];
     }
 
     @Override
@@ -90,8 +95,6 @@ public class GameActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-
-        //play while the window is still in focus
         playAGame();
     }
 

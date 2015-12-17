@@ -1,17 +1,8 @@
 package io.exis.cards.cards;
 
 import android.util.Log;
-
-import junit.framework.Assert;
-import org.jdeferred.DoneCallback;
 import org.jdeferred.android.AndroidDeferredManager;
 import org.jdeferred.android.DeferredAsyncTask;
-import com.thetransactioncompany.jsonrpc2.*;
-import com.thetransactioncompany.jsonrpc2.client.*;
-
-import java.lang.reflect.Array;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 /*
@@ -27,17 +18,30 @@ import java.util.ArrayList;
  * Copyright © 2015 exis. All rights reserved.
  *
  */
-
+@SuppressWarnings("unused")
 public class RiffleSession {
 
-    private WAMPWrapper session;
+    private WAMPWrapper WAMP;
     protected AndroidDeferredManager manager;
+    String URI;
+    Dealer dealer;
 
     //Constructor
-    RiffleSession(){
-        String URI = "ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws";
+    RiffleSession() {
+        URI = "ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws";
         manager = new AndroidDeferredManager();
-        session = new WAMPWrapper(URI);
+        WAMP = new WAMPWrapper(URI);
+    }
+
+    //Favoring this constructor
+    public RiffleSession(String domain){
+        URI = domain;
+        manager = new AndroidDeferredManager();
+        WAMP = new WAMPWrapper(URI);
+    }
+
+    public String getDomain(){
+        return URI;
     }
     /*
      * Call to Dealer::addPlayer
@@ -70,14 +74,15 @@ public class RiffleSession {
     /*
      * Called in GameActivity. Returns result of call of Exec::findDealer
      */
-    Dealer findDealer(boolean adult){
+    public Dealer findDealer(boolean adult){
         return (Dealer) call("findDealer", adult);
     }//end findDealer method
 
     /*
      * Calls to Dealer::getNewHand
      */
-    ArrayList<Card> getNewHand(Player player){
+    @SuppressWarnings("unchecked")
+    public ArrayList<Card> getNewHand(Player player){
         return (ArrayList<Card>) call("getNewHand", player);
     }//end getNewHand method
 
@@ -98,6 +103,7 @@ public class RiffleSession {
     /*
      * Call to Dealer::getSubmitted
      */
+    @SuppressWarnings("unchecked")
     public ArrayList<Card> getSubmitted(){
         return (ArrayList<Card>) call("getSubmitted");
     }
@@ -112,7 +118,7 @@ public class RiffleSession {
     /*
      * Call to Dealer::PrepareGame
      */
-    void prepareGame(){
+    public void prepareGame(){
         call("prepareGame");
     }
 
@@ -134,16 +140,81 @@ public class RiffleSession {
     /*
      * Call to Dealer::setPlayers
      */
-    void setPlayers(){
+    public void setPlayers(){
         call("setPlayers");
     }
+
+    /************  damouse's Methods  **************/
+    //Player calls at beginning of game to find dealer. Returns new hand.
+    public Object[] play(){
+        String[] cards;
+        //Dealer dealer = Exec.findDealer(true);
+        dealer = (Dealer) call("findDealer", false);
+        String roomName = Integer.toString( dealer.dealerID );
+        Player player = new Player(URI, 0, false);
+        addPlayer(player);
+
+        return new Object[]{
+                getNewHand(player),
+                dealer.getPlayers(),
+                "",                                     //TODO
+                roomName};
+    }//end play method
+
+    //Tell the Dealer the Player picked a card
+    public Object[] pick(String card){
+        String[] cards;
+        String roomName = Exec.findDealer(true).toString();
+        Player player = new Player(URI, 0, false);
+        call("receiveCard", new Card(0, card, 'a', 0));
+
+        return new Object[]{
+                player.getHand(),
+                dealer.getPlayers(),
+                "",
+                roomName};
+    }//end pick method
+
+    //player calls upon leaving
+    public void leave(){
+
+    }//end leave method
+
+    //dealer pub
+    public void answering(Player czar, String question, int duration){
+
+    }
+
+    //dealer pub
+    public void picking(String[] answers, int duration){
+
+    }
+
+    public void scoring(Player winner, String winningCard, int duration){
+
+    }
+
+    public void left(Player leavingPlayer){
+
+    }
+
+    public void joined(Player newPlayer){
+
+    }
+
+    //called by player at beginning at round
+    public String[] draw(){
+        return (String[]) call("dealCard");
+    }//end draw method
+
+    /***********  End damouse's Methods **********/
 
     /*
      * Allows Dealer and Exec to register their calls.
      */
-    private void register(String method){
-        session.register(method);
-    }
+    public void register(String method){
+        WAMP.register(method);
+    }//end register method
 
     private Object call(String method, Object...args){
         final ValueHolder<Object> result = new ValueHolder<>();
@@ -153,7 +224,8 @@ public class RiffleSession {
                 @Override
                 protected String doInBackgroundSafe(Void... nil) throws Exception {
                     //insert RPC call here
-                    result.set(session.call(method, args));
+                    result.set(WAMP.call(method, args));
+                    Log.i("RiffleSession::call()", "done calling " + method + "method");
 
                     return "Done";
                 }
@@ -165,6 +237,6 @@ public class RiffleSession {
         }
 
         return result.get();
-    }
+    }//end call method
 
 }

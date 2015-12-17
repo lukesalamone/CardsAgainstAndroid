@@ -29,6 +29,8 @@ public class Dealer {
     boolean rating;                                         //pg13 or R
     int dealerID;
     int czarNum;
+    RiffleSession session;
+    String URL;
 
     public Dealer(boolean R, int ID){
         rating = R;
@@ -40,8 +42,41 @@ public class Dealer {
         questions = new ArrayList<>();
         answers = new ArrayList<>();
         dummy = new Player(-1, null, false);
+        session = new RiffleSession();
+        URL = session.getDomain();
 
         //TODO register all calls with WAMPWrapper
+        session.register("receiveCard");
+        session.register("dealCard");
+        session.register("czarPick");
+        session.register("isCzar");
+        session.register("prepareGame");
+        session.register("setPlayers");
+        session.register("getNewHand");
+        session.register("getSubmitted");
+        session.register("getQuestion");
+        session.register("removePlayer");
+        session.register("receiveCard");
+        session.register("addPlayer");
+
+        //Exec call registers
+        session.register("findDealer");
+        session.register("getNewID");
+        session.register("addPoint");
+
+        /*  Micky's riffle calls
+
+        session.register("play");
+        session.register("pick");
+        session.register("leave");
+        session.register("answering");
+        session.register("picking");
+        session.register("scoring");
+        session.register("left");
+        session.register("joined");
+        session.register("draw");
+
+         */
     }
 
     public void prepareGame(){
@@ -65,6 +100,13 @@ public class Dealer {
 
     public boolean full(){
         return (getGameSize() + 1 > this.ROOMCAP);
+    }
+
+    //Overloaded for damouse
+    public String dealCard(){
+        Card card = generateAnswer();
+        inPlay.add(card);
+        return card.getText();
     }
 
     //when players send cards to dealer
@@ -201,5 +243,10 @@ public class Dealer {
         Collections.shuffle(answers);
         return answers.get(0);
     }//end generateCard method
+
+    //Not a fan
+    public Player[] getPlayers(){
+        return players.toArray(new Player[players.size()]);
+    }//
 
 }//end Dealer class
