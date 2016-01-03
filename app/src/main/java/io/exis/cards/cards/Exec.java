@@ -1,5 +1,8 @@
 package io.exis.cards.cards;
 
+import android.app.Activity;
+import android.content.SharedPreferences;
+
 import java.util.ArrayList;
 
 /**
@@ -27,16 +30,11 @@ public class Exec {
         dealers.remove(dealer);
     }
 
-/*    //adds player to given dealer
-    public static void addPlayer(Player player, Dealer dealer){
-        dealer.addPlayer(player);
-    }*/
-
     //finds a dealer of appropriate game not at max capacity
-    public static Dealer findDealer(boolean R){
+    public static Dealer findDealer(){
         //look for an open rating-appropriate dealer
         for(int i=0; i<dealers.size(); i++){
-            if(dealers.get(i).getRating() == R && !dealers.get(i).full()){
+            if(!dealers.get(i).full()){
                 return dealers.get(i);
             }
         }

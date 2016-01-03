@@ -12,4 +12,7 @@
     <string name="answer">ANSWERS GO HERE</string>
     <string name="room">ROOM NAME</string>
     <string name="info">Please select an age rating below.</string>
+    <string name="loading_questions">Loading Questions...</string>
+    <string name="loading_answers">Loading Answers...</string>
+    <string name="finished">Finished loading cards!</string>
 </resources>

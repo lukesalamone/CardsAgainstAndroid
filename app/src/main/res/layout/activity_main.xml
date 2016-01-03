@@ -51,31 +51,6 @@
         android:textColor="#555"
         android:textSize="40sp" />
 
-    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="49dp"
-        android:id="@+id/radioGroup">
-        <RadioButton android:id="@+id/radio_pg13"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/pg13"
-            android:onClick="onRadioButtonClicked"
-            android:layout_gravity="center_vertical"
-            android:layout_marginRight="50dp"
-            android:checked="false"
-            android:backgroundTint="#00a4e1" />
-        <RadioButton android:id="@+id/radio_adult"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/adult"
-            android:onClick="onRadioButtonClicked"
-            android:backgroundTint="#00a4e1" />
-    </RadioGroup>
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -85,5 +60,17 @@
         android:layout_below="@+id/button"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp" />
+
+    <Switch
+        android:theme="@android:style/Theme.Holo.Light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/onlineSwitch"
+        android:textOn="Online"
+        android:textOff="Offline"
+        android:layout_below="@+id/your_points"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="45dp"
+        android:onClick="onSwitchClicked"/>
 
 </RelativeLayout>

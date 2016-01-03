@@ -4,16 +4,16 @@ import android.util.Log;
 import org.jdeferred.android.AndroidDeferredManager;
 import org.jdeferred.android.DeferredAsyncTask;
 import java.util.ArrayList;
-
+import java.util.function.*;
 /*
  * RiffleSession.java
  *
- * Let's try this again with jdeferred.
+ * Created by Luke Salamone on 12/1/2015.
  *
  * Brokers interactions between server-side exec & dealer
- * and client players.
+ * and client players. Implements thin wrapper around WAMP calls
  *
- * Adapted from https://github.com/jdeferred by Luke Salamone on 12/1/2015.
+ * Deferred calls adapted from https://github.com/jdeferred
  *
  * Copyright © 2015 exis. All rights reserved.
  *
@@ -24,6 +24,7 @@ public class RiffleSession {
     private WAMPWrapper WAMP;
     protected AndroidDeferredManager manager;
     String URI;
+    Player player;
     Dealer dealer;
 
     //Constructor
@@ -144,20 +145,21 @@ public class RiffleSession {
         call("setPlayers");
     }
 
-    /************  damouse's Methods  **************/
+    /************  damouse's methods  **************/
     //Player calls at beginning of game to find dealer. Returns new hand.
     public Object[] play(){
         String[] cards;
         //Dealer dealer = Exec.findDealer(true);
         dealer = (Dealer) call("findDealer", false);
-        String roomName = Integer.toString( dealer.dealerID );
-        Player player = new Player(URI, 0, false);
+        String roomName = Integer.toString(dealer.dealerID);
+        player = new Player(URI, 0, false);
         addPlayer(player);
 
+        //Returns: string[] cards, Player[] players, string state, string roomName
         return new Object[]{
                 getNewHand(player),
                 dealer.getPlayers(),
-                "",                                     //TODO
+                "answering",                                     //TODO
                 roomName};
     }//end play method
 
@@ -165,7 +167,6 @@ public class RiffleSession {
     public Object[] pick(String card){
         String[] cards;
         String roomName = Exec.findDealer(true).toString();
-        Player player = new Player(URI, 0, false);
         call("receiveCard", new Card(0, card, 'a', 0));
 
         return new Object[]{
@@ -177,32 +178,36 @@ public class RiffleSession {
 
     //player calls upon leaving
     public void leave(){
-
+        //call Dealer::removePlayer()
+        call("removePlayer", player);
     }//end leave method
 
     //dealer pub
     public void answering(Player czar, String question, int duration){
-
+        WAMP.publish("answering", czar, question, duration);
     }
 
     //dealer pub
     public void picking(String[] answers, int duration){
-
+        WAMP.publish("picking", answers, duration);
     }
 
+    //dealer pub
     public void scoring(Player winner, String winningCard, int duration){
-
+        WAMP.publish("scoring", winner, winningCard, duration);
     }
 
+    //dealer pub
     public void left(Player leavingPlayer){
-
+        WAMP.publish("left", leavingPlayer);
     }
 
+    //dealer pub
     public void joined(Player newPlayer){
-
+        WAMP.publish("joined", newPlayer);
     }
 
-    //called by player at beginning at round
+    //called by player at beginning of round
     public String[] draw(){
         return (String[]) call("dealCard");
     }//end draw method
@@ -216,6 +221,10 @@ public class RiffleSession {
         WAMP.register(method);
     }//end register method
 
+    public void subscribe(String procedure){
+        WAMP.subscribe(procedure);
+    }//end subscribe method
+
     private Object call(String method, Object...args){
         final ValueHolder<Object> result = new ValueHolder<>();
 
@@ -225,13 +234,12 @@ public class RiffleSession {
                 protected String doInBackgroundSafe(Void... nil) throws Exception {
                     //insert RPC call here
                     result.set(WAMP.call(method, args));
-                    Log.i("RiffleSession::call()", "done calling " + method + "method");
+                    Log.i("RiffleSession::call()", "now calling " + method + "method");
 
                     return "Done";
                 }
-            }).done(res -> {
-                //do nothing
-            }).waitSafely();
+            }).done(result::set)
+              .waitSafely();
         } catch (InterruptedException e) {
             // Do nothing
         }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import android.content.Context;
+import android.os.CountDownTimer;
 import android.util.Log;
 
 /**
@@ -24,7 +25,8 @@ public class Dealer {
     //keep track of cards not in play
     private ArrayList<Card> questions;
     private ArrayList<Card> answers;
-    private Player dummy;                                   //dummy player for dealing dummy cards
+
+    private Player winner;                                   //winner
     private Card questionCard;                              //always know question card
     boolean rating;                                         //pg13 or R
     int dealerID;
@@ -41,42 +43,41 @@ public class Dealer {
         forCzar = new ArrayList<>();
         questions = new ArrayList<>();
         answers = new ArrayList<>();
-        dummy = new Player(-1, null, false);
         session = new RiffleSession();
         URL = session.getDomain();
 
         //TODO register all calls with WAMPWrapper
-        session.register("receiveCard");
-        session.register("dealCard");
-        session.register("czarPick");
-        session.register("isCzar");
-        session.register("prepareGame");
-        session.register("setPlayers");
-        session.register("getNewHand");
-        session.register("getSubmitted");
-        session.register("getQuestion");
-        session.register("removePlayer");
-        session.register("receiveCard");
-        session.register("addPlayer");
+        if(GameActivity.online) {
+            session.register("receiveCard");
+            session.register("dealCard");
+            session.register("czarPick");
+            session.register("isCzar");
+            session.register("prepareGame");
+            session.register("setPlayers");
+            session.register("getNewHand");
+            session.register("getSubmitted");
+            session.register("getQuestion");
+            session.register("removePlayer");
+            session.register("receiveCard");
+            session.register("addPlayer");
 
-        //Exec call registers
-        session.register("findDealer");
-        session.register("getNewID");
-        session.register("addPoint");
+            //Exec call registers
+            session.register("findDealer");
+            session.register("getNewID");
+            session.register("addPoint");
 
-        /*  Micky's riffle calls
+            //damouse's riffle calls
 
-        session.register("play");
-        session.register("pick");
-        session.register("leave");
-        session.register("answering");
-        session.register("picking");
-        session.register("scoring");
-        session.register("left");
-        session.register("joined");
-        session.register("draw");
-
-         */
+            session.register("play");
+            session.register("pick");
+            session.register("leave");
+            session.register("answering");
+            session.register("picking");
+            session.register("scoring");
+            session.register("left");
+            session.register("joined");
+            session.register("draw");
+        }
     }
 
     public void prepareGame(){
@@ -244,9 +245,53 @@ public class Dealer {
         return answers.get(0);
     }//end generateCard method
 
-    //Not a fan
+    //Not a fan of this method
     public Player[] getPlayers(){
         return players.toArray(new Player[players.size()]);
-    }//
+    }//end getPlayers method
+
+    public Player getWinner(){
+        return winner;
+    }//end getWinner method
+
+    /*
+     * Every GameTimer must set timer type and next timer
+     */
+    public class GameTimer extends CountDownTimer {
+        private boolean finished;                       //whether the timer is finished
+        String type;
+        GameTimer next;
+
+        public GameTimer(long duration, long interval){
+            super(duration, interval);
+            finished = false;
+        }
+
+        @Override
+        public void onFinish(){
+            finished = true;
+            if(type.equals("picking")){
+                //give points at end of picking round?
+            }
+            next.start();
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished){
+            //do nothing
+        }//end onTick method
+
+        public void setNextTimer(GameTimer nextTimer){
+            next = nextTimer;
+        }
+
+        public void setType(String timerType){
+            type = timerType;
+        }
+
+        public boolean isFinished(){
+            return finished;
+        }
+    }//end GameTimer subclass
 
 }//end Dealer class

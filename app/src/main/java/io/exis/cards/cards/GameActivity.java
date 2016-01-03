@@ -2,6 +2,7 @@ package io.exis.cards.cards;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -22,11 +23,12 @@ import java.util.ArrayList;
  */
 public class GameActivity extends Activity {
 
+    public final String PREFS;
+    public int points;
     private Context context;
-    private boolean adult;
+    public static boolean online;
     private Player player;
     private Dealer dealer;
-    //private Chronometer chronometer;
     private ProgressBar progressBar;
     private RiffleSession riffle;
     private boolean selected;                                 //whether card has been selected
@@ -38,8 +40,13 @@ public class GameActivity extends Activity {
     TextView card5;
 
     public GameActivity(){
-        adult = MainActivity.adult;
+        PREFS = MainActivity.PREFS;
+        SharedPreferences settings = getSharedPreferences(PREFS, 0);
+        points = settings.getInt("points", 0);
+
+        online = MainActivity.online;
         context = MainActivity.getAppContext();
+
         riffle = new RiffleSession();                         //create unique riffle session
         int PID = riffle.getNewID();
 
@@ -54,11 +61,11 @@ public class GameActivity extends Activity {
                 false
         );
 
-        dealer = Exec.findDealer(adult);                        //gets a dealer for the player
+        dealer = Exec.findDealer();                        //gets a dealer for the player
         dealer.prepareGame();                                   //load questions and answers
         dealer.addPlayer(player);                               //adds player to dealer
 
-        //damouse's method
+        //damouse's scheme
         Object[] playObject = riffle.play();
         String[] hand = (String[]) playObject[0];
         Player[] players = (Player[]) playObject[1];
@@ -95,10 +102,39 @@ public class GameActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        playAGame();
-    }
+        riffle.subscribe("answering");
+        riffle.subscribe("picking");
+        riffle.subscribe("scoring");
 
-    private void playAGame(){
+        if(online){
+            playOnlineGame();
+        } else {
+            playOfflineGame();
+        }
+    }//end onResume method
+
+    @Override
+    public void onPause(){
+        super.onPause();
+
+        //save points to disk
+        SharedPreferences settings = getSharedPreferences(PREFS, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt("points", points);
+        editor.apply();
+    }//end onPause method
+
+    private void playOfflineGame(){
+        selected = false;
+        player.setCzar(dealer.isCzar(player));
+        player.setHand(dealer.getNewHand(player));
+        dealer.setPlayers();
+        setQuestion();                          //draw question card
+
+
+    }//end playOfflineGame method
+
+    private void playOnlineGame(){
         selected = false;
         player.setCzar(dealer.isCzar(player));
         player.setHand(dealer.getNewHand(player));
@@ -144,7 +180,7 @@ public class GameActivity extends Activity {
     //creates and runs 15 second waiting timer
     private void dummyTimer(){
         GameTimer dummy = new GameTimer(15000, 1000);
-        dummy.setType(true);
+        dummy.setType(true);                            //waiting timer type
         dummy.start();
     }
 
@@ -259,7 +295,10 @@ public class GameActivity extends Activity {
                     player.addCard(newCard);
                 }
             }
-            Exec.addPoint(player);                              //give point to winner
+            Player winner = dealer.getWinner();
+            if(winner != null && winner.getPlayerID() == player.getPlayerID()){
+                points++;
+            }
             player.setCzar(dealer.isCzar(player));              //update whether player is czar
         }
 

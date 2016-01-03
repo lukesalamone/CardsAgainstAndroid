@@ -3,6 +3,7 @@ package io.exis.cards.cards;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import org.json.JSONObject;
@@ -24,7 +26,9 @@ public class MainActivity extends Activity {
     static final String CONTENT_RATING = "contentRating";
     static final String QUESTION_CARDS = "questionCards";
     static final String ANSWER_CARDS = "answerCards";
-    public static boolean adult = false;
+    public static final String PREFS = "prefsFile";
+    public int points;
+    public static boolean online = false;
     private static Context context;
     private static ArrayList<Card> answers;
     private static ArrayList<Card> questions;
@@ -32,14 +36,20 @@ public class MainActivity extends Activity {
     private static Typeface LibSansBold;
     private static Typeface LibSansItalic;
 
+    private boolean finishedLoading;
+
     Button gameButton;
     TextView infoText;
+    TextView pointsText;
+    Switch onlineSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         MainActivity.context = getApplicationContext();
+
+        finishedLoading = false;
 
         //set typefaces
         LibSans = Typeface.createFromAsset(getAssets(),"LiberationSans-Regular.ttf");
@@ -50,13 +60,11 @@ public class MainActivity extends Activity {
         gameButton.setTypeface(LibSansBold);
         infoText = (TextView) findViewById(R.id.info);
         infoText.setTypeface(LibSansItalic);
+        pointsText = (TextView) findViewById(R.id.your_points);
+        onlineSwitch = (Switch) findViewById(R.id.onlineSwitch);
+        onlineSwitch.setTypeface(LibSans);
 
-        if (savedInstanceState != null && savedInstanceState.getBoolean(CONTENT_RATING)) {
-            adult = savedInstanceState.getBoolean(CONTENT_RATING);
-        } else {
-            gameButton.setEnabled(false);
-        }
-
+        gameButton.setEnabled(false);
         setPoints();
     }
 
@@ -94,41 +102,33 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onStop(){
+        super.onStop();
+
+
+    }//end onStop method
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        // The activity is about to be destroyed.
     }
 
-    public void onRadioButtonClicked(View view){
-        boolean checked = ((RadioButton) view).isChecked();
-        switch(view.getId()) {
-            case R.id.radio_pg13:
-                if (checked) {
-                    adult = false;
-                    //load PG-13 cards
-                    infoText.setText("Loading Questions...");
-                    questions = Card.getQuestions(adult);
-                    infoText.setText("Loading Answers...");
-                    answers = Card.getAnswers(adult);
-                    infoText.setText("Finished loading cards!");
-                    Log.i("MainActivity", "Finished loading cards!");
-                    break;
-                }
-            case R.id.radio_adult:
-                if (checked) {
-                    adult = true;
-                    //load R-rated cards
-                    infoText.setText("Loading Questions...");
-                    questions = Card.getQuestions(adult);
-                    infoText.setText("Loading Answers...");
-                    answers = Card.getAnswers(adult);
-                    infoText.setText("Finished loading cards!");
-                    Log.i("MainActivity", "Finished loading cards!");
-                    break;
-                }
+    public void onSwitchClicked(View view){
+        online = ((Switch) view).isChecked();
+
+        if(!finishedLoading) {
+            infoText.setText(R.string.loading_questions);
+            questions = Card.getQuestions(false);
+            infoText.setText(R.string.loading_answers);
+            answers = Card.getAnswers(false);
+            infoText.setText(R.string.finished);
+            Log.i("MainActivity", "Finished loading cards!");
+
+            finishedLoading = true;
+
+            gameButton.setEnabled(true);
+            gameButton.setTextColor(Color.parseColor("#ffffff"));
         }
-        gameButton.setEnabled(true);
-        gameButton.setTextColor(Color.parseColor("#ffffff"));
     }//end onRadioButtonClicked method
 
     public static Context getAppContext(){
@@ -154,16 +154,12 @@ public class MainActivity extends Activity {
     }
 
     /*
-     * @TODO
      * Set points to previously saved value
-     *
      */
     private void setPoints(){
-        // 1. Restore from network
+        SharedPreferences settings = getSharedPreferences(PREFS, 0);
+        points = settings.getInt("points", 0);
 
-        // 2. Display correct number in activity
+        pointsText.setText(points);
     }
-
-
-
 }

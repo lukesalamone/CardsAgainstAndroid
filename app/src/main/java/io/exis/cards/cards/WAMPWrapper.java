@@ -9,13 +9,9 @@ import ws.wamp.jawampa.transport.netty.NettyWampClientConnectorProvider;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-import java.io.IOException;
-import java.net.URI;
+import java.util.function.*;
 
 import rx.Subscription;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 import ws.wamp.jawampa.ApplicationError;
 import ws.wamp.jawampa.Request;
@@ -85,8 +81,8 @@ public class WAMPWrapper {
     /*
      * Return types cannot be guaranteed!
      */
-    public void publish(String procedure, Object...args){
-        app.publish(procedure, args)
+    public void publish(String topic, Object...args){
+        app.publish(topic, args)
                 .subscribe(
                         publicationId -> { /* Event was published */ },
                         err -> { /* Error during publication */});
@@ -140,14 +136,17 @@ public class WAMPWrapper {
     /*
      * Cannot guarantee return types!
      */
+    @SuppressWarnings("unchecked")
     public Object call(String procedure, Object...args){
         //TODO
         Object obj = null;
 
+        //calls WampClient::call
         Observable result = app.call(procedure, args);
         // Subscribe for the result
         // onNext will be called in case of success with a String value
         // onError will be called in case of errors with a Throwable
+
         result.subscribe((response) -> call(procedure, args),
                 System.err::println);
         return obj;
