@@ -9,7 +9,7 @@ import ws.wamp.jawampa.transport.netty.NettyWampClientConnectorProvider;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-import java.util.function.*;
+//import java.util.function.*;
 
 import rx.Subscription;
 

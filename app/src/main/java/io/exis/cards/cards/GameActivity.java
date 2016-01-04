@@ -12,6 +12,8 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.content.Context;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 
 /**
@@ -32,12 +34,16 @@ public class GameActivity extends Activity {
     private ProgressBar progressBar;
     private RiffleSession riffle;
     private boolean selected;                                 //whether card has been selected
+    private Card chosen;
+    private ArrayList<Card> forCzar;
+    private String phase;
 
     TextView card1;
     TextView card2;
     TextView card3;
     TextView card4;
     TextView card5;
+    TextView infoText;
 
     public GameActivity(){
         PREFS = MainActivity.PREFS;
@@ -88,6 +94,8 @@ public class GameActivity extends Activity {
         card4.setTypeface(MainActivity.getTypeface(""));
         card5 = (TextView) findViewById(R.id.card5);
         card5.setTypeface(MainActivity.getTypeface(""));
+        infoText = (TextView) findViewById(R.id.room_id);
+        infoText.setTypeface(MainActivity.getTypeface("LibSansItalic"));
 
         progressBar = (ProgressBar) findViewById(R.id.progress);
     }
@@ -124,6 +132,13 @@ public class GameActivity extends Activity {
         editor.apply();
     }//end onPause method
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //riffle.leave(player);
+        dealer.removePlayer(player);
+    }
+
     private void playOfflineGame(){
         selected = false;
         player.setCzar(dealer.isCzar(player));
@@ -131,7 +146,9 @@ public class GameActivity extends Activity {
         dealer.setPlayers();
         setQuestion();                          //draw question card
 
-
+        GameTimer timer = new GameTimer(15000, 1000);
+        dealer.start();                         //start dealer's timer
+        timer.start();
     }//end playOfflineGame method
 
     private void playOnlineGame(){
@@ -141,48 +158,10 @@ public class GameActivity extends Activity {
         dealer.setPlayers();
         setQuestion();                          //draw question card
 
-        if(!player.isCzar()){
-            Log.i("playGame", "player is not czar");
-
-            //15 second timer for submission
-            GameTimer submissionTimer = new GameTimer(15000, 1000);
-
-            //default to submitting first card
-            submissionTimer.setChosen(player.getHand().get(0));
-            submissionTimer.start();
-
-            //sexy smooth progress bar
-            //stackoverflow.com/questions/6097795/android-make-a-progress-bar-update-smoothly
-            if(android.os.Build.VERSION.SDK_INT >= 11){
-                // will update the "progress" propriety of seekbar until it reaches progress
-                ObjectAnimator animation = ObjectAnimator.ofInt(progressBar,
-                        "progress",
-                        progressBar.getMax(), 0);
-                animation.setDuration(15000);
-                animation.setInterpolator(new DecelerateInterpolator());
-                animation.start();
-            }
-        }//end submission case
-
-        if(player.isCzar()) {
-            dummyTimer();
-            final ArrayList<Card> submitted = dealer.getSubmitted();
-
-            GameTimer czarTimer = new GameTimer(15000, 1000);
-            czarTimer.setChosen(submitted.get(0));
-            czarTimer.start();
-        }//end czar case
-
-        Exec.addPoint(player);                          //give point to winner
-        player.setCzar(dealer.isCzar(player));          //update whether player is czar
+        GameTimer timer = new GameTimer(15000, 1000);
+        dealer.start();                         //start dealer's timer
+        timer.start();
     }//end playGame method
-
-    //creates and runs 15 second waiting timer
-    private void dummyTimer(){
-        GameTimer dummy = new GameTimer(15000, 1000);
-        dummy.setType(true);                            //waiting timer type
-        dummy.start();
-    }
 
     private void setQuestion(){
         Card card = dealer.getQuestion();
@@ -193,6 +172,7 @@ public class GameActivity extends Activity {
         textView.setTypeface(MainActivity.getTypeface("LibSansBold"));
     }//end setQuestion method
 
+    //Sets card faces to answers
     private void showCards(){
         //ArrayList<Card> hand = riffle.getHand(player.getPlayerID());
         ArrayList<Card> hand = player.getHand();
@@ -207,40 +187,33 @@ public class GameActivity extends Activity {
         }
     }//end setAnswers method
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        //riffle.leave(player);
-        dealer.removePlayer(player);
-    }
-
     public void submitCard1(View view){
-        dealer.receiveCard(player.getHand().get(0));
+        dealer.pick(player, player.getHand().get(0));
         //set background colors
         setBackgrounds(1, view);
         selected = true;
     }
 
     public void submitCard2(View view){
-        dealer.receiveCard(player.getHand().get(1));
+        dealer.pick(player, player.getHand().get(1));
         setBackgrounds(2, view);
         selected = true;
     }
 
     public void submitCard3(View view){
-        dealer.receiveCard(player.getHand().get(2));
+        dealer.pick(player, player.getHand().get(2));
         setBackgrounds(3, view);
         selected = true;
     }
 
     public void submitCard4(View view){
-        dealer.receiveCard(player.getHand().get(3));
+        dealer.pick(player, player.getHand().get(3));
         setBackgrounds(4, view);
         selected = true;
     }
 
     public void submitCard5(View view){
-        dealer.receiveCard(player.getHand().get(4));
+        dealer.pick(player, player.getHand().get(4));
         setBackgrounds(5, view);
         selected = true;
     }
@@ -264,42 +237,78 @@ public class GameActivity extends Activity {
         }
     }//end setBackgrounds method
 
-    public class GameTimer extends CountDownTimer{
-        private boolean waiting;                        //allows us to create dummy timer
-        private boolean finished;                       //whether the timer is finished
-        private Card chosen;
+    private void setCzarCards(ArrayList<Card> forCzar){
+        String str;
+        int resID;
+        TextView view;
+        for(int i=1; i<=5; i++){
+            str = "card" + i;
+            resID = context.getResources().getIdentifier(str, "id", context.getPackageName());
+            view = (TextView) findViewById(resID);
+            view.setText(forCzar.get(i-1).getText());
+        }
+    }
+
+    private class GameTimer extends CountDownTimer{
+        private GameTimer next;
 
         public GameTimer(long startTime, long interval){
             super(startTime, interval);
-            finished = false;
-            waiting = false;
         }
 
         @Override
         public void onFinish(){
-            finished = true;
             progressBar.setProgress(0);
 
-            if(!waiting){
-                //if player is idle
-                if(!selected){
-                    submitCard1(card1);
-                }
-
-                if(player.isCzar()){
-                    //submit chosen card
-                    dealer.czarPick(chosen);
-                }else{
-                    dealer.receiveCard(chosen);
-                    Card newCard = dealer.dealCard(player);
-                    player.addCard(newCard);
-                }
-            }
-            Player winner = dealer.getWinner();
-            if(winner != null && winner.getPlayerID() == player.getPlayerID()){
-                points++;
-            }
-            player.setCzar(dealer.isCzar(player));              //update whether player is czar
+            switch(phase){
+                case "answering":                           //next phase will be picking
+                    if(player.isCzar()){
+                        infoText.setText(R.string.answeringInfo);
+                        forCzar = dealer.getCardsForCzar();
+                        chosen = forCzar.get(0);            //default submit first card
+                        setCzarCards(forCzar);
+                    }else{
+                        infoText.setText(R.string.pickingInfo);
+                        if(!selected){
+                            submitCard1(card1);
+                            player.removeCard(player.getHand().get(0));
+                        }else{
+                            dealer.pick(player, chosen);
+                            player.removeCard(chosen);
+                        }
+                    }
+                    selected = false;
+                    phase = "picking";
+                    setNextTimer();
+                    break;
+                case "picking":                             //next phase will be scoring
+                    infoText.setText(R.string.scoringInfo);
+                    if(player.isCzar()){
+                        dealer.pick(player, chosen);
+                    }
+                    phase = "scoring";
+                    setNextTimer();
+                    break;
+                case "scoring":                                 //next phase will be answering
+                    player.setCzar(dealer.isCzar(player));      //update whether player is czar
+                    setQuestion();                              //update question card
+                    player.addCard(dealer.drawCard(player));
+                    if(player.isCzar()){
+                        infoText.setText(R.string.playersPickingInfo);
+                    }else{
+                        infoText.setText(R.string.answeringInfo);
+                    }
+                    Player winner = dealer.getWinner();             //give point if player is winner
+                    if(winner != null && winner.getPlayerID() == player.getPlayerID()){
+                        Toast.makeText(context, "You won this round!", Toast.LENGTH_SHORT).show();
+                        points++;
+                    }
+                    phase = "answering";
+                    setNextTimer();
+                    break;
+            }//end switch
+            setNextTimer();
+            next.start();
         }
 
         @Override
@@ -312,16 +321,9 @@ public class GameActivity extends Activity {
             }
         }//end onTick method
 
-        public void setType(boolean isWaiting){
-            waiting = isWaiting;
-        }
-
-        public void setChosen(Card card){
-            chosen = card;
-        }
-
-        public boolean isFinished(){
-            return finished;
+        private void setNextTimer(){
+            //lets keep this bad boy synchronized
+            next = new GameTimer(dealer.getTimeRemainingInPhase(), 1000);
         }
     }//end GameTimer subclass
 }//end GameActivity class

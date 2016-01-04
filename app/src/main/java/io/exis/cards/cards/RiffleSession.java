@@ -4,7 +4,7 @@ import android.util.Log;
 import org.jdeferred.android.AndroidDeferredManager;
 import org.jdeferred.android.DeferredAsyncTask;
 import java.util.ArrayList;
-import java.util.function.*;
+//import java.util.function.*;
 /*
  * RiffleSession.java
  *
@@ -166,7 +166,7 @@ public class RiffleSession {
     //Tell the Dealer the Player picked a card
     public Object[] pick(String card){
         String[] cards;
-        String roomName = Exec.findDealer(true).toString();
+        String roomName = "Room " + Exec.findDealer().getID();
         call("receiveCard", new Card(0, card, 'a', 0));
 
         return new Object[]{
