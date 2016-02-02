@@ -6,16 +6,14 @@ import rx.Observable;
 import ws.wamp.jawampa.WampClient;
 import ws.wamp.jawampa.WampClientBuilder;
 import ws.wamp.jawampa.transport.netty.NettyWampClientConnectorProvider;
-
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
-//import java.util.function.*;
-
-import rx.Subscription;
-
 import ws.wamp.jawampa.ApplicationError;
 import ws.wamp.jawampa.Request;
 import ws.wamp.jawampa.connection.IWampConnectorProvider;
+
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+import rx.Subscription;
 
 /*
  * RiffleSession.java
@@ -73,11 +71,6 @@ public class WAMPWrapper {
         }
     }
 
-    public void main(String[] args){
-        String s = "a string";
-        Log.i("info", "i is of type " + s.getClass());
-    }
-
     /*
      * Return types cannot be guaranteed!
      */
@@ -88,9 +81,9 @@ public class WAMPWrapper {
                         err -> { /* Error during publication */});
     }//end publish method
 
-    /*
+/*    *//*
      * Client subscribes to server procedure
-     */
+     *//*
     public void subscribe(String procedure, Object...args){
         app.statusChanged()
                 .subscribe((WampClient.State newState) -> {
@@ -100,7 +93,7 @@ public class WAMPWrapper {
                                 // and the session was established
                             } else if (newState instanceof WampClient.DisconnectedState) {
                                 Log.i("WAMPWrapper::subscribe", "Disconnected");
-                                // Client got disconnected from the remoute router
+                                // Client got disconnected from the remote router
                                 // or the last possible connect attempt failed
                             } else if (newState instanceof WampClient.ConnectingState) {
                                 Log.i("WAMPWrapper::subscribe", "Connecting...");
@@ -108,11 +101,11 @@ public class WAMPWrapper {
                             }
                         }
                 );
-    }//end subscribe method
-
-    /*
+    }//end subscribe method*/
+/*
+    *//*
      * As of now, we cannot guarantee return types.
-     */
+     *//*
     public void register(String procedure){
         Subscription proc = app.registerProcedure(procedure).subscribe(
                 request -> {
@@ -131,7 +124,7 @@ public class WAMPWrapper {
                 System.err::println
         );
         subscriptionList.add(proc);
-    }//end register method
+    }//end register method*/
 
     /*
      * Cannot guarantee return types!

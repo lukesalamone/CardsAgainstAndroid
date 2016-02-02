@@ -10,14 +10,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.TextView;
-
-import org.json.JSONObject;
-
-import java.lang.reflect.Array;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -27,7 +21,7 @@ public class MainActivity extends Activity {
     static final String QUESTION_CARDS = "questionCards";
     static final String ANSWER_CARDS = "answerCards";
     public static final String PREFS = "prefsFile";
-    public int points;
+    public static int points;
     public static boolean online = false;
     private static Context context;
     private static ArrayList<Card> answers;
@@ -50,6 +44,7 @@ public class MainActivity extends Activity {
         MainActivity.context = getApplicationContext();
 
         finishedLoading = false;
+        online = false;
 
         //set typefaces
         LibSans = Typeface.createFromAsset(getAssets(),"LiberationSans-Regular.ttf");
@@ -64,7 +59,8 @@ public class MainActivity extends Activity {
         onlineSwitch = (Switch) findViewById(R.id.onlineSwitch);
         onlineSwitch.setTypeface(LibSans);
 
-        gameButton.setEnabled(false);
+        onlineSwitch.setOnClickListener(v -> online = !online);
+
         setPoints();
     }
 
@@ -95,17 +91,17 @@ public class MainActivity extends Activity {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
 
-        /*
-        savedInstanceState.putInt(QUESTION_CARDS, questions);
-        savedInstanceState.putInt(ANSWER_CARDS, answers);
-        */
+        savedInstanceState.putInt("points", points);
     }
 
     @Override
     protected void onStop(){
         super.onStop();
 
-
+        SharedPreferences settings = getSharedPreferences(PREFS, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt("points", points);
+        editor.apply();
     }//end onStop method
 
     @Override
@@ -114,7 +110,7 @@ public class MainActivity extends Activity {
     }
 
     public void onSwitchClicked(View view){
-        online = ((Switch) view).isChecked();
+        //online = ((Switch) view).isChecked();
 
         if(!finishedLoading) {
             infoText.setText(R.string.loading_questions);
@@ -125,8 +121,6 @@ public class MainActivity extends Activity {
             Log.i("MainActivity", "Finished loading cards!");
 
             finishedLoading = true;
-
-            gameButton.setEnabled(true);
             gameButton.setTextColor(Color.parseColor("#ffffff"));
         }
     }//end onRadioButtonClicked method
@@ -157,9 +151,11 @@ public class MainActivity extends Activity {
      * Set points to previously saved value
      */
     private void setPoints(){
-        SharedPreferences settings = getSharedPreferences(PREFS, 0);
-        points = settings.getInt("points", 0);
+        points = getSharedPreferences(PREFS, 0).getInt("points", 0);
 
-        pointsText.setText(points);
+        String text = String.valueOf(points);
+        Log.i("points", text);
+
+        pointsText.setText(text);
     }
 }

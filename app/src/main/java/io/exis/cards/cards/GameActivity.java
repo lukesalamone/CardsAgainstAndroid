@@ -47,8 +47,7 @@ public class GameActivity extends Activity {
 
     public GameActivity(){
         PREFS = MainActivity.PREFS;
-        SharedPreferences settings = getSharedPreferences(PREFS, 0);
-        points = settings.getInt("points", 0);
+        points = MainActivity.points;
 
         online = MainActivity.online;
         context = MainActivity.getAppContext();
@@ -131,6 +130,16 @@ public class GameActivity extends Activity {
         editor.putInt("points", points);
         editor.apply();
     }//end onPause method
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+
+        SharedPreferences settings = getSharedPreferences(PREFS, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt("points", points);
+        editor.apply();
+    }//end onStop method
 
     @Override
     protected void onDestroy() {

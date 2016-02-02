@@ -21,7 +21,7 @@ import java.util.ArrayList;
 @SuppressWarnings("unused")
 public class RiffleSession {
 
-    private WAMPWrapper WAMP;
+    //private WAMPWrapper WAMP;
     protected AndroidDeferredManager manager;
     String URI;
     Player player;
@@ -31,14 +31,14 @@ public class RiffleSession {
     RiffleSession() {
         URI = "ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws";
         manager = new AndroidDeferredManager();
-        WAMP = new WAMPWrapper(URI);
+        //WAMP = new WAMPWrapper(URI);                                              //TODO
     }
 
     //Favoring this constructor
     public RiffleSession(String domain){
         URI = domain;
         manager = new AndroidDeferredManager();
-        WAMP = new WAMPWrapper(URI);
+        //WAMP = new WAMPWrapper(URI);                                              //TODO
     }
 
     public String getDomain(){
@@ -184,27 +184,27 @@ public class RiffleSession {
 
     //dealer pub
     public void answering(Player czar, String question, int duration){
-        WAMP.publish("answering", czar, question, duration);
+        //WAMP.publish("answering", czar, question, duration);                      //TODO
     }
 
     //dealer pub
     public void picking(String[] answers, int duration){
-        WAMP.publish("picking", answers, duration);
+        //WAMP.publish("picking", answers, duration);                               //TODO
     }
 
     //dealer pub
     public void scoring(Player winner, String winningCard, int duration){
-        WAMP.publish("scoring", winner, winningCard, duration);
+        //WAMP.publish("scoring", winner, winningCard, duration);                   //TODO
     }
 
     //dealer pub
     public void left(Player leavingPlayer){
-        WAMP.publish("left", leavingPlayer);
+        //WAMP.publish("left", leavingPlayer);                                      //TODO
     }
 
     //dealer pub
     public void joined(Player newPlayer){
-        WAMP.publish("joined", newPlayer);
+        //WAMP.publish("joined", newPlayer);                                        //TODO
     }
 
     //called by player at beginning of round
@@ -218,11 +218,11 @@ public class RiffleSession {
      * Allows Dealer and Exec to register their calls.
      */
     public void register(String method){
-        WAMP.register(method);
+//        WAMP.register(method);                                                    //TODO
     }//end register method
 
     public void subscribe(String procedure){
-        WAMP.subscribe(procedure);
+//        WAMP.subscribe(procedure);                                                //TODO
     }//end subscribe method
 
     private Object call(String method, Object...args){
@@ -233,7 +233,7 @@ public class RiffleSession {
                 @Override
                 protected String doInBackgroundSafe(Void... nil) throws Exception {
                     //insert RPC call here
-                    result.set(WAMP.call(method, args));
+                    //result.set( WAMP.call(method, args) );                        //TODO
                     Log.i("RiffleSession::call()", "now calling " + method + "method");
 
                     return "Done";
