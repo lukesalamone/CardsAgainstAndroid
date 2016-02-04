@@ -52,7 +52,7 @@ public class GameActivity extends Activity {
         online = MainActivity.online;
         context = MainActivity.getAppContext();
 
-        riffle = new RiffleSession();                         //create unique riffle session
+        riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");                         //create unique riffle session
         int PID = riffle.getNewID();
 
         if(PID == 0 || PID == -1){

@@ -22,7 +22,7 @@ public class Player {
         playerID = ID;
         hand = cards;
         boolean isCzar = czar;
-        riffle = new RiffleSession();
+        riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
     }//end Player constructor
 
     //damouse's player object

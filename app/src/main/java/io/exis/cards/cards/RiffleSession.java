@@ -4,7 +4,10 @@ import android.util.Log;
 import org.jdeferred.android.AndroidDeferredManager;
 import org.jdeferred.android.DeferredAsyncTask;
 import java.util.ArrayList;
-//import java.util.function.*;
+import go.mantle.Mantle;
+import com.exis.riffle.Domain;
+import com.exis.riffle.Function;
+
 /*
  * RiffleSession.java
  *
@@ -26,27 +29,21 @@ public class RiffleSession {
     String URI;
     Player player;
     Dealer dealer;
-
-    //Constructor
-    RiffleSession() {
-        URI = "ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws";
-        manager = new AndroidDeferredManager();
-        //WAMP = new WAMPWrapper(URI);                                              //TODO
-    }
+    Domain app;
+    Function handler;
 
     //Favoring this constructor
     public RiffleSession(String domain){
         URI = domain;
         manager = new AndroidDeferredManager();
-        //WAMP = new WAMPWrapper(URI);                                              //TODO
+        app = new Domain("xs.damouse");
     }
 
-    public String getDomain(){
+    public String domain(){
         return URI;
     }
-    /*
-     * Call to Dealer::addPlayer
-     */
+
+    //Call to Dealer::addPlayer
     public void addPlayer(Player player){
         call("addPlayer", player);
     }
@@ -54,7 +51,7 @@ public class RiffleSession {
     /*
      * Call to Exec::addPoint
      */
-    public void addPoint(Player player){
+    public void addPoint(Player player) {
         call("addPoint", player);
     }
 
@@ -179,32 +176,32 @@ public class RiffleSession {
     //player calls upon leaving
     public void leave(){
         //call Dealer::removePlayer()
-        call("removePlayer", player);
+        call("/removePlayer", player);
     }//end leave method
 
     //dealer pub
     public void answering(Player czar, String question, int duration){
-        //WAMP.publish("answering", czar, question, duration);                      //TODO
+        app.publish("/answering", czar, question, duration);
     }
 
     //dealer pub
     public void picking(String[] answers, int duration){
-        //WAMP.publish("picking", answers, duration);                               //TODO
+        app.publish("/picking", answers, duration);
     }
 
     //dealer pub
     public void scoring(Player winner, String winningCard, int duration){
-        //WAMP.publish("scoring", winner, winningCard, duration);                   //TODO
+        app.publish("/scoring", winner, winningCard, duration);
     }
 
     //dealer pub
     public void left(Player leavingPlayer){
-        //WAMP.publish("left", leavingPlayer);                                      //TODO
+        app.publish("/left", leavingPlayer);
     }
 
     //dealer pub
     public void joined(Player newPlayer){
-        //WAMP.publish("joined", newPlayer);                                        //TODO
+        app.publish("/joined", newPlayer);
     }
 
     //called by player at beginning of round
@@ -214,26 +211,40 @@ public class RiffleSession {
 
     /***********  End damouse's Methods **********/
 
-    /*
-     * Allows Dealer and Exec to register their calls.
-     */
-    public void register(String method){
-//        WAMP.register(method);                                                    //TODO
+    //Allows Dealer and Exec to register their calls.
+    public void register(String procedure){
+        if(procedure.charAt(0) == '/'){
+            app.register(procedure);
+        }else{
+            app.register("/" + procedure);
+        }
     }//end register method
 
     public void subscribe(String procedure){
-//        WAMP.subscribe(procedure);                                                //TODO
+        if(procedure.charAt(0) == '/'){
+            app.subscribe(procedure, handler);
+        } else {
+            app.subscribe("/" + procedure, handler);
+        }
     }//end subscribe method
 
+    //TODO: app.call is void!
     private Object call(String method, Object...args){
         final ValueHolder<Object> result = new ValueHolder<>();
+        final String endpoint;
+
+        if(method.charAt(0) != '/'){
+            endpoint = "/" + method;
+        } else {
+            endpoint = method;
+        }
 
         try {
             manager.when(new DeferredAsyncTask<Void, Integer, String>() {
                 @Override
                 protected String doInBackgroundSafe(Void... nil) throws Exception {
                     //insert RPC call here
-                    //result.set( WAMP.call(method, args) );                        //TODO
+                    result.set( call(endpoint) );
                     Log.i("RiffleSession::call()", "now calling " + method + "method");
 
                     return "Done";
