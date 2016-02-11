@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -59,9 +60,11 @@ public class MainActivity extends Activity {
         onlineSwitch = (Switch) findViewById(R.id.onlineSwitch);
         onlineSwitch.setTypeface(LibSans);
 
-        onlineSwitch.setOnClickListener(v -> online = !online);
+        onlineSwitch.setOnClickListener(v ->
+            {online = !online;
+            onlineSwitch.toggle();});
 
-        setPoints();
+        //setPoints();
     }
 
     public void startGame(View view) {
@@ -91,17 +94,17 @@ public class MainActivity extends Activity {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
 
-        savedInstanceState.putInt("points", points);
+        //savedInstanceState.putInt("points", points);
     }
 
     @Override
     protected void onStop(){
         super.onStop();
 
-        SharedPreferences settings = getSharedPreferences(PREFS, 0);
+/*        SharedPreferences settings = getSharedPreferences(PREFS, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt("points", points);
-        editor.apply();
+        editor.apply();*/
     }//end onStop method
 
     @Override

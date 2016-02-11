@@ -11,7 +11,7 @@
     <string name="question">QUESTIONS GO HERE</string>
     <string name="answer">ANSWERS GO HERE</string>
     <string name="room">Choose a card</string>
-    <string name="info">Please choose network mode below.</string>
+    <string name="info">Network Mode</string>
     <string name="loading_questions">Loading Questions...</string>
     <string name="loading_answers">Loading Answers...</string>
     <string name="finished">Finished loading cards!</string>
@@ -19,4 +19,5 @@
     <string name="pickingInfo">Czar is picking</string>
     <string name="answeringInfo">Choose a card</string>
     <string name="playersPickingInfo">Players are submitting cards</string>
+    <string name="copyright">Copyright &#169; 2015-2016 Exis.io</string>
 </resources>

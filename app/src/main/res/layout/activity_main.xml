@@ -22,7 +22,9 @@
         android:id="@+id/your_score"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:layout_below="@+id/button"
+        android:layout_marginTop="60dp" />
 
     <TextView
         android:text="@string/your_score"
@@ -47,8 +49,8 @@
         android:layout_centerHorizontal="true"
         android:id="@+id/button"
         android:onClick="startGame"
-        android:background="@drawable/play_button"
-        android:textColor="#555"
+        android:background="#ffffff"
+        android:textColor="#000000"
         android:textSize="40sp" />
 
     <TextView
@@ -57,9 +59,9 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="@string/info"
         android:id="@+id/info"
-        android:layout_below="@+id/button"
+        android:layout_below="@+id/your_points"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="80dp" />
 
     <Switch
         android:theme="@android:style/Theme.Holo.Light"
@@ -68,9 +70,22 @@
         android:id="@+id/onlineSwitch"
         android:textOn="Online"
         android:textOff="Offline"
-        android:layout_below="@+id/your_points"
+        android:layout_below="@+id/info"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="45dp"
-        android:onClick="onSwitchClicked"/>
+        android:layout_marginTop="10dp"
+        android:onClick="onSwitchClicked"
+        android:enabled="false" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/copyright"
+        android:id="@+id/textView2"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentEnd="false"
+        android:textColorLink="#207bae"
+        android:autoLink="web" />
 
 </RelativeLayout>

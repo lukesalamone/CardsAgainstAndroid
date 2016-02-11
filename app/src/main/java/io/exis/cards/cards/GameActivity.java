@@ -25,7 +25,7 @@ import java.util.ArrayList;
  */
 public class GameActivity extends Activity {
 
-    public final String PREFS;
+    //public final String PREFS;
     public int points;
     private Context context;
     public static boolean online;
@@ -46,40 +46,49 @@ public class GameActivity extends Activity {
     TextView infoText;
 
     public GameActivity(){
-        PREFS = MainActivity.PREFS;
-        points = MainActivity.points;
+        Log.i("Game Activity", "entered constructor");
+        //PREFS = MainActivity.PREFS;
+        //points = MainActivity.points;
 
         online = MainActivity.online;
+        Log.i("Game Activity", "0");
         context = MainActivity.getAppContext();
 
-        riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");                         //create unique riffle session
+        Log.i("Game Activity", "1");
+        riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
         int PID = riffle.getNewID();
 
+        Log.i("Game Activity", "2");
         if(PID == 0 || PID == -1){
             Log.i("GameActivity", "problem with riffle.getNewID");
             PID = Exec.getNewID();
         }
 
+        Log.i("Game Activity", "3");
         player = new Player(
                 PID,
                 new ArrayList<Card>(),
                 false
         );
 
+        Log.i("Game Activity", "4");
         dealer = Exec.findDealer();                        //gets a dealer for the player
         dealer.prepareGame();                                   //load questions and answers
         dealer.addPlayer(player);                               //adds player to dealer
 
         //damouse's scheme
+        Log.i("Game Activity", "5");
         Object[] playObject = riffle.play();
         String[] hand = (String[]) playObject[0];
         Player[] players = (Player[]) playObject[1];
         String state = (String) playObject[2];
         String roomName = (String) playObject[3];
+        Log.i("Game activity", "leaving constructor");
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.i("Game activity", "entering onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
@@ -97,10 +106,12 @@ public class GameActivity extends Activity {
         infoText.setTypeface(MainActivity.getTypeface("LibSansItalic"));
 
         progressBar = (ProgressBar) findViewById(R.id.progress);
+        Log.i("Game activity", "leaving onCreate()");
     }
 
     @Override
     public void onStart(){
+        Log.i("Game activity", "entering onStart()");
         super.onStart();
         setQuestion();                              //set question TextView
         showCards();                                //populate answers TextViews
@@ -124,21 +135,21 @@ public class GameActivity extends Activity {
     public void onPause(){
         super.onPause();
 
-        //save points to disk
+/*        //save points to disk
         SharedPreferences settings = getSharedPreferences(PREFS, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt("points", points);
-        editor.apply();
+        editor.apply();*/
     }//end onPause method
 
     @Override
     protected void onStop(){
         super.onStop();
 
-        SharedPreferences settings = getSharedPreferences(PREFS, 0);
+/*        SharedPreferences settings = getSharedPreferences(PREFS, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt("points", points);
-        editor.apply();
+        editor.apply();*/
     }//end onStop method
 
     @Override

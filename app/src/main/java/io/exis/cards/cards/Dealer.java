@@ -45,7 +45,7 @@ public class Dealer {
         questions = new ArrayList<>();
         answers = new ArrayList<>();
         session = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-        URL = session.getDomain();
+        //URL = session.getDomain();
         phase = "answering";
 
         //TODO register all calls with WAMPWrapper
