@@ -60,9 +60,13 @@ public class MainActivity extends Activity {
         onlineSwitch = (Switch) findViewById(R.id.onlineSwitch);
         onlineSwitch.setTypeface(LibSans);
 
-        onlineSwitch.setOnClickListener(v ->
-            {online = !online;
-            onlineSwitch.toggle();});
+        infoText.setText(R.string.loading_questions);
+        questions = Card.getQuestions(false);
+        infoText.setText(R.string.loading_answers);
+        answers = Card.getAnswers(false);
+        infoText.setText(R.string.finished);
+
+        finishedLoading = true;
 
         //setPoints();
     }
@@ -113,19 +117,9 @@ public class MainActivity extends Activity {
     }
 
     public void onSwitchClicked(View view){
-        //online = ((Switch) view).isChecked();
-
-        if(!finishedLoading) {
-            infoText.setText(R.string.loading_questions);
-            questions = Card.getQuestions(false);
-            infoText.setText(R.string.loading_answers);
-            answers = Card.getAnswers(false);
-            infoText.setText(R.string.finished);
-            Log.i("MainActivity", "Finished loading cards!");
-
-            finishedLoading = true;
-            gameButton.setTextColor(Color.parseColor("#ffffff"));
-        }
+        Log.i("Main Activity", "toggle clicked");
+        online = !online;
+        onlineSwitch.toggle();
     }//end onRadioButtonClicked method
 
     public static Context getAppContext(){

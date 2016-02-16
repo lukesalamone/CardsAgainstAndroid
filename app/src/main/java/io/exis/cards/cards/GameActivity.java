@@ -51,12 +51,14 @@ public class GameActivity extends Activity {
         //points = MainActivity.points;
 
         online = MainActivity.online;
-        Log.i("Game Activity", "0");
         context = MainActivity.getAppContext();
 
-        Log.i("Game Activity", "1");
+        // TODO
+        //riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
+        //int PID = riffle.getNewID();
+
         riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-        int PID = riffle.getNewID();
+        int PID = Exec.getNewID();
 
         Log.i("Game Activity", "2");
         if(PID == 0 || PID == -1){

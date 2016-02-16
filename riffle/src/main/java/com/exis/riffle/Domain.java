@@ -15,7 +15,7 @@ public class Domain {
 
     /* Constructurs */
     public Domain(String name) {
-        mantleDomain = Mantle.NewDomain(name);
+        //mantleDomain = Mantle.NewDomain(name);
         app = new App();
     }
 

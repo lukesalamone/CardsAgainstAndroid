@@ -182,4 +182,21 @@ public class Card {
         return cardsArray;
 
     }//end getCardJSON method
+
+    // return card whose text is passed as parameter
+    public static Card searchCards(String text){
+        for(Card card : answers){
+            if(card.getText().equals(text)){
+                return card;
+            }
+        }
+
+        for(Card card : questions){
+            if(card.getText().equals(text)){
+                return card;
+            }
+        }
+
+        return new Card(-1, text, 'a', -1);
+    }// end searchCards method
 }
