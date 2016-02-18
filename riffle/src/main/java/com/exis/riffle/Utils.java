@@ -3,6 +3,7 @@ package com.exis.riffle;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Random;
 
@@ -12,10 +13,8 @@ public class Utils {
     private static Random generator = new Random();
     private static Gson gson = new GsonBuilder().create();
 
-
-    /* Generate a random positive integer */
-    static int newID() {
-        return generator.nextInt(Integer.MAX_VALUE);
+    static BigInteger newID() {
+        return new BigInteger(53, generator);
     }
 
     /**
@@ -26,9 +25,15 @@ public class Utils {
         return gson.toJson(args);
     }
 
-        //converts from core
     static Object[] unmarshall(String json) {
+//        Object[] result = gson.fromJson(json, Object[].class);
+//        Riffle.debug("Json from core: " + json + " after: " + result.toString());
         return gson.fromJson(json, Object[].class);
     }
-}
 
+    static BigInteger convertCoreInt64(Object o) {
+        //Riffle.debug("Converting object: " + o.toString() + " Cast as double: " + t + " long value: " + t.longValue() + " BigInt: " + BigInteger.valueOf(t.longValue()).toString());
+        BigInteger id = BigInteger.valueOf(((Double) o).longValue());
+        return id;
+    }
+}

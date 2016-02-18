@@ -1,13 +1,21 @@
 package com.exis.riffle;
 
+import android.util.Log;
+
+import com.exis.riffle.cumin.Cumin;
+import com.exis.riffle.cumin.Handler;
+
+import java.math.BigInteger;
+
 import go.mantle.Mantle;
-import me.tatarka.RetrolambdaExtension;
-//import me.tatarka.retrolambda.sample.lib.Function;
+//import me.tatarka.retrolambda.sample.lib.AnyHandler;
 
 /**
  * Created by damouse on 1/23/16.
  *
  * See here for distribution: http://inthecheesefactory.com/blog/how-to-upload-library-to-jcenter-maven-central-as-dependency/en
+ *
+ * TODO: emit different kinds of deferreds based on handlers
  */
 public class Domain {
     private Mantle.Domain mantleDomain;
@@ -15,7 +23,7 @@ public class Domain {
 
     /* Constructurs */
     public Domain(String name) {
-        //mantleDomain = Mantle.NewDomain(name);
+        mantleDomain = Mantle.NewDomain(name);
         app = new App();
     }
 
@@ -30,11 +38,11 @@ public class Domain {
         Deferred d = new Deferred(app);
 
         d.then(() -> {
+            Riffle.debug("Triggering onJoin method");
             this.onJoin();
-            return ""; // temp
         });
 
-        mantleDomain.Join(d.cb, d.eb);
+        mantleDomain.Join(d.cb.longValue(), d.eb.longValue());
         app.listen(mantleDomain);
     }
 
@@ -47,38 +55,114 @@ public class Domain {
     }
 
 
-    public Deferred subscribe(String endpoint, Function handler) {
+    Deferred _subscribe(String endpoint, Cumin.Wrapped handler) {
         Deferred d = new Deferred(app);
-        int fn = Utils.newID();
+        BigInteger fn = Utils.newID();
 
         app.handlers.put(fn, new HandlerTuple(handler, false));
-        mantleDomain.Subscribe(endpoint,d.cb, d.eb, fn, "");
+        mantleDomain.Subscribe(endpoint, d.cb.longValue(), d.eb.longValue(), fn.longValue(), "");
         return d;
     }
 
-    public void register(String endpoint) {
-//        mantleDomain.Register(endpoint);
+    Deferred _register(String endpoint, Cumin.Wrapped handler) {
+        Deferred d = new Deferred(app);
+        BigInteger fn = Utils.newID();
+
+        app.handlers.put(fn, new HandlerTuple(handler, true));
+        mantleDomain.Register(endpoint, d.cb.longValue(), d.eb.longValue(), fn.longValue(), "");
+        return d;
     }
 
     public Deferred publish(String endpoint, Object... arguments) {
         Deferred d = new Deferred();
-        mantleDomain.Publish(endpoint, d.cb, d.eb, Utils.marshall(arguments));
+        mantleDomain.Publish(endpoint, d.cb.longValue(), d.eb.longValue(), Utils.marshall(arguments));
         return d;
     }
 
-    public void call(String endpoint) {
-//        mantleDomain.Call(endpoint);
+    public CallDeferred call(String endpoint, Object... arguments) {
+        CallDeferred d = new CallDeferred(app);
+        mantleDomain.Call(endpoint, d.cb.longValue(), d.eb.longValue(), Utils.marshall(arguments));
+        return d;
     }
 
-    public void unsubscribe(String endpoint) {
-//        mantleDomain.Unsubscribe(endpoint);
+    public Deferred unsubscribe(String endpoint) {
+        // TODO: remove handler
+
+        Deferred d = new Deferred();
+        mantleDomain.Unsubscribe(endpoint, d.cb.longValue(), d.eb.longValue());
+        return d;
     }
 
-    public void unregister(String endpoint) {
-//        mantleDomain.Unregister(endpoint);
+    public Deferred unregister(String endpoint) {
+        // TODO: remove handler
+
+        Deferred d = new Deferred();
+        mantleDomain.Unregister(endpoint, d.cb.longValue(), d.eb.longValue());
+        return d;
     }
 
-    public void Leave() {
+    public void leave() {
         mantleDomain.Leave();
     }
+
+
+    //
+    // Start Generic Shotgun
+
+    public  Deferred subscribe(String endpoint,  Handler.ZeroZero handler) {
+        return _subscribe(endpoint, Cumin.cuminicate(handler));
+    }
+
+    public <A> Deferred subscribe(String endpoint, Class<A> a,  Handler.OneZero<A> handler) {
+        return _subscribe(endpoint, Cumin.cuminicate(a, handler));
+    }
+
+    public <A, B> Deferred subscribe(String endpoint, Class<A> a, Class<B> b,  Handler.TwoZero<A, B> handler) {
+        return _subscribe(endpoint, Cumin.cuminicate(a, b, handler));
+    }
+
+    public <A, B, C> Deferred subscribe(String endpoint, Class<A> a, Class<B> b, Class<C> c,  Handler.ThreeZero<A, B, C> handler) {
+        return _subscribe(endpoint, Cumin.cuminicate(a, b, c, handler));
+    }
+
+    public <A, B, C, D> Deferred subscribe(String endpoint, Class<A> a, Class<B> b, Class<C> c, Class<D> d,  Handler.FourZero<A, B, C, D> handler) {
+        return _subscribe(endpoint, Cumin.cuminicate(a, b, c, d, handler));
+    }
+
+    public <A, B, C, D, E> Deferred subscribe(String endpoint, Class<A> a, Class<B> b, Class<C> c, Class<D> d, Class<E> e,  Handler.FiveZero<A, B, C, D, E> handler) {
+        return _subscribe(endpoint, Cumin.cuminicate(a, b, c, d, e, handler));
+    }
+
+    public <A, B, C, D, E, F> Deferred subscribe(String endpoint, Class<A> a, Class<B> b, Class<C> c, Class<D> d, Class<E> e, Class<F> f,  Handler.SixZero<A, B, C, D, E, F> handler) {
+        return _subscribe(endpoint, Cumin.cuminicate(a, b, c, d, e, f, handler));
+    }
+
+    public <R> Deferred register(String endpoint, Class<R> r,  Handler.ZeroOne<R> handler) {
+        return _register(endpoint, Cumin.cuminicate(r, handler));
+    }
+
+    public <A, R> Deferred register(String endpoint, Class<A> a, Class<R> r,  Handler.OneOne<A, R> handler) {
+        return _register(endpoint, Cumin.cuminicate(a, r, handler));
+    }
+
+    public <A, B, R> Deferred register(String endpoint, Class<A> a, Class<B> b, Class<R> r,  Handler.TwoOne<A, B, R> handler) {
+        return _register(endpoint, Cumin.cuminicate(a, b, r, handler));
+    }
+
+    public <A, B, C, R> Deferred register(String endpoint, Class<A> a, Class<B> b, Class<C> c, Class<R> r,  Handler.ThreeOne<A, B, C, R> handler) {
+        return _register(endpoint, Cumin.cuminicate(a, b, c, r, handler));
+    }
+
+    public <A, B, C, D, R> Deferred register(String endpoint, Class<A> a, Class<B> b, Class<C> c, Class<D> d, Class<R> r,  Handler.FourOne<A, B, C, D, R> handler) {
+        return _register(endpoint, Cumin.cuminicate(a, b, c, d, r, handler));
+    }
+
+    public <A, B, C, D, E, R> Deferred register(String endpoint, Class<A> a, Class<B> b, Class<C> c, Class<D> d, Class<E> e, Class<R> r,  Handler.FiveOne<A, B, C, D, E, R> handler) {
+        return _register(endpoint, Cumin.cuminicate(a, b, c, d, e, r, handler));
+    }
+
+    public <A, B, C, D, E, F, R> Deferred register(String endpoint, Class<A> a, Class<B> b, Class<C> c, Class<D> d, Class<E> e, Class<F> f, Class<R> r,  Handler.SixOne<A, B, C, D, E, F, R> handler) {
+        return _register(endpoint, Cumin.cuminicate(a, b, c, d, e, f, r, handler));
+    }
+    // End Generic Shotgun
 }

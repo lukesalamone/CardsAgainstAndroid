@@ -2,10 +2,12 @@ package com.exis.riffle;
 
 import android.util.ArrayMap;
 
+import com.exis.riffle.cumin.Cumin;
+
+import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
-import java.util.logging.Handler;
 
 import go.mantle.Mantle;
 
@@ -18,12 +20,12 @@ class App {
     Mantle.Domain mantleDomain;
     Thread thread;
 
-    Map<Integer, HandlerTuple> handlers;
-    Map<Integer, Deferred> deferreds;
+    Map<BigInteger, HandlerTuple> handlers;
+    Map<BigInteger, Deferred> deferreds;
 
     App() {
-        handlers = new ArrayMap<Integer, HandlerTuple>();
-        deferreds = new ArrayMap<Integer, Deferred>();
+        handlers = new ArrayMap();
+        deferreds = new ArrayMap();
     }
 
     /**
@@ -34,16 +36,14 @@ class App {
 
         thread = new Thread() {
             public void run() {
-                Riffle.debug("App thread starting");
-                
+
                 while (true) {
                     Object[] invocation = Utils.unmarshall(mantleDomain.Receive());
                     Object[] args = {};
 
-                    Double temp = (Double) invocation[0];
-                    int id = temp.intValue();
+                    BigInteger id = Utils.convertCoreInt64(invocation[0]);
 
-                    if (id == 0) {
+                    if (id.compareTo(BigInteger.valueOf(0)) == 0) {
                         Riffle.debug("App listen loop terminating");
                         break;
                     }
@@ -53,28 +53,39 @@ class App {
                         args = a.toArray();
                     }
 
-                    //Riffle.debug("Crust invocation: " + id + " " + args);
+//                    Riffle.debug("Got invocation: " + id.toString() + " " + args.toString());
+//                    Riffle.debug("Handlers: " + deferreds.toString());
 
                     if (deferreds.containsKey(id)) {
                         Deferred d = deferreds.remove(id);
 
                         // TODO: try/catch
+
                         // Remove the deferred and trigger it appropriately
-                        if (id == d.cb) {
+                        if (id.compareTo(d.cb) == 0) {
                             deferreds.remove(d.eb);
-                            d.callback();
+
+                            d.callback(args);
                         } else {
                             deferreds.remove(d.cb);
-                            d.errback();
+                            d.errback(args);
                         }
                     }
 
-                    if (handlers.containsKey(id)) {
+                    else if (handlers.containsKey(id)) {
                         HandlerTuple t = handlers.get(id);
 
                         // TODO: try/catch
-                        // TODO: returns
-                        t.fn.run();
+
+                        if (t.isRegistration) {
+                            BigInteger yieldId = Utils.convertCoreInt64(args[0]);
+                            Object result = t.fn.invoke(Arrays.copyOfRange(args, 1, args.length));
+
+                            Object[] packed = {result};
+                            mantleDomain.Yield(yieldId.longValue(), Utils.marshall(packed));
+                        } else {
+                            t.fn.invoke(args);
+                        }
                     }
                 }
             }
@@ -84,13 +95,13 @@ class App {
     }
 }
 
+// Simple class that stores a little metadata with the handler
 class HandlerTuple {
-    Function fn = null;
+    Cumin.Wrapped fn = null;
     boolean isRegistration = false;
 
-    HandlerTuple(Function function, boolean isRegistration) {
+    HandlerTuple(Cumin.Wrapped function, boolean isRegistration) {
         fn = function;
         this.isRegistration = isRegistration;
     }
-
 }
