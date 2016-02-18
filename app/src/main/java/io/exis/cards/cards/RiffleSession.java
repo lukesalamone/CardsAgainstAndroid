@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import go.mantle.Mantle;
 import com.exis.riffle.Domain;
 import com.exis.riffle.Function;
+import com.exis.riffle.cumin.Handler;
 
 /*
  * RiffleSession.java
@@ -27,16 +28,27 @@ public class RiffleSession {
     //private WAMPWrapper WAMP;
     protected AndroidDeferredManager manager;
     String URI;
-    Player player;
     Dealer dealer;
     Domain app;
     Function handler;
+    Player player;
 
     //Favoring this constructor
-    public RiffleSession(String domain){
-        URI = domain;
+    public RiffleSession(String uri, Player player){
+        URI = uri;
         manager = new AndroidDeferredManager();
-        app = new Domain("xs.damouse");
+        app = Exec.getGame();
+        this.player = player;
+    }
+
+    public RiffleSession(String uri){
+        URI = uri;
+        manager = new AndroidDeferredManager();
+        app = Exec.getGame();
+    }
+
+    public void setPlayer(Player player){
+        this.player = player;
     }
 
     public String domain(){
@@ -167,7 +179,7 @@ public class RiffleSession {
         //dealer = (Dealer) call("findDealer", false);
 
         String roomName = Integer.toString(dealer.dealerID);
-        player = new Player(URI, 0, false);
+        Player player = new Player(URI, 0, false);
         addPlayer(player);
 
         //Returns: string[] cards, Player[] players, string state, string roomName
@@ -179,7 +191,7 @@ public class RiffleSession {
     }//end play method
 
     //Tell the Dealer the Player picked a card
-    public Object[] pick(String card){
+    public Object[] pick(Player player, String card){
         String[] cards;
         String roomName = "Room " + Exec.findDealer().getID();
 
@@ -194,90 +206,43 @@ public class RiffleSession {
                 roomName};
     }//end pick method
 
-    //player calls upon leaving
+    //player calls Dealer::removePlayer() upon leaving
     public void leave(){
-        //call Dealer::removePlayer()
-        dealer.removePlayer(player);
-//        call("/removePlayer", player);
+        app.call("removePlayer", player).then(()->{});
     }//end leave method
 
     //dealer pub
     public void answering(Player czar, String question, int duration){
-//        app.publish("/answering", czar, question, duration);                  // TODO
+        app.publish("answering", czar, question, duration);
     }
 
     //dealer pub
     public void picking(String[] answers, int duration){
-//        app.publish("/picking", answers, duration);                           // TODO
+        app.publish("picking", answers, duration);
     }
 
     //dealer pub
     public void scoring(Player winner, String winningCard, int duration){
-//        app.publish("/scoring", winner, winningCard, duration);               // TODO
+        app.publish("scoring", winner, winningCard, duration);
     }
 
     //dealer pub
     public void left(Player leavingPlayer){
-//        app.publish("/left", leavingPlayer);                                  // TODO
+        app.publish("left", leavingPlayer);
     }
 
     //dealer pub
     public void joined(Player newPlayer){
-//        app.publish("/joined", newPlayer);                                    // TODO
+        app.publish("joined", newPlayer);
     }
 
     //called by player at beginning of round
     public String[] draw(){
-        return new String[]{dealer.dealCard(player).getText()};
-//        return (String[]) call("dealCard");
+//        return new String[]{dealer.dealCard(player).getText()};
+
+        app.call("draw").then(String[].class, (String[] ret)->{
+            return ret;
+        });
     }//end draw method
-
-    /***********  End damouse's Methods **********/
-
-    //Allows Dealer and Exec to register their calls.
-    public void register(String procedure){
-        if(procedure.charAt(0) == '/'){
-            app.register(procedure);
-        }else{
-            app.register("/" + procedure);
-        }
-    }//end register method
-
-    public void subscribe(String procedure){
-        if(procedure.charAt(0) == '/'){
-            app.subscribe(procedure, handler);
-        } else {
-            app.subscribe("/" + procedure, handler);
-        }
-    }//end subscribe method
-
-    //TODO: app.call is void!
-    private Object call(String method, Object...args){
-        final ValueHolder<Object> result = new ValueHolder<>();
-        final String endpoint;
-
-        if(method.charAt(0) != '/'){
-            endpoint = "/" + method;
-        } else {
-            endpoint = method;
-        }
-
-        try {
-            manager.when(new DeferredAsyncTask<Void, Integer, String>() {
-                @Override
-                protected String doInBackgroundSafe(Void... nil) throws Exception {
-                    //insert RPC call here
-                    Log.i("RiffleSession::call()", "now calling " + method + "method");
-//                    result.set(app.call(endpoint));                   // TODO
-                    return "Done";
-                }
-            }).done(result::set)
-              .waitSafely();
-        } catch (InterruptedException e) {
-            // Do nothing
-        }
-
-        return result.get();
-    }//end call method
 
 }

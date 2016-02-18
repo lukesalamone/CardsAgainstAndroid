@@ -7,6 +7,8 @@ import android.content.Context;
 import android.os.CountDownTimer;
 import android.util.Log;
 
+import com.exis.riffle.Domain;
+
 /**
  * Dealer.java
  * Manages decks and player points
@@ -34,6 +36,7 @@ public class Dealer {
     GameTimer timer;
     RiffleSession session;
     String URL;
+    Domain Game;
 
     public Dealer(boolean R, int ID){
         rating = R;
@@ -47,38 +50,22 @@ public class Dealer {
         session = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
         //URL = session.getDomain();
         phase = "answering";
+        Game = Exec.getGame();
 
         //TODO register all calls with WAMPWrapper
         if(GameActivity.online) {
-            session.register("receiveCard");
-            session.register("dealCard");
-            session.register("czarPick");
-            session.register("isCzar");
-            session.register("prepareGame");
-            session.register("setPlayers");
-            session.register("getNewHand");
-            session.register("getSubmitted");
-            session.register("getQuestion");
-            session.register("removePlayer");
-            session.register("receiveCard");
-            session.register("addPlayer");
 
-            //Exec call registers
-            session.register("findDealer");
-            session.register("getNewID");
-            session.register("addPoint");
-
-            //damouse's riffle calls
-
-            session.register("play");
-            session.register("pick");
-            session.register("leave");
-            session.register("answering");
-            session.register("picking");
-            session.register("scoring");
-            session.register("left");
-            session.register("joined");
-            session.register("draw");
+            /*
+             * riffle calls
+             *
+             * endpoint, arg types, return type, method pointer
+             *
+             * TODO method references don't take parameters
+            */
+            Game.register("play", Object[].class, session::play);
+            Game.register("pick", String[].class, Object[].class, session::pick);
+            Game.register("leave", Player.class, session::leave);
+            Game.register("draw", String[].class, session::draw);
         }
     }//end Dealer constructor
 
@@ -259,6 +246,7 @@ public class Dealer {
 
     public void removePlayer(Player player){
         players.remove(player);
+        session.leave();
     }//end remove player method
 
     //deal cards to all players

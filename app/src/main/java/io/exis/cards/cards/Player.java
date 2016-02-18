@@ -1,5 +1,7 @@
 package io.exis.cards.cards;
 
+import com.exis.riffle.Domain;
+
 import java.util.ArrayList;
 
 /**
@@ -17,12 +19,14 @@ public class Player {
     private boolean isCzar;                 //whether the player is card czar
     private RiffleSession riffle;
     private String URL;
+    private Domain Game;
 
     public Player(int ID, ArrayList<Card> cards, boolean czar){
         playerID = ID;
         hand = cards;
         boolean isCzar = czar;
         riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
+
     }//end Player constructor
 
     //damouse's player object
@@ -31,6 +35,11 @@ public class Player {
         riffle = new RiffleSession(domain);
         score = 0;                                  //players are not persistent :(
         isCzar = czar;
+    }
+
+    // TODO
+    public Domain getGame(){
+        return Game;
     }
 
     public String getDomain(){

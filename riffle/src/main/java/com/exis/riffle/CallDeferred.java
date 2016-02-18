@@ -25,7 +25,7 @@ public class CallDeferred extends Deferred {
         return _then (Cumin.cuminicate( handler));
     }
 
-    public <A> CallDeferred then(Class<A> a,  com.exis.riffle.cumin.Handler.OneZero<A> handler) {
+    public <A> CallDeferred then(Class<A> a, Handler.OneZero<A> handler) {
         return _then (Cumin.cuminicate(a,  handler));
     }
 

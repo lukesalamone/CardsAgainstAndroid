@@ -54,8 +54,6 @@ public class GameActivity extends Activity {
         context = MainActivity.getAppContext();
 
         // TODO
-        //riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-        //int PID = riffle.getNewID();
 
         riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
         int PID = Exec.getNewID();
@@ -72,6 +70,8 @@ public class GameActivity extends Activity {
                 new ArrayList<Card>(),
                 false
         );
+
+        riffle.setPlayer(player);
 
         Log.i("Game Activity", "4");
         dealer = Exec.findDealer();                        //gets a dealer for the player
@@ -122,7 +122,7 @@ public class GameActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        riffle.subscribe("answering");
+        riffle.subscribe("answering", );
         riffle.subscribe("picking");
         riffle.subscribe("scoring");
 
