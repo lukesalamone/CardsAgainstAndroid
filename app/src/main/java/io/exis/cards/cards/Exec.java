@@ -20,8 +20,7 @@ public class Exec {
     static ArrayList<Sender> senders = new ArrayList<>();                   // dealers are senders
     static int counter = 0;
     static Domain Game = new Domain("xs.damouse.CardsAgainst");
-    Receiver receiver = new Receiver("xs.damouse.CardsAgainst", Game);
-    receiver.join();
+    Receiver receiver = new Receiver("xs.damouse.CardsAgainst", Game);      // Exec is receiver
 
     public static Domain getGame(){
         return Game;
@@ -40,10 +39,10 @@ public class Exec {
             }
         }
 
-        Dealer dealer = addDealer(false);
+        Dealer dealer = addDealer();
 
         // connect to Exec
-        Sender sender = new Sender("dealer" + dealer.getID(), Game);
+        Sender sender = new Sender("dealer" + dealer.ID(), Game);
         senders.add(sender);
 
 
@@ -70,12 +69,12 @@ public class Exec {
 
     //create new dealer and add to dealer list
     //return dealer ID
-    private static Dealer addDealer(boolean R){
-        Dealer dealer = new Dealer(R, getNewID());
+    private static Dealer addDealer(){
+        Dealer dealer = new Dealer(getNewID());
         dealers.add(dealer);
         return dealer;
 
-        //TODO register all calls
+        //TODO register all endpoints
     }//end addDealer method
 
     public static void addPoint(Player player){
@@ -109,10 +108,14 @@ class Receiver extends Domain {
 
         // TODO add Exec subscribes
 
+        Dealer dealer = Exec.findDealer();
+
         // TODO add Exec registers
+        //Exec.getGame().register("/join", Player.class, (player)->dealer.addPlayer(player));
     }
 }// end Receiver class
 
+// dealers are all senders
 class Sender extends Domain {
     private static final String TAG = "Sender";
     public MainActivity parent;

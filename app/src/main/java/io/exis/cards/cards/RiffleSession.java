@@ -5,6 +5,8 @@ import org.jdeferred.android.AndroidDeferredManager;
 import org.jdeferred.android.DeferredAsyncTask;
 import java.util.ArrayList;
 import go.mantle.Mantle;
+
+import com.exis.riffle.CallDeferred;
 import com.exis.riffle.Domain;
 import com.exis.riffle.Function;
 import com.exis.riffle.cumin.Handler;
@@ -32,6 +34,7 @@ public class RiffleSession {
     Domain app;
     Function handler;
     Player player;
+    Object ret;
 
     //Favoring this constructor
     public RiffleSession(String uri, Player player){
@@ -47,157 +50,33 @@ public class RiffleSession {
         app = Exec.getGame();
     }
 
-    public void setPlayer(Player player){
-        this.player = player;
-    }
-
-    public String domain(){
-        return URI;
-    }
-
-    //Call to Dealer::addPlayer
-    public void addPlayer(Player player){
-        dealer.addPlayer(player);
-//        call("addPlayer", player);
-    }
-
-    /*
-     * Call to Exec::addPoint
+    /* damouse's methods
+     *
+     * For now, these methods are a thin wrapper around luke's original methods
+     * TODO unwrap methods to use damouse
      */
-    public void addPoint(Player player){
-        Exec.addPoint(player);
-//      call("addPoint", player);
-    }
 
-    /*
-     * Called in GameActivity.
-     */
-    public void czarPick(Card card){
-        dealer.czarPick(card);
-//        call("czarPick", card);
-    }
-
-    /*
-     * Called in GameActivity. Returns result of call to Dealer::dealCard
-    */
-    public Card dealCard(Player player){
-        return dealer.dealCard(player);
-//        return (Card) call("dealCard", player);
-    }
-
-    /*
-     * Called in GameActivity. Returns result of call of Exec::findDealer
-     */
-    public Dealer findDealer(boolean adult){
-        return Exec.findDealer();
-//        return (Dealer) call("findDealer", adult);
-    }//end findDealer method
-
-    /*
-     * Calls to Dealer::getNewHand
-     */
-    @SuppressWarnings("unchecked")
-    public ArrayList<Card> getNewHand(Player player){
-        return dealer.getNewHand(player);
-//        return (ArrayList<Card>) call("getNewHand", player);
-    }//end getNewHand method
-
-    /*
-     * Called in GameActivity. Must return result of call to Exec::getNewID
-     */
-    public int getNewID(){
-        Log.i("RiffleSession", "getNewID()");
-        return Exec.getNewID();
-//        return (int) call("getNewID");
-    }//end getNewID method
-
-    /*
-     * Call to Dealer::getQuetion
-    */
-    public Card getQuestion(){
-        return dealer.getQuestion();
-//        return (Card) call("getSubmitted");
-    }
-
-    /*
-     * Call to Dealer::getSubmitted
-     */
-    @SuppressWarnings("unchecked")
-    public ArrayList<Card> getSubmitted(){
-        return dealer.getSubmitted();
-//        return (ArrayList<Card>) call("getSubmitted");
-    }
-
-    /*
-     * Called in GameActivity. Returns Dealer::isCzar
-     */
-    public boolean isCzar(Player player){
-        return dealer.isCzar(player);
-//        return (boolean) call("isCzar", player);
-    }//end isCzar method
-
-    /*
-     * Call to Dealer::PrepareGame
-     */
-    public void prepareGame(){
-        dealer.prepareGame();
-//        call("prepareGame");
-    }
-
-    /*
-     * Called in GameActivity when player sends card to dealer. Returns result of call to
-     * Dealer::ReceiveCard(card).
-     */
-    public void receiveCard(Card card){
-        dealer.receiveCard(card);
-//        call("receiveCard", card);
-    }
-
-    /*
-     * Call to Dealer::removePlayer
-    */
-    public void removePlayer(Player player){
-        dealer.removePlayer(player);
-//        call("removePlayer", player);
-    }
-
-    /*
-     * Call to Dealer::setPlayers
-     */
-    public void setPlayers(){
-        dealer.setPlayers();
-//        call("setPlayers");
-    }
-
-    /************  damouse's methods  **************/
+    //server-side
     //Player calls at beginning of game to find dealer. Returns new hand.
-    public Object[] play(){
+    public Object[] play(Player player){
         String[] cards;
 
         // TODO
         Dealer dealer = Exec.findDealer();
-        //dealer = (Dealer) call("findDealer", false);
+        addPlayer(player);                  // TODO
 
-        String roomName = Integer.toString(dealer.dealerID);
-        Player player = new Player(URI, 0, false);
-        addPlayer(player);
-
-        //Returns: string[] cards, Player[] players, string state, string roomName
-        return new Object[]{
-                getNewHand(player),
-                dealer.getPlayers(),
-                "answering",                                     //TODO
-                roomName};
+        // TODO
+        app.call(dealer.ID() + "/play", player).then(Object[].class, (ret)->setRet(ret));
+        return (Object[]) getRet();
     }//end play method
 
-    //Tell the Dealer the Player picked a card
+    // player calls pick to tell dealer that Player picked a card
     public Object[] pick(Player player, String card){
         String[] cards;
-        String roomName = "Room " + Exec.findDealer().getID();
+        String roomName = "Room " + Exec.findDealer().ID();
 
         // TODO
         dealer.receiveCard(Card.searchCards(card));
-//        call("receiveCard", new Card(0, card, 'a', 0));
 
         return new Object[]{
                 player.getHand(),
@@ -206,15 +85,21 @@ public class RiffleSession {
                 roomName};
     }//end pick method
 
-    //player calls Dealer::removePlayer() upon leaving
+    // player calls Dealer::removePlayer() upon leaving
     public void leave(){
         app.call("removePlayer", player).then(()->{});
     }//end leave method
+
+    // player calls when starting game
+    public void join(Player player){
+        app.call("/join", Player.class).then(()->{});
+    }
 
     //dealer pub
     public void answering(Player czar, String question, int duration){
         app.publish("answering", czar, question, duration);
     }
+
 
     //dealer pub
     public void picking(String[] answers, int duration){
@@ -236,13 +121,110 @@ public class RiffleSession {
         app.publish("joined", newPlayer);
     }
 
-    //called by player at beginning of round
-    public String[] draw(){
-//        return new String[]{dealer.dealCard(player).getText()};
-
-        app.call("draw").then(String[].class, (String[] ret)->{
-            return ret;
-        });
+    // dealer calls Player::draw to give card to player
+    public void draw(Player player, Card card){
+        String endpoint = player.getDomain() + "/draw";
+        app.call(endpoint, card.getText()).then(()->{});
     }//end draw method
 
+    /*     end damouse's methods    */
+
+    public void setPlayer(Player player){
+        this.player = player;
+    }
+
+    public String domain(){
+        return URI;
+    }
+
+    //Call to Dealer::addPlayer
+    public void addPlayer(Player player){
+        dealer.addPlayer(player);
+    }
+
+    /*
+     * Call to Exec::addPoint
+     */
+    public void addPoint(Player player){
+        Exec.addPoint(player);
+    }
+
+    // Called in GameActivity. Returns result of call to Dealer::dealCard
+    public Card dealCard(Player player){
+        return dealer.dealCard(player);
+    }
+
+    /*
+     * Called in GameActivity. Returns result of call of Exec::findDealer
+     */
+    public Dealer findDealer(boolean adult){
+        return Exec.findDealer();
+    }//end findDealer method
+
+    /*
+     * Calls to Dealer::getNewHand
+     */
+    @SuppressWarnings("unchecked")
+    public ArrayList<Card> getNewHand(Player player){
+        return dealer.getNewHand(player);
+    }//end getNewHand method
+
+    /*
+     * Called in GameActivity. Must return result of call to Exec::getNewID
+     */
+    public int getNewID(){
+        return Exec.getNewID();
+    }//end getNewID method
+
+    /*
+     * Call to Dealer::getQuetion
+    */
+    public Card getQuestion(){
+        return dealer.getQuestion();
+    }
+
+    /*
+     * Call to Dealer::getSubmitted
+     */
+    @SuppressWarnings("unchecked")
+    public ArrayList<Card> getSubmitted(){
+        return dealer.getSubmitted();
+    }
+
+    /*
+     * Called in GameActivity. Returns Dealer::isCzar
+     */
+    public boolean isCzar(Player player){
+        return dealer.isCzar(player);
+    }//end isCzar method
+
+    /*
+     * Call to Dealer::PrepareGame
+     */
+    public void prepareGame(){
+        dealer.prepareGame();
+    }
+
+    /*
+     * Called in GameActivity when player sends card to dealer. Returns result of call to
+     * Dealer::ReceiveCard(card).
+     */
+    private void receiveCard(Card card){
+        dealer.receiveCard(card);
+    }
+
+    /*
+     * Call to Dealer::removePlayer
+    */
+    private void removePlayer(Player player){
+        dealer.removePlayer(player);
+    }
+
+    private void setRet(Object o){
+        this.ret = o;
+    }
+
+    private Object getRet(){
+        return this.ret;
+    }
 }

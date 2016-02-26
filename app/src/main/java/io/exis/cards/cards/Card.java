@@ -23,8 +23,8 @@ import java.util.ArrayList;
 
 public class Card {
 
-    int ID;
-    String text;
+    private String ID;
+    private String text;
     char type;
     int PID;
     static JSONArray cardsArray;
@@ -33,13 +33,11 @@ public class Card {
     static ArrayList<Card> questions;
     static ArrayList<Card> answers;
 
-    static char arrType;
-
     static Context context;
 
     //Every card has an ID, associated text, and type
     //Type may be 'q' for question or 'a' for answer
-    public Card(int cardID, String cardText, char cardType, int playerID){
+    public Card(String cardID, String cardText, char cardType, int playerID){
         ID = cardID;
         text = cardText;
         type = cardType;
@@ -47,7 +45,11 @@ public class Card {
         context = MainActivity.getAppContext();
     }//end Card constructor
 
-    public int getID(){
+    public static Card getErrorCard(String dummyString){
+        return new Card("error", dummyString, 'e', -1);
+    }
+
+    public String getID(){
         return this.ID;
     }//end getID method
 
@@ -152,7 +154,7 @@ public class Card {
         String cardText = cardsJSON.getString("text");
 
         //return card created with cardText
-        return new Card(ID, cardText, type, -1);
+        return new Card(ID + "", cardText, type, -1);
     }//end getCardByID method
 
     /*
@@ -183,6 +185,26 @@ public class Card {
 
     }//end getCardJSON method
 
+    public void setPID(int pid){
+        this.PID = pid;
+    }
+
+    public static String printHand(ArrayList<Card> hand){
+        String s = "";
+        for(Card c : hand){
+            s += c.getText();
+        }
+        return s;
+    }
+
+    public static String[] handToStrings(ArrayList<Card> hand){
+        String[] arr = new String[hand.size()];
+        for(int i=0; i<arr.length; i++){
+            arr[i] = hand.get(i).getText();
+        }
+        return arr;
+    }
+
     // return card whose text is passed as parameter
     public static Card searchCards(String text){
         for(Card card : answers){
@@ -197,6 +219,6 @@ public class Card {
             }
         }
 
-        return new Card(-1, text, 'a', -1);
+        return new Card("error", text, 'e', -1);
     }// end searchCards method
 }

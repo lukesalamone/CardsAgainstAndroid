@@ -46,10 +46,6 @@ public class GameActivity extends Activity {
     TextView infoText;
 
     public GameActivity(){
-        Log.i("Game Activity", "entered constructor");
-        //PREFS = MainActivity.PREFS;
-        //points = MainActivity.points;
-
         online = MainActivity.online;
         context = MainActivity.getAppContext();
 
@@ -58,13 +54,11 @@ public class GameActivity extends Activity {
         riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
         int PID = Exec.getNewID();
 
-        Log.i("Game Activity", "2");
         if(PID == 0 || PID == -1){
             Log.i("GameActivity", "problem with riffle.getNewID");
             PID = Exec.getNewID();
         }
 
-        Log.i("Game Activity", "3");
         player = new Player(
                 PID,
                 new ArrayList<Card>(),
@@ -72,8 +66,8 @@ public class GameActivity extends Activity {
         );
 
         riffle.setPlayer(player);
+        riffle.play();
 
-        Log.i("Game Activity", "4");
         dealer = Exec.findDealer();                        //gets a dealer for the player
         dealer.prepareGame();                                   //load questions and answers
         dealer.addPlayer(player);                               //adds player to dealer
@@ -122,9 +116,6 @@ public class GameActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        riffle.subscribe("answering", );
-        riffle.subscribe("picking");
-        riffle.subscribe("scoring");
 
         if(online){
             playOnlineGame();
@@ -209,33 +200,36 @@ public class GameActivity extends Activity {
         }
     }//end setAnswers method
 
+    //TODO condense these 5 methods...
     public void submitCard1(View view){
-        dealer.pick(player, player.getHand().get(0));
+        player.pick(dealer, player.getHand().get(0));
+
         //set background colors
         setBackgrounds(1, view);
         selected = true;
     }
 
     public void submitCard2(View view){
-        dealer.pick(player, player.getHand().get(1));
+        player.pick(dealer, player.getHand().get(1));
+
         setBackgrounds(2, view);
         selected = true;
     }
 
     public void submitCard3(View view){
-        dealer.pick(player, player.getHand().get(2));
+        player.pick(dealer, player.getHand().get(2));
         setBackgrounds(3, view);
         selected = true;
     }
 
     public void submitCard4(View view){
-        dealer.pick(player, player.getHand().get(3));
+        player.pick(dealer, player.getHand().get(3));
         setBackgrounds(4, view);
         selected = true;
     }
 
     public void submitCard5(View view){
-        dealer.pick(player, player.getHand().get(4));
+        player.pick(dealer, player.getHand().get(4));
         setBackgrounds(5, view);
         selected = true;
     }
@@ -295,7 +289,7 @@ public class GameActivity extends Activity {
                             submitCard1(card1);
                             player.removeCard(player.getHand().get(0));
                         }else{
-                            dealer.pick(player, chosen);
+                            dealer.pick(player, chosen.getText());
                             player.removeCard(chosen);
                         }
                     }
@@ -305,16 +299,13 @@ public class GameActivity extends Activity {
                     break;
                 case "picking":                             //next phase will be scoring
                     infoText.setText(R.string.scoringInfo);
-                    if(player.isCzar()){
-                        dealer.pick(player, chosen);
-                    }
+
                     phase = "scoring";
                     setNextTimer();
                     break;
                 case "scoring":                                 //next phase will be answering
                     player.setCzar(dealer.isCzar(player));      //update whether player is czar
                     setQuestion();                              //update question card
-                    player.addCard(dealer.drawCard(player));
                     if(player.isCzar()){
                         infoText.setText(R.string.playersPickingInfo);
                     }else{

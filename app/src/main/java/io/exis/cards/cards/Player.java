@@ -1,5 +1,7 @@
 package io.exis.cards.cards;
 
+import android.util.Log;
+
 import com.exis.riffle.Domain;
 
 import java.util.ArrayList;
@@ -29,28 +31,44 @@ public class Player {
 
     }//end Player constructor
 
-    //damouse's player object
+    // damouse's player object
     public Player(String domain, int score, boolean czar){
         URL = domain;
         riffle = new RiffleSession(domain);
-        score = 0;                                  //players are not persistent :(
         isCzar = czar;
+        playerID = createID();
+
+        //TODO do something with this info
+        Game.subscribe("answering", Player.class, String.class, Integer.class,
+                (czarPlayer, questionText, duration) -> Log.i("answering sub", "received question " + questionText));
+        Game.subscribe("picking", ArrayList.class, Integer.class,
+                (answers, duration)->Log.i("picking sub", "received answers " +  Card.printHand(answers)) );
+        //Game.publish("scoring", winner, Dealer.getWinningCard().getText(), 10);
+        Game.subscribe("scoring", Player.class, String.class, Integer.class,
+                (winningPlayer, winningCard, duration)->Log.i("scoring sub", "winning card " + winningCard));
+
+        //TODO register all endpoints
+//        Game.register(domain + "/draw", Card.class, Player::draw);
+
+        // join the game
+        riffle.join(this);
+
     }
 
     // TODO
     public Domain getGame(){
-        return Game;
+        return this.Game;
     }
 
     public String getDomain(){
-        return URL;
+        return this.URL;
     }
 
     public ArrayList<Card> getHand(){
-        return hand;
+        return this.hand;
     }//end getCards method
 
-    public int getPlayerID(){
+    public int ID(){
         return this.playerID;
     }//end getPlayerID method
 
@@ -73,7 +91,7 @@ public class Player {
     }//end czarPicks method
 
     //add a card to player's hand
-    public void addCard(Card card){
+    public void draw(Card card){
         hand.add(card);
     }//end addCard method
 
@@ -85,12 +103,16 @@ public class Player {
     public boolean removeCard(Card card){
         boolean removed;
         removed = hand.remove(card);
-
-        if(!removed){
-            //riffle.reportError(2, getPlayerID(), "Unable to remove " +
-            //        "card from hand.", card, hand);
-        }
-
         return removed;
     }//end removeCard method
+
+    private int createID(){
+        return (int) (Math.random() * Integer.MAX_VALUE);
+    }
+
+    // submit card to dealer
+    //TODO implement this method
+    public void pick(Dealer dealer, Card card){
+        Game.call(dealer.ID() + "/pick", this, card.getText()).then(()->{});
+    }
 }

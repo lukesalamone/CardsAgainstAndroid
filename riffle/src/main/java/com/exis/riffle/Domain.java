@@ -109,7 +109,7 @@ public class Domain {
     //
     // Start Generic Shotgun
 
-    public  Deferred subscribe(String endpoint,  Handler.ZeroZero handler) {
+    public  Deferred subscribe(String endpoint, Handler.ZeroZero handler) {
         return _subscribe(endpoint, Cumin.cuminicate(handler));
     }
 

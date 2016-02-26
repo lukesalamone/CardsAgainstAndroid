@@ -28,19 +28,19 @@ public class Dealer {
     private ArrayList<Card> questions;
     private ArrayList<Card> answers;
     private String phase;
-    private Player winner;                                   //winner
+    private static Player winner;                           //winner
+    private static Card winningCard;
     private Card questionCard;                              //always know question card
-    private boolean rating;                                         //pg13 or R
-    int dealerID;
+    //private boolean rating;                                 //pg13 or R
+    private String dealerID;
     int czarNum;
     GameTimer timer;
     RiffleSession session;
     String URL;
     Domain Game;
 
-    public Dealer(boolean R, int ID){
-        rating = R;
-        dealerID = ID;
+    public Dealer(int ID){
+        dealerID = "dealer" + ID;
         czarNum = 0;
         players  = new ArrayList<>();
         inPlay = new ArrayList<>();
@@ -52,27 +52,26 @@ public class Dealer {
         phase = "answering";
         Game = Exec.getGame();
 
-        //TODO register all calls with WAMPWrapper
-        if(GameActivity.online) {
+        //TODO register all calls
 
             /*
              * riffle calls
-             *
              * endpoint, arg types, return type, method pointer
              *
-             * TODO method references don't take parameters
             */
             Game.register("play", Object[].class, session::play);
-            Game.register("pick", String[].class, Object[].class, session::pick);
-            Game.register("leave", Player.class, session::leave);
-            Game.register("draw", String[].class, session::draw);
-        }
+//            Game.register("pick", Player.class, String.class, (player, card)->pick(player, card));
+//            Game.register("left", Player.class, (Player) p -> removePlayer(p));
     }//end Dealer constructor
 
-    public boolean addPlayer(Player player){
+    public String ID(){
+        return this.dealerID;
+    }
+
+    public void addPlayer(Player player){
         //if max capacity exceeded
         if(full()){
-            return false;
+            return;
         }
 
         //deal them 5 cards
@@ -81,10 +80,8 @@ public class Dealer {
         }
 
         players.add(player);
-
-        return true;
     }//end addPlayer method
-
+/*
     //need to overload for czar situation
     public void czarPick(Card card){
         //can't give a dummy a point!
@@ -96,12 +93,14 @@ public class Dealer {
 
         updateCzar();
     }
-
+*/
     public Card dealCard(Player player){
+
         Card card = generateAnswer();                       //generate new card to give to player
-        card.PID = player.getPlayerID();
+        card.PID = player.ID();
         answers.remove(card);                               //remove card from deck
-        player.addCard(card);                               //add card to player's hand
+        // player.addCard(card);                            //add card to player's hand
+        session.draw(player, card);
         inPlay.add(card);                                   //add card to cards in play
         return card;
     }//end dealCard method
@@ -145,13 +144,28 @@ public class Dealer {
         return forCzar;
     }//end getCardsForCzar method
 
+    public Card getCardFromString(String cardString){
+        // iterate over cards in play
+        for(Card c: inPlay){
+            if(c.getText().equals(cardString)){
+                return c;
+            }
+        }
+
+        // iterate over cards for czar
+        for(Card c : forCzar){
+            if(c.getText().equals(cardString)){
+                return c;
+            }
+        }
+
+        //otherwise return errCard
+        return Card.getErrorCard(cardString);
+    }
+
     public int getGameSize(){
         return players.size();
     }//end getGameSize method
-
-    public int getID(){
-        return dealerID;
-    }
 
     public ArrayList<Card> getNewHand(Player player){
         ArrayList<Card> hand = new ArrayList<>();
@@ -175,7 +189,7 @@ public class Dealer {
         }
 
         for(int i=0; i<players.size(); i++){
-            if(players.get(i).getPlayerID() == PID){
+            if(players.get(i).ID() == PID){
                 return players.get(i);
             }
         }
@@ -192,10 +206,6 @@ public class Dealer {
             questionCard = generateQuestion();
         }
         return questionCard;
-    }
-
-    public boolean getRating(){
-        return this.rating;
     }
 
     //return a list of cards for czar to pick from
@@ -218,9 +228,13 @@ public class Dealer {
         return winner;
     }//end getWinner method
 
+    public static Card getWinningCard(){
+        return winningCard;
+    }
+
     public boolean isCzar(Player player){
         for(Player iterator : players){
-            if(iterator.getPlayerID() == player.getPlayerID()){
+            if(iterator.ID() == player.ID()){
                 return iterator.isCzar();
             }
         }
@@ -229,12 +243,16 @@ public class Dealer {
     }//end isCzar method
 
     public void prepareGame(){
-        questions = MainActivity.getQuestions();                //load all questions
-        answers = MainActivity.getAnswers();                    //load all answers
+        if(questions == null) {
+            questions = MainActivity.getQuestions();                //load all questions
+        }
+        if(answers == null) {
+            answers = MainActivity.getAnswers();                    //load all answers
+        }
         Log.i("prepareGame", "questions has size " + questions.size() +
                 ", answers has size " + answers.size());
 
-        //add dummies to fill room
+        // TODO add dummies to fill room
 
     }
 
@@ -249,13 +267,14 @@ public class Dealer {
         session.leave();
     }//end remove player method
 
+    // TODO is this method necessary?
     //deal cards to all players
     public void setPlayers(){
         for(int i=0; i<players.size(); i++){
             //give everyone 5 cards
             while(players.get(i).getHand().size() < 5){
                 Card newCard = dealCard(players.get(i));
-                players.get(i).addCard(newCard);
+                players.get(i).draw(newCard);
                 inPlay.add(newCard);
             }
         }
@@ -263,12 +282,9 @@ public class Dealer {
 
     //update czar to next player
     private void updateCzar(){
-        //set czar to next player
         players.get(czarNum).setCzar(false);
         czarNum++;
         czarNum = czarNum % getGameSize();
-
-        //pub here
         players.get(czarNum).setCzar(true);
     }//end updateCzar method
 
@@ -278,8 +294,24 @@ public class Dealer {
         timer.start();
     }//end start method
 
+    public Object[] play(Player player){
+        //Returns: string[] cards, Player[] players, string state, string roomName
+        return new Object[]{
+                getNewHand(player),
+                this.getPlayers(),
+                phase,
+                dealerID};
+    }
 
-    public void pick(Player player, Card card){
+    /* TODO cannot use player.isCzar on submitted player object!
+     *
+     * @param   player player that is submitting a card
+     * @param   card Card czar has chosen
+     */
+    public void pick(Player player, String cardString){
+
+        Card card = getCardFromString(cardString);
+
         //czar can't submit during answering phase
         if(phase.equals("answering") && !player.isCzar()){
             //can't submit 2 cards in a round
@@ -293,9 +325,11 @@ public class Dealer {
             }
             forCzar.add(card);
         } else if(phase.equals("picking") && player.isCzar()){
+            winningCard = card;
+
             //update winner
             for(Player p : players){
-                if(card.getPID() == p.getPlayerID()){
+                if(card.getPID() == p.ID()){
                     winner = p;
                     //TODO pub winner
                     return;
@@ -325,21 +359,26 @@ public class Dealer {
         @Override
         public void onFinish(){
             switch (type){
-                case "answering":
+                case "answering": // end of answering phase
                     phase = "picking";
+
+                    Game.publish("picking", Card.handToStrings(answers), 10);
                     setNextTimer("picking");
                     break;
-                case "picking":
+                case "picking": // end of picking phase
                     forCzar.clear();
                     updateCzar();
                     questionCard = generateQuestion();              //update question
+
                     phase = "scoring";
+                    Game.publish("scoring", winner, winningCard.getText(), 10);
                     setNextTimer("scoring");
                     break;
-                case "scoring":
-                    //give point to winner
+                case "scoring": // end of scoring phase
+                    //TODO give point to winner
 
                     phase = "answering";
+                    Game.publish("answering", players.get(getCzarPos()), getQuestion().getText(), 10);
                     setNextTimer("answering");
                     break;
             }
