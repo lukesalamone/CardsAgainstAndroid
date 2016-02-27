@@ -31,13 +31,14 @@ public class Dealer {
     private static Player winner;                           //winner
     private static Card winningCard;
     private Card questionCard;                              //always know question card
-    //private boolean rating;                                 //pg13 or R
     private String dealerID;
     int czarNum;
     GameTimer timer;
     RiffleSession session;
     String URL;
     Domain Game;
+    private boolean online;
+    private int dummyCount;
 
     public Dealer(int ID){
         dealerID = "dealer" + ID;
@@ -45,23 +46,26 @@ public class Dealer {
         players  = new ArrayList<>();
         inPlay = new ArrayList<>();
         forCzar = new ArrayList<>();
-        questions = new ArrayList<>();
-        answers = new ArrayList<>();
-        session = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
+        questions = MainActivity.getQuestions();
+        answers = MainActivity.getAnswers();
+        online = GameActivity.online;
+        dummyCount = 0;
+
         //URL = session.getDomain();
         phase = "answering";
-        Game = Exec.getGame();
 
-        //TODO register all calls
+        if(GameActivity.online) {
+            session = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
+            Game = Exec.getGame();
 
-            /*
-             * riffle calls
-             * endpoint, arg types, return type, method pointer
-             *
-            */
-            Game.register("play", Object[].class, session::play);
-//            Game.register("pick", Player.class, String.class, (player, card)->pick(player, card));
-//            Game.register("left", Player.class, (Player) p -> removePlayer(p));
+        /*
+         * riffle calls
+         * register(endpoint, arg types, return type, method ptr)
+        */
+            Game.register("play", Player.class, Object[].class, this::play);
+            Game.register("pick", Player.class, String.class, Object.class, this::pick);
+            Game.register("left", Player.class, Object.class, this::removePlayer);
+        }
     }//end Dealer constructor
 
     public String ID(){
@@ -81,26 +85,17 @@ public class Dealer {
 
         players.add(player);
     }//end addPlayer method
-/*
-    //need to overload for czar situation
-    public void czarPick(Card card){
-        //can't give a dummy a point!
-        if(card.getPID() != -1){
-            //give winner a point
-            Player winner = getPlayerByID(card.getPID());
-            Exec.addPoint(winner);
-        }
 
-        updateCzar();
-    }
-*/
     public Card dealCard(Player player){
 
         Card card = generateAnswer();                       //generate new card to give to player
         card.PID = player.ID();
-        answers.remove(card);                               //remove card from deck
-        // player.addCard(card);                            //add card to player's hand
-        session.draw(player, card);
+
+        if(online) {
+            session.draw(player, card);
+        }else{
+            player.draw(card);                            //add card to player's hand
+        }
         inPlay.add(card);                                   //add card to cards in play
         return card;
     }//end dealCard method
@@ -116,8 +111,12 @@ public class Dealer {
         return dealCard(player);
     }
 
-    public boolean full(){
-        return (getGameSize() + 1 > this.ROOMCAP);
+    public boolean full() {
+        if (dummyCount == 0 && players.size() == ROOMCAP){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     public int getCzarPos(){
@@ -175,17 +174,19 @@ public class Dealer {
         }
 
         return hand;
-    }//end getNewHand method
+    }// end getNewHand method
 
-    //returns phase of gameTimer
+    // returns phase of gameTimer
     public String getPhase(){
         return phase;
     }
 
     public Player getPlayerByID(int PID){
-        //dummy player has PID = -1. This should never happen.
+
+        // dummy player has PID = -1. This should never happen.
         if(PID == -1){
-            return new Player(-1, null, false);
+            Log.wtf("Dealer::getPlayerByID", "Error player detected");
+            return new Player("error", 0, false);
         }
 
         for(int i=0; i<players.size(); i++){
@@ -194,9 +195,9 @@ public class Dealer {
             }
         }
         return null;
-    }//end getPlayerByID
+    }// end getPlayerByID
 
-    //Not a fan of this method
+    // Not a fan of this method
     public Player[] getPlayers(){
         return players.toArray(new Player[players.size()]);
     }//end getPlayers method
@@ -251,9 +252,21 @@ public class Dealer {
         }
         Log.i("prepareGame", "questions has size " + questions.size() +
                 ", answers has size " + answers.size());
+    }
 
-        // TODO add dummies to fill room
+    // add dummies to fill room
+    public void addDummies(){
+        while(!full() && players.size() < ROOMCAP){
+            Player dummy = new Player("dummmy" + Exec.getNewID(), 0, false);
+            addPlayer(dummy);
+            dummyCount++;
+            Log.i("add dummies", "dummy count: " + dummyCount);
+        }
 
+        if(!online){
+            Log.i("add dummies", "setting dummy as czar");
+            players.get(4).setCzar(true);
+        }
     }
 
     //when players send cards to dealer
@@ -262,9 +275,10 @@ public class Dealer {
         forCzar.add(card);
     }
 
-    public void removePlayer(Player player){
+    public Object removePlayer(Player player){
         players.remove(player);
         session.leave();
+        return null;
     }//end remove player method
 
     // TODO is this method necessary?
@@ -308,7 +322,7 @@ public class Dealer {
      * @param   player player that is submitting a card
      * @param   card Card czar has chosen
      */
-    public void pick(Player player, String cardString){
+    public Object pick(Player player, String cardString){
 
         Card card = getCardFromString(cardString);
 
@@ -332,11 +346,13 @@ public class Dealer {
                 if(card.getPID() == p.ID()){
                     winner = p;
                     //TODO pub winner
-                    return;
+                    return null;
                 }
             }
             winner = null;
         }
+
+        return null;
     }//end pick method
 
     /*
@@ -347,7 +363,7 @@ public class Dealer {
      * Scoring - Dealer gives point to winner
      *
      */
-    public class GameTimer extends CountDownTimer {
+    private class GameTimer extends CountDownTimer {
         private String type;
         private GameTimer next;
         private long timeRemaining;
@@ -362,7 +378,14 @@ public class Dealer {
                 case "answering": // end of answering phase
                     phase = "picking";
 
-                    Game.publish("picking", Card.handToStrings(answers), 10);
+                    if(online) {
+                        Game.publish("picking", Card.handToStrings(answers), 10);
+                    } else {
+                        //pad hand for czar with dummy cards
+                        while(forCzar.size() != 5){
+                            receiveCard(generateAnswer());
+                        }
+                    }
                     setNextTimer("picking");
                     break;
                 case "picking": // end of picking phase
@@ -371,14 +394,18 @@ public class Dealer {
                     questionCard = generateQuestion();              //update question
 
                     phase = "scoring";
-                    Game.publish("scoring", winner, winningCard.getText(), 10);
+                    if(online){
+                        Game.publish("scoring", winner, winningCard.getText(), 10);
+                    }
                     setNextTimer("scoring");
                     break;
                 case "scoring": // end of scoring phase
                     //TODO give point to winner
 
                     phase = "answering";
-                    Game.publish("answering", players.get(getCzarPos()), getQuestion().getText(), 10);
+                    if(online){
+                        Game.publish("answering", players.get(getCzarPos()), getQuestion().getText(), 10);
+                    }
                     setNextTimer("answering");
                     break;
             }

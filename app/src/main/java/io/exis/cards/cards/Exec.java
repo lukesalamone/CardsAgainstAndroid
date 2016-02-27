@@ -18,7 +18,6 @@ public class Exec {
 
     static ArrayList<Dealer> dealers = new ArrayList<>();
     static ArrayList<Sender> senders = new ArrayList<>();                   // dealers are senders
-    static int counter = 0;
     static Domain Game = new Domain("xs.damouse.CardsAgainst");
     Receiver receiver = new Receiver("xs.damouse.CardsAgainst", Game);      // Exec is receiver
 
@@ -30,9 +29,8 @@ public class Exec {
         dealers.remove(dealer);
     }
 
-    //finds a dealer of appropriate game not at max capacity
-    public static Dealer findDealer(){
-        //look for an open rating-appropriate dealer
+    //finds a dealer not at max capacity
+    public static Dealer findDealer(boolean online){
         for(int i=0; i<dealers.size(); i++){
             if(!dealers.get(i).full()){
                 return dealers.get(i);
@@ -40,17 +38,19 @@ public class Exec {
         }
 
         Dealer dealer = addDealer();
+        Log.i("Exec::findDealer", "found dealer " + dealer.ID());
 
-        // connect to Exec
-        Sender sender = new Sender("dealer" + dealer.ID(), Game);
-        senders.add(sender);
-
+        if(online){
+            // connect to Exec
+            Sender sender = new Sender("dealer" + dealer.ID(), Game);
+            senders.add(sender);
+        }
 
         return dealer;
     }// end findDealer method
 
     public static int getNewID(){
-        return counter++;
+        return (int) (Math.random() * Integer.MAX_VALUE);
     }// end getNewID method
 
     // probably won't need this...
@@ -108,7 +108,7 @@ class Receiver extends Domain {
 
         // TODO add Exec subscribes
 
-        Dealer dealer = Exec.findDealer();
+        Dealer dealer = Exec.findDealer(false);
 
         // TODO add Exec registers
         //Exec.getGame().register("/join", Player.class, (player)->dealer.addPlayer(player));

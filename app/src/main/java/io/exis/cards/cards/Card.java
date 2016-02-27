@@ -96,6 +96,7 @@ public class Card {
             throw new RuntimeException(e);
         }
         cardsArray = null;
+        Log.i("get questions", "questions has size " + questions.size());
         return questions;
     }//end getQuestions method
 
@@ -119,6 +120,7 @@ public class Card {
             throw new RuntimeException(e);
         }
         cardsArray = null;
+        Log.i("get answers", "answers has size " + answers.size());
         return answers;
     }//end getAnswers method
 

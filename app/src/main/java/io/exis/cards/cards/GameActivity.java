@@ -46,40 +46,16 @@ public class GameActivity extends Activity {
     TextView infoText;
 
     public GameActivity(){
-        online = MainActivity.online;
+        ////////////////////////////////
+        /////// BIG GREEN BUTTON ///////
+        ////////////////////////////////
+        online = false;
+        ///////////////////////////////
+
         context = MainActivity.getAppContext();
+        int id = Exec.getNewID();
+        player = new Player("player" + id, 0, false);
 
-        // TODO
-
-        riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-        int PID = Exec.getNewID();
-
-        if(PID == 0 || PID == -1){
-            Log.i("GameActivity", "problem with riffle.getNewID");
-            PID = Exec.getNewID();
-        }
-
-        player = new Player(
-                PID,
-                new ArrayList<Card>(),
-                false
-        );
-
-        riffle.setPlayer(player);
-        riffle.play();
-
-        dealer = Exec.findDealer();                        //gets a dealer for the player
-        dealer.prepareGame();                                   //load questions and answers
-        dealer.addPlayer(player);                               //adds player to dealer
-
-        //damouse's scheme
-        Log.i("Game Activity", "5");
-        Object[] playObject = riffle.play();
-        String[] hand = (String[]) playObject[0];
-        Player[] players = (Player[]) playObject[1];
-        String state = (String) playObject[2];
-        String roomName = (String) playObject[3];
-        Log.i("Game activity", "leaving constructor");
     }
 
     @Override
@@ -109,8 +85,6 @@ public class GameActivity extends Activity {
     public void onStart(){
         Log.i("Game activity", "entering onStart()");
         super.onStart();
-        setQuestion();                              //set question TextView
-        showCards();                                //populate answers TextViews
     }
 
     @Override
@@ -118,50 +92,83 @@ public class GameActivity extends Activity {
         super.onResume();
 
         if(online){
+            riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
+            riffle.setPlayer(player);
+
+            Object[] playObject = riffle.play();
+            String[] hand = (String[]) playObject[0];
+            Player[] players = (Player[]) playObject[1];
+            String state = (String) playObject[2];
+            String roomName = (String) playObject[3];
+            setQuestion();                              //set question TextView
+            showCards();
             playOnlineGame();
         } else {
+            //TODO consolidate calls into future Exec.join(player)
+
+            dealer = Exec.findDealer(online);                       //gets a dealer for the player
+            dealer.prepareGame();                                   //load questions and answers
+            dealer.addPlayer(player);                               //adds player to dealer
+            dealer.addDummies();
+            Log.i("onResume", "setting question");
+            setQuestion();                              //set question TextView
+            Log.i("onResume", "showing cards");
+            showCards();
+
+            Log.i("onResume", "playing offline game");
             playOfflineGame();
         }
+
+                               //populate answers TextViews
     }//end onResume method
 
     @Override
     public void onPause(){
         super.onPause();
 
-/*        //save points to disk
-        SharedPreferences settings = getSharedPreferences(PREFS, 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putInt("points", points);
-        editor.apply();*/
+        // TODO save points to disk
+
     }//end onPause method
 
     @Override
     protected void onStop(){
         super.onStop();
-
-/*        SharedPreferences settings = getSharedPreferences(PREFS, 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putInt("points", points);
-        editor.apply();*/
     }//end onStop method
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //riffle.leave(player);
-        dealer.removePlayer(player);
+        if(online) {
+            riffle.leave();
+        }else {
+            dealer.removePlayer(player);
+        }
     }
 
     private void playOfflineGame(){
+        int i = 0;
+        Log.i("playOfflineGame", "" + i++);
         selected = false;
+        Log.i("playOfflineGame", "" + i++);
         player.setCzar(dealer.isCzar(player));
+        Log.i("playOfflineGame", "" + i++);
         player.setHand(dealer.getNewHand(player));
+        Log.i("playOfflineGame", "" + i++);
         dealer.setPlayers();
+        Log.i("playOfflineGame", "" + i++);
         setQuestion();                          //draw question card
+        Log.i("playOfflineGame", "" + i++);
+        chosen = player.getHand().get(0);
+        Log.i("playOfflineGame", "" + i++);
 
         GameTimer timer = new GameTimer(15000, 1000);
+        Log.i("playOfflineGame", "" + i++);
+        timer.setType("answering");
+        Log.i("playOfflineGame", "" + i++);
         dealer.start();                         //start dealer's timer
+        Log.i("playOfflineGame", "" + i);
         timer.start();
+        Log.i("playOfflineGame", "leaving method");
     }//end playOfflineGame method
 
     private void playOnlineGame(){
@@ -263,10 +270,12 @@ public class GameActivity extends Activity {
             view = (TextView) findViewById(resID);
             view.setText(forCzar.get(i-1).getText());
         }
+        this.forCzar = forCzar;
     }
 
     private class GameTimer extends CountDownTimer{
         private GameTimer next;
+        private String type;
 
         public GameTimer(long startTime, long interval){
             super(startTime, interval);
@@ -274,9 +283,9 @@ public class GameActivity extends Activity {
 
         @Override
         public void onFinish(){
-            progressBar.setProgress(0);
+            progressBar.setProgress(progressBar.getMax());
 
-            switch(phase){
+            switch(type){
                 case "answering":                           //next phase will be picking
                     if(player.isCzar()){
                         infoText.setText(R.string.answeringInfo);
@@ -295,13 +304,13 @@ public class GameActivity extends Activity {
                     }
                     selected = false;
                     phase = "picking";
-                    setNextTimer();
+                    setNextTimer("picking");
                     break;
                 case "picking":                             //next phase will be scoring
                     infoText.setText(R.string.scoringInfo);
 
                     phase = "scoring";
-                    setNextTimer();
+                    setNextTimer("scoring");
                     break;
                 case "scoring":                                 //next phase will be answering
                     player.setCzar(dealer.isCzar(player));      //update whether player is czar
@@ -312,31 +321,34 @@ public class GameActivity extends Activity {
                         infoText.setText(R.string.answeringInfo);
                     }
                     Player winner = dealer.getWinner();             //give point if player is winner
-                    if(winner != null && winner.getPlayerID() == player.getPlayerID()){
+                    if(winner != null && winner.ID() == player.ID()){
                         Toast.makeText(context, "You won this round!", Toast.LENGTH_SHORT).show();
                         points++;
                     }
                     phase = "answering";
-                    setNextTimer();
+                    setNextTimer("answering");
                     break;
             }//end switch
-            setNextTimer();
             next.start();
         }
 
         @Override
         public void onTick(long millisUntilFinished){
+            //TODO add sexier progress animation
             //set chronometer width proportionally to time remaining
-            if(android.os.Build.VERSION.SDK_INT < 11) {
-                long timeRemaining = (millisUntilFinished / 1000);
-                int progress = (int) (progressBar.getMax() * timeRemaining / 15);
-                progressBar.setProgress(progress);
-            }
+            long timeRemaining = (millisUntilFinished / 1000);
+            int progress = (int) (progressBar.getMax() * timeRemaining / 15);
+            progressBar.setProgress(progress);
         }//end onTick method
 
-        private void setNextTimer(){
+        public void setType(String timerType){
+            type = timerType;
+        }
+
+        private void setNextTimer(String nextType){
             //lets keep this bad boy synchronized
             next = new GameTimer(dealer.getTimeRemainingInPhase(), 1000);
+            next.setType(nextType);
         }
     }//end GameTimer subclass
 }//end GameActivity class

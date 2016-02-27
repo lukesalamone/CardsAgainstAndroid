@@ -22,37 +22,31 @@ public class Player {
     private RiffleSession riffle;
     private String URL;
     private Domain Game;
+    private int score;
+    private String domain;
+    private boolean online;
 
-    public Player(int ID, ArrayList<Card> cards, boolean czar){
-        playerID = ID;
-        hand = cards;
-        boolean isCzar = czar;
-        riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-
-    }//end Player constructor
-
-    // damouse's player object
     public Player(String domain, int score, boolean czar){
-        URL = domain;
-        riffle = new RiffleSession(domain);
-        isCzar = czar;
-        playerID = createID();
+        this.playerID = Integer.parseInt(domain.substring(6, domain.length()));
+        this.domain = "player" + playerID;
+        this.isCzar = czar;
+        this.score = score;
+        this.online = GameActivity.online;
+        this.hand = new ArrayList<>();
 
-        //TODO do something with this info
-        Game.subscribe("answering", Player.class, String.class, Integer.class,
-                (czarPlayer, questionText, duration) -> Log.i("answering sub", "received question " + questionText));
-        Game.subscribe("picking", ArrayList.class, Integer.class,
-                (answers, duration)->Log.i("picking sub", "received answers " +  Card.printHand(answers)) );
-        //Game.publish("scoring", winner, Dealer.getWinningCard().getText(), 10);
-        Game.subscribe("scoring", Player.class, String.class, Integer.class,
-                (winningPlayer, winningCard, duration)->Log.i("scoring sub", "winning card " + winningCard));
+        if(online) {
+            this.riffle = new RiffleSession(domain);
+            Game.subscribe("answering", Player.class, String.class, Integer.class,
+                    (czarPlayer, questionText, duration) -> Log.i("answering sub", "received question " + questionText));
+            Game.subscribe("picking", ArrayList.class, Integer.class,
+                    (answers, duration) -> Log.i("picking sub", "received answers " + Card.printHand(answers)));
+            Game.subscribe("scoring", Player.class, String.class, Integer.class,
+                    (winningPlayer, winningCard, duration) -> Log.i("scoring sub", "winning card " + winningCard));
+            Game.register(domain + "/draw", Card.class, Object.class, this::draw);
 
-        //TODO register all endpoints
-//        Game.register(domain + "/draw", Card.class, Player::draw);
-
-        // join the game
-        riffle.join(this);
-
+            // join the game
+            riffle.join(this);
+        }
     }
 
     // TODO
@@ -91,28 +85,29 @@ public class Player {
     }//end czarPicks method
 
     //add a card to player's hand
-    public void draw(Card card){
+    public Object draw(Card card){
         hand.add(card);
+        return null;
     }//end addCard method
 
     public Card submit(){
         return null;
     }
 
-    //removes card from player's hand
+    // removes card from player's hand
     public boolean removeCard(Card card){
         boolean removed;
         removed = hand.remove(card);
         return removed;
-    }//end removeCard method
-
-    private int createID(){
-        return (int) (Math.random() * Integer.MAX_VALUE);
-    }
+    }// end removeCard method
 
     // submit card to dealer
     //TODO implement this method
     public void pick(Dealer dealer, Card card){
-        Game.call(dealer.ID() + "/pick", this, card.getText()).then(()->{});
-    }
+        if(online) {
+            Game.call(dealer.ID() + "/pick", this, card.getText()).then( ()->{} );
+        }else{
+            dealer.pick(this, card.getText());
+        }
+    }// end pick method
 }

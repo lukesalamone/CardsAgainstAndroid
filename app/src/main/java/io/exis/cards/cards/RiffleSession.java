@@ -58,22 +58,23 @@ public class RiffleSession {
 
     //server-side
     //Player calls at beginning of game to find dealer. Returns new hand.
-    public Object[] play(Player player){
+    public Object[] play(){
         String[] cards;
 
         // TODO
-        Dealer dealer = Exec.findDealer();
-        addPlayer(player);                  // TODO
+        Dealer dealer = Exec.findDealer(true);// TODO
+        addPlayer(this.player);
 
         // TODO
-        app.call(dealer.ID() + "/play", player).then(Object[].class, (ret)->setRet(ret));
+        app.call(dealer.ID() + "/play", this.player).then(Object[].class, this::setRet);
         return (Object[]) getRet();
     }//end play method
 
+    //TODO
     // player calls pick to tell dealer that Player picked a card
     public Object[] pick(Player player, String card){
         String[] cards;
-        String roomName = "Room " + Exec.findDealer().ID();
+        String roomName = "Room " + Exec.findDealer(true).ID();
 
         // TODO
         dealer.receiveCard(Card.searchCards(card));
@@ -99,7 +100,6 @@ public class RiffleSession {
     public void answering(Player czar, String question, int duration){
         app.publish("answering", czar, question, duration);
     }
-
 
     //dealer pub
     public void picking(String[] answers, int duration){
@@ -157,8 +157,8 @@ public class RiffleSession {
     /*
      * Called in GameActivity. Returns result of call of Exec::findDealer
      */
-    public Dealer findDealer(boolean adult){
-        return Exec.findDealer();
+    public Dealer findDealer(){
+        return Exec.findDealer(true);
     }//end findDealer method
 
     /*
