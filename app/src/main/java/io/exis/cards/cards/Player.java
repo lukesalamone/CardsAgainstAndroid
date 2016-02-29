@@ -36,6 +36,7 @@ public class Player {
 
         if(online) {
             this.riffle = new RiffleSession(domain);
+            this.Game = new Domain("xs.damouse.CardsAgainst." + playerID);
             Game.subscribe("answering", Player.class, String.class, Integer.class,
                     (czarPlayer, questionText, duration) -> Log.i("answering sub", "received question " + questionText));
             Game.subscribe("picking", ArrayList.class, Integer.class,
@@ -49,7 +50,6 @@ public class Player {
         }
     }
 
-    // TODO
     public Domain getGame(){
         return this.Game;
     }

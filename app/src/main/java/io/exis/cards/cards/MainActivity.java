@@ -31,10 +31,7 @@ public class MainActivity extends Activity {
     private static Typeface LibSansBold;
     private static Typeface LibSansItalic;
 
-    private boolean finishedLoading;
-
     Button gameButton;
-    TextView infoText;
     TextView pointsText;
     Switch onlineSwitch;
 
@@ -43,8 +40,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         MainActivity.context = getApplicationContext();
-
-        finishedLoading = false;
         online = false;
 
         //set typefaces
@@ -54,21 +49,9 @@ public class MainActivity extends Activity {
 
         gameButton  = (Button) findViewById(R.id.button);
         gameButton.setTypeface(LibSansBold);
-        infoText = (TextView) findViewById(R.id.info);
-        infoText.setTypeface(LibSansItalic);
-        pointsText = (TextView) findViewById(R.id.your_points);
-        onlineSwitch = (Switch) findViewById(R.id.onlineSwitch);
-        onlineSwitch.setTypeface(LibSans);
 
-        infoText.setText(R.string.loading_questions);
         questions = Card.getQuestions(false);
-        infoText.setText(R.string.loading_answers);
         answers = Card.getAnswers(false);
-        infoText.setText(R.string.finished);
-
-        finishedLoading = true;
-
-        //setPoints();
     }
 
     public void startGame(View view) {

@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.content.Context;
@@ -49,13 +49,12 @@ public class GameActivity extends Activity {
         ////////////////////////////////
         /////// BIG GREEN BUTTON ///////
         ////////////////////////////////
-        online = false;
+        online = true;
         ///////////////////////////////
 
         context = MainActivity.getAppContext();
         int id = Exec.getNewID();
         player = new Player("player" + id, 0, false);
-
     }
 
     @Override
@@ -329,15 +328,18 @@ public class GameActivity extends Activity {
                     setNextTimer("answering");
                     break;
             }//end switch
+            Log.i("game timer", "ending phase " + phase);
             next.start();
         }
 
         @Override
         public void onTick(long millisUntilFinished){
             //TODO add sexier progress animation
+
             //set chronometer width proportionally to time remaining
             long timeRemaining = (millisUntilFinished / 1000);
             int progress = (int) (progressBar.getMax() * timeRemaining / 15);
+
             progressBar.setProgress(progress);
         }//end onTick method
 

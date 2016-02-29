@@ -19,7 +19,6 @@ public class Exec {
     static ArrayList<Dealer> dealers = new ArrayList<>();
     static ArrayList<Sender> senders = new ArrayList<>();                   // dealers are senders
     static Domain Game = new Domain("xs.damouse.CardsAgainst");
-    Receiver receiver = new Receiver("xs.damouse.CardsAgainst", Game);      // Exec is receiver
 
     public static Domain getGame(){
         return Game;
@@ -74,7 +73,7 @@ public class Exec {
         dealers.add(dealer);
         return dealer;
 
-        //TODO register all endpoints
+        // TODO register all endpoints
     }//end addDealer method
 
     public static void addPoint(Player player){
@@ -88,8 +87,6 @@ class Receiver extends Domain {
     private static final String TAG = "Receiver";
     public MainActivity parent;
 
-    // I REALLY have to do this? Come on, java
-    // Create these without needing to override the default constructor...
     public Receiver(String name) {
         super(name);
     }
@@ -105,9 +102,6 @@ class Receiver extends Domain {
     @Override
     public void onJoin() {
         Log.d(TAG, "Receiver joined!");
-
-        // TODO add Exec subscribes
-
         Dealer dealer = Exec.findDealer(false);
 
         // TODO add Exec registers

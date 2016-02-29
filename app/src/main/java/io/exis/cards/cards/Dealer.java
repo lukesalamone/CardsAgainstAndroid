@@ -345,7 +345,7 @@ public class Dealer {
             for(Player p : players){
                 if(card.getPID() == p.ID()){
                     winner = p;
-                    //TODO pub winner
+                    session.scoring(winner, cardString, 10);
                     return null;
                 }
             }
