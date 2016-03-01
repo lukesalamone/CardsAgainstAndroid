@@ -21,7 +21,6 @@ public class Dealer {
     final int ROOMCAP = 5;
 
     private ArrayList<Player> players;                      //keep track of players playing
-    private ArrayList<Card> inPlay;                         //keep track of cards in play
     private ArrayList<Card> forCzar;                        //cards we send to czar
 
     //keep track of cards not in play
@@ -44,7 +43,6 @@ public class Dealer {
         dealerID = "dealer" + ID;
         czarNum = 0;
         players  = new ArrayList<>();
-        inPlay = new ArrayList<>();
         forCzar = new ArrayList<>();
         questions = MainActivity.getQuestions();
         answers = MainActivity.getAnswers();
@@ -96,16 +94,8 @@ public class Dealer {
         }else{
             player.draw(card);                            //add card to player's hand
         }
-        inPlay.add(card);                                   //add card to cards in play
         return card;
     }//end dealCard method
-
-    //Overloaded for damouse
-    public String dealCard(){
-        Card card = generateAnswer();
-        inPlay.add(card);
-        return card.getText();
-    }
 
     public Card drawCard(Player player){
         return dealCard(player);
@@ -145,14 +135,14 @@ public class Dealer {
 
     public Card getCardFromString(String cardString){
         // iterate over cards in play
-        for(Card c: inPlay){
+        for(Card c: answers){
             if(c.getText().equals(cardString)){
                 return c;
             }
         }
 
         // iterate over cards for czar
-        for(Card c : forCzar){
+        for(Card c : questions){
             if(c.getText().equals(cardString)){
                 return c;
             }
@@ -281,15 +271,17 @@ public class Dealer {
         return null;
     }//end remove player method
 
-    // TODO is this method necessary?
-    //deal cards to all players
+    // deal cards to all players
     public void setPlayers(){
         for(int i=0; i<players.size(); i++){
             //give everyone 5 cards
             while(players.get(i).getHand().size() < 5){
-                Card newCard = dealCard(players.get(i));
-                players.get(i).draw(newCard);
-                inPlay.add(newCard);
+                Card newCard = generateAnswer();
+                if(online){
+                    session.draw(players.get(i), newCard);
+                } else {
+                    players.get(i).draw(newCard);
+                }
             }
         }
     }//end setPlayers method
@@ -406,12 +398,13 @@ public class Dealer {
                     if(online){
                         Game.publish("answering", players.get(getCzarPos()), getQuestion().getText(), 10);
                     }
+                    setPlayers();                    // deal cards back to each player
                     setNextTimer("answering");
                     break;
-            }
+            }// end switch
 
             next.start();
-        }
+        }// end onFinish method
 
         @Override
         public void onTick(long millisUntilFinished){

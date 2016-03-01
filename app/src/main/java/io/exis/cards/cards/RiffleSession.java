@@ -52,7 +52,7 @@ public class RiffleSession {
 
     /* damouse's methods
      *
-     * For now, these methods are a thin wrapper around luke's original methods
+     * For now, these methods are a thin wrapper around Luke's original methods
      * TODO unwrap methods to use damouse
      */
 

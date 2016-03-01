@@ -102,7 +102,7 @@ public class Player {
     }// end removeCard method
 
     // submit card to dealer
-    //TODO implement this method
+    // dealer calls this method on player
     public void pick(Dealer dealer, Card card){
         if(online) {
             Game.call(dealer.ID() + "/pick", this, card.getText()).then( ()->{} );
@@ -110,4 +110,14 @@ public class Player {
             dealer.pick(this, card.getText());
         }
     }// end pick method
+
+    public String printHand(){
+        String s = "";
+
+        for(Card c: hand){
+            s += c.getText() + "\n";
+        }
+
+        return s;
+    }
 }

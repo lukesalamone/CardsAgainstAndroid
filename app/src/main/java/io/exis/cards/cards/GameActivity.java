@@ -49,7 +49,7 @@ public class GameActivity extends Activity {
         ////////////////////////////////
         /////// BIG GREEN BUTTON ///////
         ////////////////////////////////
-        online = true;
+        online = false;
         ///////////////////////////////
 
         context = MainActivity.getAppContext();
@@ -109,9 +109,8 @@ public class GameActivity extends Activity {
             dealer.prepareGame();                                   //load questions and answers
             dealer.addPlayer(player);                               //adds player to dealer
             dealer.addDummies();
-            Log.i("onResume", "setting question");
+
             setQuestion();                              //set question TextView
-            Log.i("onResume", "showing cards");
             showCards();
 
             Log.i("onResume", "playing offline game");
@@ -146,28 +145,17 @@ public class GameActivity extends Activity {
 
     private void playOfflineGame(){
         int i = 0;
-        Log.i("playOfflineGame", "" + i++);
         selected = false;
-        Log.i("playOfflineGame", "" + i++);
         player.setCzar(dealer.isCzar(player));
-        Log.i("playOfflineGame", "" + i++);
         player.setHand(dealer.getNewHand(player));
-        Log.i("playOfflineGame", "" + i++);
         dealer.setPlayers();
-        Log.i("playOfflineGame", "" + i++);
         setQuestion();                          //draw question card
-        Log.i("playOfflineGame", "" + i++);
         chosen = player.getHand().get(0);
-        Log.i("playOfflineGame", "" + i++);
 
         GameTimer timer = new GameTimer(15000, 1000);
-        Log.i("playOfflineGame", "" + i++);
         timer.setType("answering");
-        Log.i("playOfflineGame", "" + i++);
         dealer.start();                         //start dealer's timer
-        Log.i("playOfflineGame", "" + i);
         timer.start();
-        Log.i("playOfflineGame", "leaving method");
     }//end playOfflineGame method
 
     private void playOnlineGame(){
@@ -208,7 +196,12 @@ public class GameActivity extends Activity {
 
     //TODO condense these 5 methods...
     public void submitCard1(View view){
-        player.pick(dealer, player.getHand().get(0));
+        if(online){
+
+        }else{
+            player.pick(dealer, player.getHand().get(0));
+        }
+
 
         //set background colors
         setBackgrounds(1, view);
@@ -324,6 +317,9 @@ public class GameActivity extends Activity {
                         Toast.makeText(context, "You won this round!", Toast.LENGTH_SHORT).show();
                         points++;
                     }
+                    Log.i("Player's cards", player.printHand());
+
+                    showCards();
                     phase = "answering";
                     setNextTimer("answering");
                     break;
@@ -348,8 +344,8 @@ public class GameActivity extends Activity {
         }
 
         private void setNextTimer(String nextType){
-            //lets keep this bad boy synchronized
-            next = new GameTimer(dealer.getTimeRemainingInPhase(), 1000);
+            // TODO synchronization may be a problem
+            next = new GameTimer(10000, 1000);
             next.setType(nextType);
         }
     }//end GameTimer subclass
