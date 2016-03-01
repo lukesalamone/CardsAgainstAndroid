@@ -6,10 +6,8 @@ Created by Luke Salamone
 
 ###Punt List
 
-Networking with Riffle
-
-Java futures & promises (jdererred)
-
 List players in GameActivity
 
 Login / Registration
+
+Saving points
