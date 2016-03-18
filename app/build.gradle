@@ -14,7 +14,6 @@ android {
         multiDexEnabled true
     }
 
-    artifacts.add("default", file('mantle.aar'))
 
     buildTypes {
         release {

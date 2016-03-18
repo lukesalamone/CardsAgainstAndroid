@@ -7,6 +7,7 @@ import com.exis.riffle.cumin.Cumin;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Map;
 
 import go.mantle.Mantle;
@@ -82,7 +83,7 @@ class App {
                             Object result = t.fn.invoke(Arrays.copyOfRange(args, 1, args.length));
 
                             Object[] packed = {result};
-                            mantleDomain.Yield(yieldId.longValue(), Utils.marshall(packed));
+                            mantleDomain.Yield(yieldId.toString(), Utils.marshall(packed));
                         } else {
                             t.fn.invoke(args);
                         }

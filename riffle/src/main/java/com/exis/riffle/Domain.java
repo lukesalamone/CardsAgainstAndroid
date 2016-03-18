@@ -42,7 +42,7 @@ public class Domain {
             this.onJoin();
         });
 
-        mantleDomain.Join(d.cb.longValue(), d.eb.longValue());
+        mantleDomain.Join(d.cb.toString(), d.eb.toString());
         app.listen(mantleDomain);
     }
 
@@ -60,7 +60,7 @@ public class Domain {
         BigInteger fn = Utils.newID();
 
         app.handlers.put(fn, new HandlerTuple(handler, false));
-        mantleDomain.Subscribe(endpoint, d.cb.longValue(), d.eb.longValue(), fn.longValue(), "");
+        mantleDomain.Subscribe(endpoint, d.cb.toString(), d.eb.toString(), fn.toString(), "");
         return d;
     }
 
@@ -69,19 +69,19 @@ public class Domain {
         BigInteger fn = Utils.newID();
 
         app.handlers.put(fn, new HandlerTuple(handler, true));
-        mantleDomain.Register(endpoint, d.cb.longValue(), d.eb.longValue(), fn.longValue(), "");
+        mantleDomain.Register(endpoint, d.cb.toString(), d.eb.toString(), fn.toString(), "");
         return d;
     }
 
     public Deferred publish(String endpoint, Object... arguments) {
         Deferred d = new Deferred();
-        mantleDomain.Publish(endpoint, d.cb.longValue(), d.eb.longValue(), Utils.marshall(arguments));
+        mantleDomain.Publish(endpoint, d.cb.toString(), d.eb.toString(), Utils.marshall(arguments));
         return d;
     }
 
     public CallDeferred call(String endpoint, Object... arguments) {
         CallDeferred d = new CallDeferred(app);
-        mantleDomain.Call(endpoint, d.cb.longValue(), d.eb.longValue(), Utils.marshall(arguments));
+        mantleDomain.Call(endpoint, d.cb.toString(), d.eb.toString(), Utils.marshall(arguments));
         return d;
     }
 
@@ -89,7 +89,7 @@ public class Domain {
         // TODO: remove handler
 
         Deferred d = new Deferred();
-        mantleDomain.Unsubscribe(endpoint, d.cb.longValue(), d.eb.longValue());
+        mantleDomain.Unsubscribe(endpoint, d.cb.toString(), d.eb.toString());
         return d;
     }
 
@@ -97,7 +97,7 @@ public class Domain {
         // TODO: remove handler
 
         Deferred d = new Deferred();
-        mantleDomain.Unregister(endpoint, d.cb.longValue(), d.eb.longValue());
+        mantleDomain.Unregister(endpoint, d.cb.toString(), d.eb.toString());
         return d;
     }
 
@@ -109,7 +109,7 @@ public class Domain {
     //
     // Start Generic Shotgun
 
-    public  Deferred subscribe(String endpoint, Handler.ZeroZero handler) {
+    public  Deferred subscribe(String endpoint,  Handler.ZeroZero handler) {
         return _subscribe(endpoint, Cumin.cuminicate(handler));
     }
 
