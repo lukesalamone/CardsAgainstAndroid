@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.exis.riffle.Domain;
 import com.exis.riffle.Riffle;
 
 import java.util.ArrayList;
@@ -107,6 +108,13 @@ public class GameActivity extends Activity {
             // int id = Exec.getNewID();
             Log.i(TAG, "creating Exec instance");
             exec = new Exec(this);
+
+            Domain app = new Domain("xs.damouse.CardsAgainst");
+            Player player = new Player(Exec.getNewID(), app);
+            player.activity = this;
+            exec.externalPlayerDomain = player;
+
+            exec.join();
 
         } else {
             //TODO consolidate calls into future Exec.join(player)
