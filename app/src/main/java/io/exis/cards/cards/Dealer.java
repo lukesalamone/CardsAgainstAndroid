@@ -298,8 +298,6 @@ public class Dealer extends Domain{
     public Object[] play(){
         //Returns: string[] cards, Player[] players, string state, string roomName
 
-
-
         return new Object[]{
                 getNewHand(),
                 this.getPlayers(),

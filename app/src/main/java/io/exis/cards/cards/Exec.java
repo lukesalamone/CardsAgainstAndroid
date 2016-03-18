@@ -33,14 +33,17 @@ public class Exec extends Domain{
     @Override
     public void onJoin(){
         String TAG = "Exec::onJoin()";
+
         register("play", Object[].class, Exec::play);
 
         activity.player = new Player(getNewID(), "", new Domain("xs.damouse.CardsAgainst"));
+
         Log.i(TAG, "creating new riffle session");
-        activity.riffle = new RiffleSession(player.domain(), this);
+        activity.riffle = new RiffleSession(activity.player.domain(), this);
 
         Log.i(TAG, "calling Exec::play");
         Object[] playObject = play();
+
         if(playObject == null){
             Log.wtf(TAG, "play object is null!");
         }
@@ -67,8 +70,6 @@ public class Exec extends Domain{
         activity.showCards();
         Log.i(TAG, "playing online game");
         activity.playOnlineGame();
-
-
     }
 
     // TODO offline case in GameActivity

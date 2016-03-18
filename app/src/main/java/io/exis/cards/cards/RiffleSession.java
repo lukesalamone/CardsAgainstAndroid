@@ -23,7 +23,6 @@ import com.exis.riffle.cumin.Handler;
 @SuppressWarnings("unused")
 public class RiffleSession {
 
-    //private WAMPWrapper WAMP;
     Dealer dealer;
     Domain app;
     Function handler;
