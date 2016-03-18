@@ -32,8 +32,13 @@ public class Player extends Domain {
     private Object ret;
     private Card nextCard;
 
+    GameActivity activity;
+    Domain exec;
+
     public Player(int ID, String dealerDomain, Domain app){
         super("player" + ID, app);
+        exec = new Domain(dealerDomain, app);
+
         this.ID = ID;         // numbers only
         this.playerID = "player" + ID;
         this.online = GameActivity.online;
@@ -43,6 +48,51 @@ public class Player extends Domain {
 
     @Override
     public void onJoin(){
+        String TAG = "Player::onJoin()";
+
+//        activity.player = new Player(getNewID(), "", new Domain("xs.damouse.CardsAgainst"));
+        Log.i(TAG, "creating new riffle session");
+        activity.player = this;
+        activity.riffle = new RiffleSession(this, exec);
+
+        // TOOD: receive the results of the play call and THEN handle all the other stuff--
+        // methods below included!
+        Log.i(TAG, "calling Exec::play");
+        exec.call("play").then () -> {
+            Log.i(TAG, "Called play!");
+
+            /*
+                    Object[] playObject = play();
+
+        if(playObject == null){
+            Log.wtf(TAG, "play object is null!");
+        }
+
+        try {
+            activity.hand = (String[]) playObject[0];
+        }catch(NullPointerException e){
+            Log.wtf(TAG, "hand is null!");
+        }
+
+        activity.players = (Player[]) playObject[1];
+        activity.state = (String) playObject[2];
+        activity.roomName = (String) playObject[3];
+
+        player.setDealer(activity.roomName);
+
+        Log.i(TAG, "setting player");
+        riffle.setPlayer(player);
+
+        Log.i(TAG, "joining game");
+        activity.player.join();
+
+        activity.setQuestion();                              //set question TextView
+        activity.showCards();
+        Log.i(TAG, "playing online game");
+        activity.playOnlineGame();
+             */
+        });
+
         Log.i("Player", "sub to answering");
         subscribe("answering", Player.class, String.class, Integer.class,
                 (czarPlayer, questionText, duration) -> {
@@ -173,4 +223,8 @@ public class Player extends Domain {
     public String winningCard(){
         return winningCard;
     }
+
+    public static int getNewID(){
+        return (int) (Math.random() * Integer.MAX_VALUE);
+    }// end getNewID method
 }

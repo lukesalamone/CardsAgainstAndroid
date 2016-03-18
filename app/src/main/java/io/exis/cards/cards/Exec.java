@@ -22,7 +22,9 @@ public class Exec extends Domain{
     private GameActivity activity;
     private Domain domain;
 
-    public Exec(GameActivity activity){
+    public Domain externalPlayerDomain;
+
+    public Exec(GameActivity activity) {
         super("Exec", new Domain("xs.damouse.CardsAgainst"));
         Log.i("Exec", "entering constructor");
         this.activity = activity;
@@ -35,40 +37,41 @@ public class Exec extends Domain{
         String TAG = "Exec::onJoin()";
         register("play", Object[].class, Exec::play);
 
-        activity.player = new Player(getNewID(), "", new Domain("xs.damouse.CardsAgainst"));
-        Log.i(TAG, "creating new riffle session");
-        activity.riffle = new RiffleSession(player.domain(), this);
+//        activity.player = new Player(getNewID(), "", new Domain("xs.damouse.CardsAgainst"));
+//        Log.i(TAG, "creating new riffle session");
+//        activity.riffle = new RiffleSession(player.domain(), this);
 
-        Log.i(TAG, "calling Exec::play");
-        Object[] playObject = play();
-        if(playObject == null){
-            Log.wtf(TAG, "play object is null!");
-        }
+//        Log.i(TAG, "calling Exec::play");
+//        Object[] playObject = play();
+//
+//        if(playObject == null){
+//            Log.wtf(TAG, "play object is null!");
+//        }
+//
+//        try {
+//            activity.hand = (String[]) playObject[0];
+//        }catch(NullPointerException e){
+//            Log.wtf(TAG, "hand is null!");
+//        }
+//
+//        activity.players = (Player[]) playObject[1];
+//        activity.state = (String) playObject[2];
+//        activity.roomName = (String) playObject[3];
+//
+//        player.setDealer(activity.roomName);
+//
+//        Log.i(TAG, "setting player");
+//        riffle.setPlayer(player);
+//
+//        Log.i(TAG, "joining game");
+//        activity.player.join();
+//
+//        activity.setQuestion();                              //set question TextView
+//        activity.showCards();
+//        Log.i(TAG, "playing online game");
+//        activity.playOnlineGame();
 
-        try {
-            activity.hand = (String[]) playObject[0];
-        }catch(NullPointerException e){
-            Log.wtf(TAG, "hand is null!");
-        }
-
-        activity.players = (Player[]) playObject[1];
-        activity.state = (String) playObject[2];
-        activity.roomName = (String) playObject[3];
-
-        player.setDealer(activity.roomName);
-
-        Log.i(TAG, "setting player");
-        riffle.setPlayer(player);
-
-        Log.i(TAG, "joining game");
-        activity.player.join();
-
-        activity.setQuestion();                              //set question TextView
-        activity.showCards();
-        Log.i(TAG, "playing online game");
-        activity.playOnlineGame();
-
-
+        externalPlayerDomain.join();
     }
 
     // TODO offline case in GameActivity
