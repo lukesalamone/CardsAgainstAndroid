@@ -14,48 +14,69 @@ import java.util.ArrayList;
  *
  * Created by luke on 10/13/15.
  */
-public class Player {
+public class Player extends Domain {
 
-    private int playerID;                   //unique to every player
+    private int ID;                         //unique to every player
+    private String playerID;
     private ArrayList<Card> hand;           //list of a player's cards
     private boolean isCzar;                 //whether the player is card czar
-    private RiffleSession riffle;
-    private String URL;
-    private Domain Game;
     private int score;
-    private String domain;
+    private String dealerDomain;
     private boolean online;
+    private Player czar;
+    private String question;
+    private int duration;
+    private ArrayList<Card> answers;
+    private Player winner;
+    private String winningCard;
+    private Object ret;
+    private Card nextCard;
 
-    public Player(String domain, int score, boolean czar){
-        this.playerID = Integer.parseInt(domain.substring(6, domain.length()));
-        this.domain = "player" + playerID;
-        this.isCzar = czar;
-        this.score = score;
+    public Player(int ID, String dealerDomain, Domain app){
+        super("player" + ID, app);
+        this.ID = ID;         // numbers only
+        this.playerID = "player" + ID;
         this.online = GameActivity.online;
         this.hand = new ArrayList<>();
+        this.dealerDomain = dealerDomain;
+    }// end constructor
 
-        if(online) {
-            this.riffle = new RiffleSession(domain);
-            this.Game = new Domain("xs.damouse.CardsAgainst." + playerID);
-            Game.subscribe("answering", Player.class, String.class, Integer.class,
-                    (czarPlayer, questionText, duration) -> Log.i("answering sub", "received question " + questionText));
-            Game.subscribe("picking", ArrayList.class, Integer.class,
-                    (answers, duration) -> Log.i("picking sub", "received answers " + Card.printHand(answers)));
-            Game.subscribe("scoring", Player.class, String.class, Integer.class,
-                    (winningPlayer, winningCard, duration) -> Log.i("scoring sub", "winning card " + winningCard));
-            Game.register(domain + "/draw", Card.class, Object.class, this::draw);
+    @Override
+    public void onJoin(){
+        Log.i("Player", "sub to answering");
+        subscribe("answering", Player.class, String.class, Integer.class,
+                (czarPlayer, questionText, duration) -> {
+                    Log.i("answering sub", "received question " + questionText);
+                    if (czarPlayer == this) {
+                        this.setCzar(true);
+                    }
+                    this.question = questionText;
+                    this.duration = duration;
+                });
 
-            // join the game
-            riffle.join(this);
-        }
+        Log.i("Player", "sub to picking");
+        subscribe("picking", ArrayList.class, Integer.class,
+                (answers, duration) -> {
+                    Log.i("picking sub", "received answers " + Card.printHand(answers));
+                    this.answers = answers;
+                    this.duration = duration;
+                });
+
+        Log.i("Player", "sub to scoring");
+        subscribe("scoring", Player.class, String.class, Integer.class,
+                (winningPlayer, winningCard, duration) -> {
+                    Log.i("scoring sub", "winning card " + winningCard);
+                    this.winner = winningPlayer;
+                    this.winningCard = winningCard;
+                    this.duration = duration;
+                });
+
+        Log.i("Player", "reg draw");
+        register("draw", Card.class, Object.class, this::draw);
     }
 
-    public Domain getGame(){
-        return this.Game;
-    }
-
-    public String getDomain(){
-        return this.URL;
+    public Domain domain(){
+        return this;
     }
 
     public ArrayList<Card> getHand(){
@@ -63,7 +84,7 @@ public class Player {
     }//end getCards method
 
     public int ID(){
-        return this.playerID;
+        return this.ID;
     }//end getPlayerID method
 
     public boolean isCzar(){
@@ -78,11 +99,9 @@ public class Player {
         this.hand = hand;
     }
 
-    public Card czarPicks(ArrayList<Card> czarList){
-        int x = 0;
-
-        return czarList.get(x);
-    }//end czarPicks method
+    public void setDealer(String dealerDomain){
+        this.dealerDomain = dealerDomain;
+    }
 
     //add a card to player's hand
     public Object draw(Card card){
@@ -105,7 +124,8 @@ public class Player {
     // dealer calls this method on player
     public void pick(Dealer dealer, Card card){
         if(online) {
-            Game.call(dealer.ID() + "/pick", this, card.getText()).then( ()->{} );
+            call("pick", this, card.getText()).then(Object.class, this::setRet);
+            nextCard = (Card) getRet();
         }else{
             dealer.pick(this, card.getText());
         }
@@ -119,5 +139,38 @@ public class Player {
         }
 
         return s;
+    }
+
+    private void setRet(Object o){
+        ret = o;
+    }
+
+    // getter methods
+    private Object getRet(){
+        return ret;
+    }
+
+    public Player czar(){
+        return czar;
+    }
+
+    public String question(){
+        return question;
+    }
+
+    public int duration(){
+        return duration;
+    }
+
+    public ArrayList answers(){
+        return answers;
+    }
+
+    public Player winner(){
+        return winner;
+    }
+
+    public String winningCard(){
+        return winningCard;
     }
 }

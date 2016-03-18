@@ -38,10 +38,10 @@ public class Card {
     //Every card has an ID, associated text, and type
     //Type may be 'q' for question or 'a' for answer
     public Card(String cardID, String cardText, char cardType, int playerID){
-        ID = cardID;
-        text = cardText;
-        type = cardType;
-        PID = playerID;
+        this.ID = cardID;
+        this.text = cardText;
+        this.type = cardType;
+        this.PID = playerID;
         context = MainActivity.getAppContext();
     }//end Card constructor
 

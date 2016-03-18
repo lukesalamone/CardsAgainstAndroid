@@ -8,6 +8,7 @@ import android.os.CountDownTimer;
 import android.util.Log;
 
 import com.exis.riffle.Domain;
+import com.exis.riffle.Riffle;
 
 /**
  * Dealer.java
@@ -16,7 +17,7 @@ import com.exis.riffle.Domain;
  *
  * Created by luke on 10/13/15.
  */
-public class Dealer {
+public class Dealer extends Domain{
 
     final int ROOMCAP = 5;
 
@@ -34,13 +35,12 @@ public class Dealer {
     int czarNum;
     GameTimer timer;
     RiffleSession session;
-    String URL;
-    Domain Game;
     private boolean online;
     private int dummyCount;
 
     public Dealer(int ID){
-        dealerID = "dealer" + ID;
+        super("dealer" + ID, new Domain("xs.damouse.CardsAgainst"));
+        dealerID = ID + "";
         czarNum = 0;
         players  = new ArrayList<>();
         forCzar = new ArrayList<>();
@@ -51,20 +51,15 @@ public class Dealer {
 
         //URL = session.getDomain();
         phase = "answering";
-
-        if(GameActivity.online) {
-            session = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-            Game = Exec.getGame();
-
-        /*
-         * riffle calls
-         * register(endpoint, arg types, return type, method ptr)
-        */
-            Game.register("play", Player.class, Object[].class, this::play);
-            Game.register("pick", Player.class, String.class, Object.class, this::pick);
-            Game.register("left", Player.class, Object.class, this::removePlayer);
-        }
+        publish(phase, players.get(getCzarPos()), getQuestion().getText(), 10);
     }//end Dealer constructor
+
+    // riffle calls
+    @Override
+    public void onJoin(){
+        register("pick", Player.class, String.class, Object.class, this::pick);
+        register("left", Player.class, Object.class, this::removePlayer);
+    }
 
     public String ID(){
         return this.dealerID;
@@ -156,11 +151,11 @@ public class Dealer {
         return players.size();
     }//end getGameSize method
 
-    public ArrayList<Card> getNewHand(Player player){
+    public ArrayList<Card> getNewHand(){
         ArrayList<Card> hand = new ArrayList<>();
 
         for(int i=0; i<5; i++){
-            hand.add(dealCard(player));
+            hand.add(generateAnswer());
         }
 
         return hand;
@@ -176,7 +171,7 @@ public class Dealer {
         // dummy player has PID = -1. This should never happen.
         if(PID == -1){
             Log.wtf("Dealer::getPlayerByID", "Error player detected");
-            return new Player("error", 0, false);
+            return new Player(-1, dealerID, null);
         }
 
         for(int i=0; i<players.size(); i++){
@@ -247,7 +242,7 @@ public class Dealer {
     // add dummies to fill room
     public void addDummies(){
         while(!full() && players.size() < ROOMCAP){
-            Player dummy = new Player("dummmy" + Exec.getNewID(), 0, false);
+            Player dummy = new Player(Exec.getNewID(), dealerID, null);
             addPlayer(dummy);
             dummyCount++;
             Log.i("add dummies", "dummy count: " + dummyCount);
@@ -300,10 +295,13 @@ public class Dealer {
         timer.start();
     }//end start method
 
-    public Object[] play(Player player){
+    public Object[] play(){
         //Returns: string[] cards, Player[] players, string state, string roomName
+
+
+
         return new Object[]{
-                getNewHand(player),
+                getNewHand(),
                 this.getPlayers(),
                 phase,
                 dealerID};
@@ -371,7 +369,7 @@ public class Dealer {
                     phase = "picking";
 
                     if(online) {
-                        Game.publish("picking", Card.handToStrings(answers), 10);
+                        publish("picking", Card.handToStrings(answers), 10);
                     } else {
                         //pad hand for czar with dummy cards
                         while(forCzar.size() != 5){
@@ -387,7 +385,7 @@ public class Dealer {
 
                     phase = "scoring";
                     if(online){
-                        Game.publish("scoring", winner, winningCard.getText(), 10);
+                        publish("scoring", winner, winningCard.getText(), 10);
                     }
                     setNextTimer("scoring");
                     break;
@@ -396,7 +394,7 @@ public class Dealer {
 
                     phase = "answering";
                     if(online){
-                        Game.publish("answering", players.get(getCzarPos()), getQuestion().getText(), 10);
+                        publish("answering", players.get(getCzarPos()), getQuestion().getText(), 10);
                     }
                     setPlayers();                    // deal cards back to each player
                     setNextTimer("answering");

@@ -13,6 +13,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import com.exis.riffle.Riffle;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 

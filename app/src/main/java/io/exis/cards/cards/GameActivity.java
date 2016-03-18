@@ -14,6 +14,8 @@ import android.widget.TextView;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.exis.riffle.Riffle;
+
 import java.util.ArrayList;
 
 /**
@@ -29,14 +31,20 @@ public class GameActivity extends Activity {
     public int points;
     private Context context;
     public static boolean online;
-    private Player player;
+    public Player player;
     private Dealer dealer;
+    private Exec exec;
     private ProgressBar progressBar;
-    private RiffleSession riffle;
+    public RiffleSession riffle;
     private boolean selected;                                 //whether card has been selected
     private Card chosen;
     private ArrayList<Card> forCzar;
     private String phase;
+
+    public String[] hand;
+    public Player[] players;
+    public String state;
+    public String roomName;
 
     TextView card1;
     TextView card2;
@@ -46,15 +54,18 @@ public class GameActivity extends Activity {
     TextView infoText;
 
     public GameActivity(){
+        Riffle.setFabricDev();
+        Riffle.setLogLevelDebug();
+        Riffle.setCuminOff();
+
+        Log.i("GameActivity", "entered constructor");
         ////////////////////////////////
-        /////// BIG GREEN BUTTON ///////
+        /////// FAT RED BUTTON ///////
         ////////////////////////////////
-        online = false;
+        online = true;
         ///////////////////////////////
 
         context = MainActivity.getAppContext();
-        int id = Exec.getNewID();
-        player = new Player("player" + id, 0, false);
     }
 
     @Override
@@ -89,19 +100,14 @@ public class GameActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+        String TAG = "GameActivity::onResume()";
+        int i = 0;
 
         if(online){
-            riffle = new RiffleSession("ws://ec2-52-26-83-61.us-west-2.compute.amazonaws.com:8000/ws");
-            riffle.setPlayer(player);
+            // int id = Exec.getNewID();
+            Log.i(TAG, "creating Exec instance");
+            exec = new Exec(this);
 
-            Object[] playObject = riffle.play();
-            String[] hand = (String[]) playObject[0];
-            Player[] players = (Player[]) playObject[1];
-            String state = (String) playObject[2];
-            String roomName = (String) playObject[3];
-            setQuestion();                              //set question TextView
-            showCards();
-            playOnlineGame();
         } else {
             //TODO consolidate calls into future Exec.join(player)
 
@@ -147,7 +153,7 @@ public class GameActivity extends Activity {
         int i = 0;
         selected = false;
         player.setCzar(dealer.isCzar(player));
-        player.setHand(dealer.getNewHand(player));
+        player.setHand(dealer.getNewHand());
         dealer.setPlayers();
         setQuestion();                          //draw question card
         chosen = player.getHand().get(0);
@@ -158,39 +164,61 @@ public class GameActivity extends Activity {
         timer.start();
     }//end playOfflineGame method
 
-    private void playOnlineGame(){
+    public void playOnlineGame(){
+        String TAG = "playOnlineGame";
+        int i = 0;
         selected = false;
-        player.setCzar(dealer.isCzar(player));
-        player.setHand(dealer.getNewHand(player));
-        dealer.setPlayers();
-        setQuestion();                          //draw question card
+
+        Log.i(TAG, "" + i++);
+        //player.setHand(dealer.getNewHand(player));                // TODO
+
+        Log.i(TAG, "" + i++);
+        //dealer.setPlayers();                                      // TODO
+
+        Log.i(TAG, "" + i++);
+        setQuestion();
 
         GameTimer timer = new GameTimer(15000, 1000);
         dealer.start();                         //start dealer's timer
         timer.start();
     }//end playGame method
 
-    private void setQuestion(){
-        Card card = dealer.getQuestion();
+    public void setQuestion(){
+        String questionText;
+        if(online) {
+            questionText = player.question();
+        }else{
+            Card card = dealer.getQuestion();
+            questionText = card.getText();
+        }
 
-        String questionText = card.getText();
         TextView textView = (TextView) findViewById(R.id.question);
         textView.setText(questionText);
         textView.setTypeface(MainActivity.getTypeface("LibSansBold"));
     }//end setQuestion method
 
     //Sets card faces to answers
-    private void showCards(){
-        //ArrayList<Card> hand = riffle.getHand(player.getPlayerID());
-        ArrayList<Card> hand = player.getHand();
+    public void showCards(){
+        if(online){
+            //change card texts to text of cards in hand
+            for(int i=0; i<5; i++){
+                String str = "card" + (i + 1);
+                int resID = context.getResources().getIdentifier(str,
+                        "id", context.getPackageName());
+                TextView view = (TextView) findViewById(resID);
+                view.setText(hand[i]);
+            }
+        }else{
+            ArrayList<Card> hand = player.getHand();
 
-        //change card texts to text of cards in hand
-        for(int i=0; i<5; i++){
-            String str = "card" + (i + 1);
-            int resID = context.getResources().getIdentifier(str,
-                    "id", context.getPackageName());
-            TextView view = (TextView) findViewById(resID);
-            view.setText(hand.get(i).getText());
+            //change card texts to text of cards in hand
+            for(int i=0; i<5; i++){
+                String str = "card" + (i + 1);
+                int resID = context.getResources().getIdentifier(str,
+                        "id", context.getPackageName());
+                TextView view = (TextView) findViewById(resID);
+                view.setText(hand.get(i).getText());
+            }
         }
     }//end setAnswers method
 

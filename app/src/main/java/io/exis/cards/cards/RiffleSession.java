@@ -1,14 +1,12 @@
 package io.exis.cards.cards;
 
 import android.util.Log;
-import org.jdeferred.android.AndroidDeferredManager;
-import org.jdeferred.android.DeferredAsyncTask;
 import java.util.ArrayList;
 import go.mantle.Mantle;
-
 import com.exis.riffle.CallDeferred;
 import com.exis.riffle.Domain;
 import com.exis.riffle.Function;
+import com.exis.riffle.Riffle;
 import com.exis.riffle.cumin.Handler;
 
 /*
@@ -17,9 +15,7 @@ import com.exis.riffle.cumin.Handler;
  * Created by Luke Salamone on 12/1/2015.
  *
  * Brokers interactions between server-side exec & dealer
- * and client players. Implements thin wrapper around WAMP calls
- *
- * Deferred calls adapted from https://github.com/jdeferred
+ * and client players. Implements thin wrapper around riffle.Domain calls
  *
  * Copyright © 2015 exis. All rights reserved.
  *
@@ -28,26 +24,18 @@ import com.exis.riffle.cumin.Handler;
 public class RiffleSession {
 
     //private WAMPWrapper WAMP;
-    protected AndroidDeferredManager manager;
-    String URI;
     Dealer dealer;
     Domain app;
     Function handler;
     Player player;
     Object ret;
+    final String superdomain = "xs.damouse.CardsAgainst";
+    Domain sender;
+    Domain receiver;
 
-    //Favoring this constructor
-    public RiffleSession(String uri, Player player){
-        URI = uri;
-        manager = new AndroidDeferredManager();
-        app = Exec.getGame();
-        this.player = player;
-    }
-
-    public RiffleSession(String uri){
-        URI = uri;
-        manager = new AndroidDeferredManager();
-        app = Exec.getGame();
+    public RiffleSession(Domain sender, Domain receiver){
+        this.sender = sender;
+        this.receiver = receiver;
     }
 
     /* damouse's methods
@@ -57,26 +45,17 @@ public class RiffleSession {
      */
 
     //server-side
-    //Player calls at beginning of game to find dealer. Returns new hand.
+    //Player calls Exec at beginning of game to find dealer. Returns new hand.
     public Object[] play(){
-        String[] cards;
-
-        // TODO
-        Dealer dealer = Exec.findDealer(true);// TODO
-        addPlayer(this.player);
-
-        // TODO
-        app.call(dealer.ID() + "/play", this.player).then(Object[].class, this::setRet);
+        sender.call("play").then(Object[].class, this::setRet);
         return (Object[]) getRet();
     }//end play method
 
-    //TODO
     // player calls pick to tell dealer that Player picked a card
     public Object[] pick(Player player, String card){
         String[] cards;
         String roomName = "Room " + Exec.findDealer(true).ID();
 
-        // TODO
         dealer.receiveCard(Card.searchCards(card));
 
         return new Object[]{
@@ -88,12 +67,14 @@ public class RiffleSession {
 
     // player calls Dealer::removePlayer() upon leaving
     public void leave(){
-        app.call("removePlayer", player).then(()->{});
+        app.call("removePlayer", player).then(() -> {
+        });
     }//end leave method
 
     // player calls when starting game
     public void join(Player player){
-        app.call("/join", Player.class).then(()->{});
+        app.call("join", Player.class).then(() -> {
+        });
     }
 
     //dealer pub
@@ -106,9 +87,24 @@ public class RiffleSession {
         app.publish("picking", answers, duration);
     }
 
+    // dealer pub TODO args
+    public void choosing(){
+        app.publish("choosing");
+    }
+
     //dealer pub
     public void scoring(Player winner, String winningCard, int duration){
         app.publish("scoring", winner, winningCard, duration);
+    }
+
+    // dealer pub TODO args
+    public void tick(){
+        app.publish("tick");
+    }
+
+    // dealer pub TODO args
+    public void current(Player czar){
+        app.publish("current", czar);
     }
 
     //dealer pub
@@ -123,23 +119,13 @@ public class RiffleSession {
 
     // dealer calls Player::draw to give card to player
     public void draw(Player player, Card card){
-        String endpoint = player.getDomain() + "/draw";
-        app.call(endpoint, card.getText()).then(()->{});
+        app.call("draw", card.getText()).then(()->{});
     }//end draw method
 
     /*     end damouse's methods    */
 
     public void setPlayer(Player player){
         this.player = player;
-    }
-
-    public String domain(){
-        return URI;
-    }
-
-    //Call to Dealer::addPlayer
-    public void addPlayer(Player player){
-        dealer.addPlayer(player);
     }
 
     /*
@@ -166,7 +152,7 @@ public class RiffleSession {
      */
     @SuppressWarnings("unchecked")
     public ArrayList<Card> getNewHand(Player player){
-        return dealer.getNewHand(player);
+        return dealer.getNewHand();
     }//end getNewHand method
 
     /*
@@ -221,6 +207,9 @@ public class RiffleSession {
     }
 
     private void setRet(Object o){
+        if(o == null){
+            Riffle.warn("Return object is null!");
+        }
         this.ret = o;
     }
 
