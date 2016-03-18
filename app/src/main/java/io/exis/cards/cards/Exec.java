@@ -29,7 +29,7 @@ public class Exec extends Domain{
         Log.i("Exec", "entering constructor");
         this.activity = activity;
         Log.i("Exec constructor", "Exec is joining");
-        join();
+
     }
 
     @Override
@@ -43,7 +43,7 @@ public class Exec extends Domain{
 
 //        Log.i(TAG, "calling Exec::play");
 //        Object[] playObject = play();
-//
+
 //        if(playObject == null){
 //            Log.wtf(TAG, "play object is null!");
 //        }

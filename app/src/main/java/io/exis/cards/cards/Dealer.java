@@ -51,7 +51,7 @@ public class Dealer extends Domain{
 
         //URL = session.getDomain();
         phase = "answering";
-        publish(phase, players.get(getCzarPos()), getQuestion().getText(), 10);
+//        publish(phase, players.get(getCzarPos()), getQuestion().getText(), 10);
     }//end Dealer constructor
 
     // riffle calls
@@ -171,7 +171,7 @@ public class Dealer extends Domain{
         // dummy player has PID = -1. This should never happen.
         if(PID == -1){
             Log.wtf("Dealer::getPlayerByID", "Error player detected");
-            return new Player(-1, dealerID, null);
+            return new Player(-1, null);
         }
 
         for(int i=0; i<players.size(); i++){
@@ -242,7 +242,7 @@ public class Dealer extends Domain{
     // add dummies to fill room
     public void addDummies(){
         while(!full() && players.size() < ROOMCAP){
-            Player dummy = new Player(Exec.getNewID(), dealerID, null);
+            Player dummy = new Player(Exec.getNewID(), null);
             addPlayer(dummy);
             dummyCount++;
             Log.i("add dummies", "dummy count: " + dummyCount);
@@ -297,8 +297,6 @@ public class Dealer extends Domain{
 
     public Object[] play(){
         //Returns: string[] cards, Player[] players, string state, string roomName
-
-
 
         return new Object[]{
                 getNewHand(),

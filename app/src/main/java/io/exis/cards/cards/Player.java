@@ -35,7 +35,9 @@ public class Player extends Domain {
     GameActivity activity;
     Domain exec;
 
-    public Player(int ID, String dealerDomain, Domain app){
+    Exec DANGER_EXEC;
+
+    public Player(int ID, Domain app){
         super("player" + ID, app);
         exec = new Domain(dealerDomain, app);
 
@@ -43,7 +45,6 @@ public class Player extends Domain {
         this.playerID = "player" + ID;
         this.online = GameActivity.online;
         this.hand = new ArrayList<>();
-        this.dealerDomain = dealerDomain;
     }// end constructor
 
     @Override
@@ -57,12 +58,11 @@ public class Player extends Domain {
 
         // TOOD: receive the results of the play call and THEN handle all the other stuff--
         // methods below included!
-        Log.i(TAG, "calling Exec::play");
-        exec.call("play").then () -> {
-            Log.i(TAG, "Called play!");
+//        Log.i(TAG, "calling Exec::play");
+//        exec.call("play").then () -> {
+//            Log.i(TAG, "Called play!");
 
-            /*
-                    Object[] playObject = play();
+        Object[] playObject = DANGER_EXEC.play();
 
         if(playObject == null){
             Log.wtf(TAG, "play object is null!");
@@ -78,20 +78,12 @@ public class Player extends Domain {
         activity.state = (String) playObject[2];
         activity.roomName = (String) playObject[3];
 
-        player.setDealer(activity.roomName);
-
-        Log.i(TAG, "setting player");
-        riffle.setPlayer(player);
-
-        Log.i(TAG, "joining game");
-        activity.player.join();
+        setDealer(activity.roomName);
 
         activity.setQuestion();                              //set question TextView
         activity.showCards();
         Log.i(TAG, "playing online game");
         activity.playOnlineGame();
-             */
-        });
 
         Log.i("Player", "sub to answering");
         subscribe("answering", Player.class, String.class, Integer.class,
@@ -123,6 +115,8 @@ public class Player extends Domain {
 
         Log.i("Player", "reg draw");
         register("draw", Card.class, Object.class, this::draw);
+
+        Log.i(TAG, "onJoin Finished");
     }
 
     public Domain domain(){
