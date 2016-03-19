@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import android.content.Context;
 import android.os.CountDownTimer;
+import android.os.Looper;
 import android.util.Log;
 
 import com.exis.riffle.Domain;
@@ -49,9 +50,12 @@ public class Dealer extends Domain{
         online = GameActivity.online;
         dummyCount = 0;
 
-        //URL = session.getDomain();
         phase = "answering";
-//        publish(phase, players.get(getCzarPos()), getQuestion().getText(), 10);
+
+        timer = new GameTimer(15000, 1000);
+        timer.setType("answering");
+        Looper.prepare();
+        timer.start();
     }//end Dealer constructor
 
     // riffle calls
@@ -242,7 +246,7 @@ public class Dealer extends Domain{
     // add dummies to fill room
     public void addDummies(){
         while(!full() && players.size() < ROOMCAP){
-            Player dummy = new Player(Exec.getNewID(), null);
+            Player dummy = new Player( Exec.getNewID(), null);
             addPlayer(dummy);
             dummyCount++;
             Log.i("add dummies", "dummy count: " + dummyCount);
@@ -290,16 +294,16 @@ public class Dealer extends Domain{
     }//end updateCzar method
 
     public void start(){
-        timer = new GameTimer(15000, 1000);
-        timer.setType("answering");
-        timer.start();
+
+
+
     }//end start method
 
     public Object[] play(){
         //Returns: string[] cards, Player[] players, string state, string roomName
 
         return new Object[]{
-                getNewHand(),
+                Card.handToStrings( getNewHand() ),
                 this.getPlayers(),
                 phase,
                 dealerID};

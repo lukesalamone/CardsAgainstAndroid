@@ -51,39 +51,11 @@ public class Player extends Domain {
     public void onJoin(){
         String TAG = "Player::onJoin()";
 
-//        activity.player = new Player(getNewID(), "", new Domain("xs.damouse.CardsAgainst"));
         Log.i(TAG, "creating new riffle session");
         activity.player = this;
         activity.riffle = new RiffleSession(this, exec);
 
-        // TOOD: receive the results of the play call and THEN handle all the other stuff--
-        // methods below included!
-//        Log.i(TAG, "calling Exec::play");
-//        exec.call("play").then () -> {
-//            Log.i(TAG, "Called play!");
 
-        Object[] playObject = DANGER_EXEC.play();
-
-        if(playObject == null){
-            Log.wtf(TAG, "play object is null!");
-        }
-
-        try {
-            activity.hand = (String[]) playObject[0];
-        }catch(NullPointerException e){
-            Log.wtf(TAG, "hand is null!");
-        }
-
-        activity.players = (Player[]) playObject[1];
-        activity.state = (String) playObject[2];
-        activity.roomName = (String) playObject[3];
-
-        setDealer(activity.roomName);
-
-        activity.setQuestion();                              //set question TextView
-        activity.showCards();
-        Log.i(TAG, "playing online game");
-        activity.playOnlineGame();
 
         Log.i("Player", "sub to answering");
         subscribe("answering", Player.class, String.class, Integer.class,
@@ -116,7 +88,27 @@ public class Player extends Domain {
         Log.i("Player", "reg draw");
         register("draw", Card.class, Object.class, this::draw);
 
+        // TODO should not be using DANGER_EXEC
+        Object[] playObject = DANGER_EXEC.play();
+
+        if(playObject == null){
+            Log.wtf(TAG, "play object is null!");
+        }
+
+        try {
+            activity.hand = (String[]) playObject[0];
+        }catch(NullPointerException e){
+            Log.wtf(TAG, "hand is null!");
+        }
+
+        activity.players = (Player[]) playObject[1];
+        activity.state = (String) playObject[2];
+        activity.roomName = (String) playObject[3];
+
+        setDealer(activity.roomName);
+
         Log.i(TAG, "onJoin Finished");
+        activity.onPlayerJoined();
     }
 
     public Domain domain(){

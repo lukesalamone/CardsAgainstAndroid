@@ -22,7 +22,6 @@ import com.exis.riffle.cumin.Handler;
  */
 @SuppressWarnings("unused")
 public class RiffleSession {
-
     Dealer dealer;
     Domain app;
     Function handler;
@@ -53,7 +52,7 @@ public class RiffleSession {
     // player calls pick to tell dealer that Player picked a card
     public Object[] pick(Player player, String card){
         String[] cards;
-        String roomName = "Room " + Exec.findDealer(true).ID();
+        String roomName = "Room " + Exec.findDealer().ID();
 
         dealer.receiveCard(Card.searchCards(card));
 
@@ -143,7 +142,7 @@ public class RiffleSession {
      * Called in GameActivity. Returns result of call of Exec::findDealer
      */
     public Dealer findDealer(){
-        return Exec.findDealer(true);
+        return Exec.findDealer();
     }//end findDealer method
 
     /*
@@ -162,7 +161,7 @@ public class RiffleSession {
     }//end getNewID method
 
     /*
-     * Call to Dealer::getQuetion
+     * Call to Dealer::getQuestion
     */
     public Card getQuestion(){
         return dealer.getQuestion();

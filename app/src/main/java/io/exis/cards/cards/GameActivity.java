@@ -102,7 +102,6 @@ public class GameActivity extends Activity {
     public void onResume() {
         super.onResume();
         String TAG = "GameActivity::onResume()";
-        int i = 0;
 
         if(online){
             // int id = Exec.getNewID();
@@ -115,11 +114,10 @@ public class GameActivity extends Activity {
             exec.externalPlayerDomain = player;
 
             exec.join();
-
         } else {
             //TODO consolidate calls into future Exec.join(player)
 
-            dealer = Exec.findDealer(online);                       //gets a dealer for the player
+            dealer = Exec.findDealer();                       //gets a dealer for the player
             dealer.prepareGame();                                   //load questions and answers
             dealer.addPlayer(player);                               //adds player to dealer
             dealer.addDummies();
@@ -187,9 +185,19 @@ public class GameActivity extends Activity {
         setQuestion();
 
         GameTimer timer = new GameTimer(15000, 1000);
-        dealer.start();                         //start dealer's timer
+        //dealer.start();                         //start dealer's timer
         timer.start();
     }//end playGame method
+
+    // called by Player after join
+    public void onPlayerJoined(){
+        this.runOnUiThread(() -> {
+            setQuestion();                              //set question TextView
+            showCards();
+            playOnlineGame();
+        });
+
+    }//end onPlayerJoin method
 
     public void setQuestion(){
         String questionText;
