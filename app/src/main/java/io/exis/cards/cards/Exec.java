@@ -24,12 +24,8 @@ public class Exec extends Domain{
 
     public Domain externalPlayerDomain;
 
-    public Exec(GameActivity activity) {
+    public Exec() {
         super("Exec", new Domain("xs.damouse.CardsAgainst"));
-        Log.i("Exec", "entering constructor");
-        //this.activity = activity;
-        Log.i("Exec constructor", "Exec is joining");
-
     }
 
     @Override
@@ -65,6 +61,8 @@ public class Exec extends Domain{
 
         Dealer dealer = addDealer();
         Log.i("Exec::findDealer", "found dealer " + dealer.ID());
+        dealer.join();
+        Log.i("Exec::findDealer", "dealer " + dealer.ID() + " joining");
         dealer.start();
 
         return dealer;

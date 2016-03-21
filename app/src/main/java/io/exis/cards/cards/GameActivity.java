@@ -106,7 +106,7 @@ public class GameActivity extends Activity {
         if(online){
             // int id = Exec.getNewID();
             Log.i(TAG, "creating Exec instance");
-            exec = new Exec(this);
+            exec = new Exec();
 
             Domain app = new Domain("xs.damouse.CardsAgainst");
             Player player = new Player(Exec.getNewID(), app);
@@ -185,7 +185,7 @@ public class GameActivity extends Activity {
         setQuestion();
 
         GameTimer timer = new GameTimer(15000, 1000);
-        //dealer.start();                         //start dealer's timer
+        timer.setType("answering");
         timer.start();
     }//end playGame method
 

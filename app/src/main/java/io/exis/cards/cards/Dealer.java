@@ -38,6 +38,8 @@ public class Dealer extends Domain{
     RiffleSession session;
     private boolean online;
     private int dummyCount;
+    private int playerCount;
+    private int duration = 10;                              //
 
     public Dealer(int ID){
         super("dealer" + ID, new Domain("xs.damouse.CardsAgainst"));
@@ -46,15 +48,21 @@ public class Dealer extends Domain{
         players  = new ArrayList<>();
         forCzar = new ArrayList<>();
         questions = MainActivity.getQuestions();
+        questionCard = generateQuestion();
+
         answers = MainActivity.getAnswers();
         online = GameActivity.online;
         dummyCount = 0;
-
+        playerCount = 0;
         phase = "answering";
 
+        //fill room with players
+        addDummies();
+
+        Looper.prepare();
         timer = new GameTimer(15000, 1000);
         timer.setType("answering");
-        Looper.prepare();
+        Log.i("dealer", "starting Dealer timer...");
         timer.start();
     }//end Dealer constructor
 
@@ -63,6 +71,7 @@ public class Dealer extends Domain{
     public void onJoin(){
         register("pick", Player.class, String.class, Object.class, this::pick);
         register("left", Player.class, Object.class, this::removePlayer);
+        publish("answering", czar().ID(), getQuestion().getText(), 10);
     }
 
     public String ID(){
@@ -80,8 +89,19 @@ public class Dealer extends Domain{
             dealCard(player);
         }
 
+        playerCount++;
         players.add(player);
     }//end addPlayer method
+
+    // returns current czar
+    private Player czar(){
+        for(int i=0; i<players.size(); i++){
+            if(players.get(i).isCzar()){
+                players.get(i);
+            }
+        }
+        return null;
+    }
 
     public Card dealCard(Player player){
 
@@ -101,12 +121,13 @@ public class Dealer extends Domain{
     }
 
     public boolean full() {
-        if (dummyCount == 0 && players.size() == ROOMCAP){
+        if (playerCount == ROOMCAP && players.size() == ROOMCAP){
             return true;
         }else{
             return false;
         }
     }
+/*
 
     public int getCzarPos(){
         for(int i=0; i<players.size(); i++){
@@ -116,6 +137,7 @@ public class Dealer extends Domain{
         }
         return 0;
     }//end getCzarPos method
+*/
 
     private Card generateQuestion(){
         Collections.shuffle(questions);
@@ -164,11 +186,6 @@ public class Dealer extends Domain{
 
         return hand;
     }// end getNewHand method
-
-    // returns phase of gameTimer
-    public String getPhase(){
-        return phase;
-    }
 
     public Player getPlayerByID(int PID){
 
@@ -223,9 +240,9 @@ public class Dealer extends Domain{
     }
 
     public boolean isCzar(Player player){
-        for(Player iterator : players){
-            if(iterator.ID() == player.ID()){
-                return iterator.isCzar();
+        for(Player p : players){
+            if(p.ID() == player.ID()){
+                return p.isCzar();
             }
         }
         //hopefully we found the player, but...
@@ -246,7 +263,7 @@ public class Dealer extends Domain{
     // add dummies to fill room
     public void addDummies(){
         while(!full() && players.size() < ROOMCAP){
-            Player dummy = new Player( Exec.getNewID(), null);
+            Player dummy = new Player(Exec.getNewID(), null);
             addPlayer(dummy);
             dummyCount++;
             Log.i("add dummies", "dummy count: " + dummyCount);
@@ -396,7 +413,7 @@ public class Dealer extends Domain{
 
                     phase = "answering";
                     if(online){
-                        publish("answering", players.get(getCzarPos()), getQuestion().getText(), 10);
+                        publish("answering", czar(), getQuestion().getText(), 10);
                     }
                     setPlayers();                    // deal cards back to each player
                     setNextTimer("answering");

@@ -58,13 +58,14 @@ public class Player extends Domain {
 
 
         Log.i("Player", "sub to answering");
-        subscribe("answering", Player.class, String.class, Integer.class,
+        subscribe("answering", String.class, String.class, Integer.class,
                 (czarPlayer, questionText, duration) -> {
                     Log.i("answering sub", "received question " + questionText);
-                    if (czarPlayer == this) {
+                    if (czarPlayer.equals(playerID)) {
                         this.setCzar(true);
                     }
                     this.question = questionText;
+                    activity.setQuestion();
                     this.duration = duration;
                 });
 
@@ -123,6 +124,10 @@ public class Player extends Domain {
         return this.ID;
     }//end getPlayerID method
 
+    public String playerID(){
+        return playerID;
+    }
+
     public boolean isCzar(){
         return this.isCzar;
     }
@@ -144,10 +149,6 @@ public class Player extends Domain {
         hand.add(card);
         return null;
     }//end addCard method
-
-    public Card submit(){
-        return null;
-    }
 
     // removes card from player's hand
     public boolean removeCard(Card card){
@@ -186,31 +187,7 @@ public class Player extends Domain {
         return ret;
     }
 
-    public Player czar(){
-        return czar;
-    }
-
     public String question(){
         return question;
     }
-
-    public int duration(){
-        return duration;
-    }
-
-    public ArrayList answers(){
-        return answers;
-    }
-
-    public Player winner(){
-        return winner;
-    }
-
-    public String winningCard(){
-        return winningCard;
-    }
-
-    public static int getNewID(){
-        return (int) (Math.random() * Integer.MAX_VALUE);
-    }// end getNewID method
 }
