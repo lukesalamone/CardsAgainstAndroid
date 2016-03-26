@@ -12,113 +12,83 @@ import java.util.ArrayList;
  *
  * All players are PG13 as of Dec 17
  *
+ * TODO implement pub to reject & choose
+ *
  * Created by luke on 10/13/15.
  */
-public class Player extends Domain {
+public class Player {
 
-    private int ID;                         //unique to every player
+    private int ID;
     private String playerID;
-    private ArrayList<Card> hand;           //list of a player's cards
-    private boolean isCzar;                 //whether the player is card czar
+    private ArrayList<Card> hand;
+    private ArrayList<Card> answers;
+    private boolean isCzar;
+    private int duration;
     private int score;
     private String dealerDomain;
-    private boolean online;
-    private Player czar;
     private String question;
-    private int duration;
-    private ArrayList<Card> answers;
     private Player winner;
     private String winningCard;
     private Object ret;
     private Card nextCard;
+    private Card picked;
+    boolean dummy;
 
-    GameActivity activity;
+    GameActivity activity;                  // TODO get rid of this
     Domain exec;
+    private Receiver playerDomain;
 
     Exec DANGER_EXEC;
 
     public Player(int ID, Domain app){
-        super("player" + ID, app);
         exec = new Domain(dealerDomain, app);
+        playerDomain = new Receiver("player" + ID, app);
+        playerDomain.player = this;
 
-        this.ID = ID;         // numbers only
-        this.playerID = "player" + ID;
-        this.online = GameActivity.online;
-        this.hand = new ArrayList<>();
+        this.ID = ID;
+        playerID = "player" + ID;
+        hand = new ArrayList<>();
+        score = 0;
+        dummy = false;
     }// end constructor
 
-    @Override
-    public void onJoin(){
-        String TAG = "Player::onJoin()";
+    // constructor for dummies
+    public Player(){
+        ID = Exec.getNewID();
+        playerID = "dummy" + ID;
+        hand = new ArrayList<>();
+        score = 0;
+        dummy = true;
+    }// end dummy constructor
 
-        Log.i(TAG, "creating new riffle session");
-        activity.player = this;
-        activity.riffle = new RiffleSession(this, exec);
-
-
-
-        Log.i("Player", "sub to answering");
-        subscribe("answering", String.class, String.class, Integer.class,
-                (czarPlayer, questionText, duration) -> {
-                    Log.i("answering sub", "received question " + questionText);
-                    if (czarPlayer.equals(playerID)) {
-                        this.setCzar(true);
-                    }
-                    this.question = questionText;
-                    activity.setQuestion();
-                    this.duration = duration;
-                });
-
-        Log.i("Player", "sub to picking");
-        subscribe("picking", ArrayList.class, Integer.class,
-                (answers, duration) -> {
-                    Log.i("picking sub", "received answers " + Card.printHand(answers));
-                    this.answers = answers;
-                    this.duration = duration;
-                });
-
-        Log.i("Player", "sub to scoring");
-        subscribe("scoring", Player.class, String.class, Integer.class,
-                (winningPlayer, winningCard, duration) -> {
-                    Log.i("scoring sub", "winning card " + winningCard);
-                    this.winner = winningPlayer;
-                    this.winningCard = winningCard;
-                    this.duration = duration;
-                });
-
-        Log.i("Player", "reg draw");
-        register("draw", Card.class, Object.class, this::draw);
-
-        // TODO should not be using DANGER_EXEC
-        Object[] playObject = DANGER_EXEC.play();
-
-        if(playObject == null){
-            Log.wtf(TAG, "play object is null!");
-        }
-
-        try {
-            activity.hand = (String[]) playObject[0];
-        }catch(NullPointerException e){
-            Log.wtf(TAG, "hand is null!");
-        }
-
-        activity.players = (Player[]) playObject[1];
-        activity.state = (String) playObject[2];
-        activity.roomName = (String) playObject[3];
-
-        setDealer(activity.roomName);
-
-        Log.i(TAG, "onJoin Finished");
-        activity.onPlayerJoined();
+    // Exec calls
+    public void join(){
+        playerDomain.join();
     }
 
-    public Domain domain(){
-        return this;
+    //add a card to player's hand
+    public Object draw(Card card){
+        hand.add(card);
+        return null;
+    }//end addCard method
+
+    // dealer calls this method on player
+    public Card pick(Card newCard){
+        hand.add(newCard);
+        return picked;
+    }// end pick method
+
+    public Receiver playerDomain(){
+        return playerDomain;
     }
 
-    public ArrayList<Card> getHand(){
+    public ArrayList<Card> hand(){
         return this.hand;
     }//end getCards method
+
+    public Player getWinner(){
+        return this.winner;
+    }
 
     public int ID(){
         return this.ID;
@@ -126,6 +96,10 @@ public class Player extends Domain {
 
     public String playerID(){
         return playerID;
+    }
+
+    public ArrayList<Card> answers(){
+        return answers;
     }
 
     public boolean isCzar(){
@@ -144,12 +118,6 @@ public class Player extends Domain {
         this.dealerDomain = dealerDomain;
     }
 
-    //add a card to player's hand
-    public Object draw(Card card){
-        hand.add(card);
-        return null;
-    }//end addCard method
-
     // removes card from player's hand
     public boolean removeCard(Card card){
         boolean removed;
@@ -157,16 +125,14 @@ public class Player extends Domain {
         return removed;
     }// end removeCard method
 
-    // submit card to dealer
-    // dealer calls this method on player
-    public void pick(Dealer dealer, Card card){
-        if(online) {
-            call("pick", this, card.getText()).then(Object.class, this::setRet);
-            nextCard = (Card) getRet();
-        }else{
-            dealer.pick(this, card.getText());
-        }
-    }// end pick method
+    public void setPicked(int pos){
+        picked = hand.get(pos);
+        playerDomain.publish("picked", picked);
+    }
+
+    public void addPoint(){
+        score++;
+    }
 
     public String printHand(){
         String s = "";
@@ -178,16 +144,76 @@ public class Player extends Domain {
         return s;
     }
 
-    private void setRet(Object o){
-        ret = o;
-    }
-
-    // getter methods
-    private Object getRet(){
-        return ret;
-    }
-
     public String question(){
-        return question;
+        if(question == null || question == "") {
+            return Dealer.generateQuestion().getText();
+        }else{
+            return question;
+        }
     }
-}
+
+    // Receiver handles riffle calls
+    private class Receiver extends Domain{
+        private Player player;
+
+        public Receiver(String name) {
+            super(name);
+        }
+
+        public Receiver(String name, Domain superdomain) {
+            super(name, superdomain );
+        }
+
+        @Override
+        public void onJoin(){
+            String TAG = "Player::onJoin()";
+            activity.player = player;
+
+            register("draw", Card.class, Object.class, player::draw);
+            register("pick", Card.class, Card.class, player::pick);
+
+            Log.i("Player", "sub to answering");
+            subscribe("answering", String.class, String.class, Integer.class,
+                    (czarPlayer, questionText, duration) -> {
+                        Log.i("answering sub", "received question " + questionText);
+
+                        player.isCzar = czarPlayer.equals(playerID);
+                        player.question = questionText;
+                        player.duration = duration;
+                        activity.setQuestion();
+                    });
+
+            Log.i("Player", "sub to picking");
+            subscribe("picking", ArrayList.class, Integer.class,
+                    (answers, duration) -> {
+                        Log.i("picking sub", "received answers " + Card.printHand(answers));
+                        player.answers = answers;
+                        player.duration = duration;
+                    });
+
+            Log.i("Player", "sub to scoring");
+            subscribe("scoring", Player.class, String.class, Integer.class,
+                    (winningPlayer, winningCard, duration) -> {
+                        Log.i("scoring sub", "winning card " + winningCard);
+                        player.winner = winningPlayer;
+                        player.winningCard = winningCard;
+                        player.duration = duration;
+                    });
+
+            // TODO should not be using DANGER_EXEC
+            Object[] playObject = DANGER_EXEC.play();
+
+            if(playObject == null){
+                Log.wtf(TAG, "play object is null!");
+            }
+
+            player.hand = Card.buildHand( (String[])playObject[0] );
+            setDealer((String)playObject[3]);
+
+            Log.i(TAG, "onJoin Finished");
+            activity.onPlayerJoined(playObject);
+        }
+
+    }
+}// end Player class
+

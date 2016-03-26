@@ -36,13 +36,12 @@ public class GameActivity extends Activity {
     private Dealer dealer;
     private Exec exec;
     private ProgressBar progressBar;
-    public RiffleSession riffle;
-    private boolean selected;                                 //whether card has been selected
+    public RiffleSession session;
+    private boolean answerSelected;                             //whether card has been selected
     private Card chosen;
     private ArrayList<Card> forCzar;
     private String phase;
 
-    public String[] hand;
     public Player[] players;
     public String state;
     public String roomName;
@@ -55,18 +54,18 @@ public class GameActivity extends Activity {
     TextView infoText;
 
     public GameActivity(){
+        Log.i("GameActivity", "entered constructor");
         Riffle.setFabricDev();
         Riffle.setLogLevelDebug();
         Riffle.setCuminOff();
 
-        Log.i("GameActivity", "entered constructor");
         ////////////////////////////////
         /////// FAT RED BUTTON ///////
         ////////////////////////////////
-        online = true;
+        this.online = true;
         ///////////////////////////////
 
-        context = MainActivity.getAppContext();
+        this.context = MainActivity.getAppContext();
     }
 
     @Override
@@ -76,19 +75,20 @@ public class GameActivity extends Activity {
         setContentView(R.layout.activity_game);
 
         card1 = (TextView) findViewById(R.id.card1);
-        card1.setTypeface(MainActivity.getTypeface(""));
         card2 = (TextView) findViewById(R.id.card2);
-        card2.setTypeface(MainActivity.getTypeface(""));
         card3 = (TextView) findViewById(R.id.card3);
-        card3.setTypeface(MainActivity.getTypeface(""));
         card4 = (TextView) findViewById(R.id.card4);
-        card4.setTypeface(MainActivity.getTypeface(""));
         card5 = (TextView) findViewById(R.id.card5);
-        card5.setTypeface(MainActivity.getTypeface(""));
         infoText = (TextView) findViewById(R.id.room_id);
+        progressBar = (ProgressBar) findViewById(R.id.progress);
+
+        card1.setTypeface(MainActivity.getTypeface(""));
+        card2.setTypeface(MainActivity.getTypeface(""));
+        card3.setTypeface(MainActivity.getTypeface(""));
+        card4.setTypeface(MainActivity.getTypeface(""));
+        card5.setTypeface(MainActivity.getTypeface(""));
         infoText.setTypeface(MainActivity.getTypeface("LibSansItalic"));
 
-        progressBar = (ProgressBar) findViewById(R.id.progress);
         Log.i("Game activity", "leaving onCreate()");
     }
 
@@ -111,8 +111,9 @@ public class GameActivity extends Activity {
             Domain app = new Domain("xs.damouse.CardsAgainst");
             Player player = new Player(Exec.getNewID(), app);
             player.activity = this;
-            exec.externalPlayerDomain = player;
-
+            session = new RiffleSession(player.playerDomain());
+            session.setPlayer(player);
+            exec.externalPlayer = player;
             exec.join();
         } else {
             //TODO consolidate calls into future Exec.join(player)
@@ -123,13 +124,11 @@ public class GameActivity extends Activity {
             dealer.addDummies();
 
             setQuestion();                              //set question TextView
-            showCards();
+            refreshCards(player.hand());
 
             Log.i("onResume", "playing offline game");
             playOfflineGame();
         }
-
-                               //populate answers TextViews
     }//end onResume method
 
     @Override
@@ -149,20 +148,20 @@ public class GameActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         if(online) {
-            riffle.leave();
+            session.leave();
         }else {
-            dealer.removePlayer(player);
+            dealer.leave(player);
         }
     }
 
     private void playOfflineGame(){
         int i = 0;
-        selected = false;
+        answerSelected = false;
         player.setCzar(dealer.isCzar(player));
         player.setHand(dealer.getNewHand());
         dealer.setPlayers();
         setQuestion();                          //draw question card
-        chosen = player.getHand().get(0);
+        chosen = player.hand().get(0);
 
         GameTimer timer = new GameTimer(15000, 1000);
         timer.setType("answering");
@@ -173,15 +172,7 @@ public class GameActivity extends Activity {
     public void playOnlineGame(){
         String TAG = "playOnlineGame";
         int i = 0;
-        selected = false;
-
-        Log.i(TAG, "" + i++);
-        //player.setHand(dealer.getNewHand(player));                // TODO
-
-        Log.i(TAG, "" + i++);
-        //dealer.setPlayers();                                      // TODO
-
-        Log.i(TAG, "" + i++);
+        answerSelected = false;
         setQuestion();
 
         GameTimer timer = new GameTimer(15000, 1000);
@@ -190,13 +181,25 @@ public class GameActivity extends Activity {
     }//end playGame method
 
     // called by Player after join
-    public void onPlayerJoined(){
+    public void onPlayerJoined(Object[] play){
+        String TAG = "onPlayerJoined()";
+        Log.i(TAG, "entered method");
+        try {
+            player.setHand(Card.buildHand((String[]) play[0]));
+            this.players = (Player[]) play[1];
+            this.state = (String) play[2];
+            this.roomName = (String) play[3];
+        }catch(NullPointerException e){
+            Log.wtf(TAG, "null pointer in play object");
+            e.printStackTrace();
+        }
+
         this.runOnUiThread(() -> {
+            Log.i(TAG, "runOnUithread block entered");
             setQuestion();                              //set question TextView
-            showCards();
+            refreshCards(player.hand());
             playOnlineGame();
         });
-
     }//end onPlayerJoin method
 
     public void setQuestion(){
@@ -214,67 +217,51 @@ public class GameActivity extends Activity {
     }//end setQuestion method
 
     //Sets card faces to answers
-    public void showCards(){
-        if(online){
-            //change card texts to text of cards in hand
-            for(int i=0; i<5; i++){
-                String str = "card" + (i + 1);
-                int resID = context.getResources().getIdentifier(str,
-                        "id", context.getPackageName());
-                TextView view = (TextView) findViewById(resID);
-                view.setText(hand[i]);
-            }
-        }else{
-            ArrayList<Card> hand = player.getHand();
-
-            //change card texts to text of cards in hand
-            for(int i=0; i<5; i++){
-                String str = "card" + (i + 1);
-                int resID = context.getResources().getIdentifier(str,
-                        "id", context.getPackageName());
-                TextView view = (TextView) findViewById(resID);
-                view.setText(hand.get(i).getText());
-            }
+    public void refreshCards(ArrayList<Card> pile){
+        //change card texts to text of cards in hand
+        for(int i=0; i<5; i++){
+            String str = "card" + (i + 1);
+            int resID = context.getResources().getIdentifier(str,
+                    "id", context.getPackageName());
+            TextView view = (TextView) findViewById(resID);
+            view.setText( pile.get(i).getText() );
         }
     }//end setAnswers method
 
     //TODO condense these 5 methods...
     public void submitCard1(View view){
-        if(online){
-
-        }else{
-            player.pick(dealer, player.getHand().get(0));
-        }
-
+        player.setPicked(0);
 
         //set background colors
         setBackgrounds(1, view);
-        selected = true;
+        answerSelected = true;
     }
 
     public void submitCard2(View view){
-        player.pick(dealer, player.getHand().get(1));
+        player.setPicked(1);
 
         setBackgrounds(2, view);
-        selected = true;
+        answerSelected = true;
     }
 
     public void submitCard3(View view){
-        player.pick(dealer, player.getHand().get(2));
+        player.setPicked(2);
         setBackgrounds(3, view);
-        selected = true;
+        answerSelected = true;
     }
 
     public void submitCard4(View view){
-        player.pick(dealer, player.getHand().get(3));
+        player.setPicked(3);
+
         setBackgrounds(4, view);
-        selected = true;
+        answerSelected = true;
     }
 
     public void submitCard5(View view){
-        player.pick(dealer, player.getHand().get(4));
+        player.setPicked(4);
+
         setBackgrounds(5, view);
-        selected = true;
+        answerSelected = true;
     }
 
     //whiten card backgrounds other than card c
@@ -296,19 +283,6 @@ public class GameActivity extends Activity {
         }
     }//end setBackgrounds method
 
-    private void setCzarCards(ArrayList<Card> forCzar){
-        String str;
-        int resID;
-        TextView view;
-        for(int i=1; i<=5; i++){
-            str = "card" + i;
-            resID = context.getResources().getIdentifier(str, "id", context.getPackageName());
-            view = (TextView) findViewById(resID);
-            view.setText(forCzar.get(i-1).getText());
-        }
-        this.forCzar = forCzar;
-    }
-
     private class GameTimer extends CountDownTimer{
         private GameTimer next;
         private String type;
@@ -325,20 +299,21 @@ public class GameActivity extends Activity {
                 case "answering":                           //next phase will be picking
                     if(player.isCzar()){
                         infoText.setText(R.string.answeringInfo);
-                        forCzar = dealer.getCardsForCzar();
+                        forCzar = player.answers();
                         chosen = forCzar.get(0);            //default submit first card
-                        setCzarCards(forCzar);
+                        refreshCards(forCzar);
                     }else{
                         infoText.setText(R.string.pickingInfo);
-                        if(!selected){
+                        if(!answerSelected){
                             submitCard1(card1);
-                            player.removeCard(player.getHand().get(0));
+                            player.removeCard(player.hand().get(0));
                         }else{
-                            dealer.pick(player, chosen.getText());
+                            player.pick(chosen);
                             player.removeCard(chosen);
                         }
                     }
-                    selected = false;
+
+                    answerSelected = false;
                     phase = "picking";
                     setNextTimer("picking");
                     break;
@@ -349,28 +324,27 @@ public class GameActivity extends Activity {
                     setNextTimer("scoring");
                     break;
                 case "scoring":                                 //next phase will be answering
-                    player.setCzar(dealer.isCzar(player));      //update whether player is czar
                     setQuestion();                              //update question card
                     if(player.isCzar()){
                         infoText.setText(R.string.playersPickingInfo);
                     }else{
                         infoText.setText(R.string.answeringInfo);
                     }
-                    Player winner = dealer.getWinner();             //give point if player is winner
+                    Player winner = player.getWinner();             //give point if player is winner
                     if(winner != null && winner.ID() == player.ID()){
                         Toast.makeText(context, "You won this round!", Toast.LENGTH_SHORT).show();
-                        points++;
+                        player.addPoint();
                     }
                     Log.i("Player's cards", player.printHand());
 
-                    showCards();
+                    refreshCards(player.hand());
                     phase = "answering";
                     setNextTimer("answering");
                     break;
             }//end switch
-            Log.i("game timer", "ending phase " + phase);
+            Log.i("game timer", "beginning phase " + phase);
             next.start();
-        }
+        }// end onFinish method
 
         @Override
         public void onTick(long millisUntilFinished){

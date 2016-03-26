@@ -22,7 +22,7 @@ public class Exec extends Domain{
     private GameActivity activity;
     private Domain domain;
 
-    public Domain externalPlayerDomain;
+    public Player externalPlayer;
 
     public Exec() {
         super("Exec", new Domain("xs.damouse.CardsAgainst"));
@@ -31,12 +31,7 @@ public class Exec extends Domain{
     @Override
     public void onJoin(){
         register("play", Object[].class, Exec::play);
-        externalPlayerDomain.join();
-    }
-
-    // TODO offline case in GameActivity
-    public static void join(Player player){
-
+        externalPlayer.join();
     }
 
     public static Object[] play(){
@@ -79,9 +74,4 @@ public class Exec extends Domain{
         dealers.add(dealer);
         return dealer;
     }//end addDealer method
-
-    public static void addPoint(Player player){
-
-    }
-
 }//end Exec class

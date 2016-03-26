@@ -22,16 +22,16 @@ public class Dealer extends Domain{
 
     final int ROOMCAP = 5;
 
-    private ArrayList<Player> players;                      //keep track of players playing
-    private ArrayList<Card> forCzar;                        //cards we send to czar
+    private ArrayList<Player> players;                      // keep track of players playing
+    private ArrayList<Card> answers;                        // cards sent to czar
 
     //keep track of cards not in play
-    private ArrayList<Card> questions;
-    private ArrayList<Card> answers;
+    private static ArrayList<Card> questionDeck;
+    private ArrayList<Card> answerDeck;
     private String phase;
-    private static Player winner;                           //winner
+    private static Player winner;                           // winner
     private static Card winningCard;
-    private Card questionCard;                              //always know question card
+    private Card questionCard;                              // always know question card
     private String dealerID;
     int czarNum;
     GameTimer timer;
@@ -39,25 +39,29 @@ public class Dealer extends Domain{
     private boolean online;
     private int dummyCount;
     private int playerCount;
-    private int duration = 10;                              //
+    private int duration;
 
     public Dealer(int ID){
         super("dealer" + ID, new Domain("xs.damouse.CardsAgainst"));
+        session = new RiffleSession(this);
         dealerID = ID + "";
         czarNum = 0;
         players  = new ArrayList<>();
-        forCzar = new ArrayList<>();
-        questions = MainActivity.getQuestions();
+        answerDeck = MainActivity.getAnswers();
+        questionDeck = MainActivity.getQuestions();
         questionCard = generateQuestion();
 
-        answers = MainActivity.getAnswers();
+
+        answers = new ArrayList<>();
         online = GameActivity.online;
         dummyCount = 0;
         playerCount = 0;
+        duration = 10;
         phase = "answering";
 
         //fill room with players
         addDummies();
+        updateCzar();
 
         Looper.prepare();
         timer = new GameTimer(15000, 1000);
@@ -69,9 +73,16 @@ public class Dealer extends Domain{
     // riffle calls
     @Override
     public void onJoin(){
-        register("pick", Player.class, String.class, Object.class, this::pick);
-        register("left", Player.class, Object.class, this::removePlayer);
-        publish("answering", czar().ID(), getQuestion().getText(), 10);
+        // TODO register methods joined and closed
+        register("leave", Player.class, Object.class, this::leave);
+
+        subscribe("picked", Card.class, (c)->{
+            Log.i("picked listener", "received card " + c.getText());
+            answers.add(c);
+        });
+
+        // pub: current czar, current question & round duration
+        publish("answering", players.get(czarNum).ID(), getQuestion().getText(), 10);
     }
 
     public String ID(){
@@ -95,30 +106,20 @@ public class Dealer extends Domain{
 
     // returns current czar
     private Player czar(){
-        for(int i=0; i<players.size(); i++){
-            if(players.get(i).isCzar()){
-                players.get(i);
-            }
-        }
-        return null;
+        return players.get(czarNum);
     }
 
     public Card dealCard(Player player){
 
         Card card = generateAnswer();                       //generate new card to give to player
-        card.PID = player.ID();
 
-        if(online) {
-            session.draw(player, card);
+        if(online && !player.dummy) {
+            session.draw(card);
         }else{
             player.draw(card);                            //add card to player's hand
         }
         return card;
     }//end dealCard method
-
-    public Card drawCard(Player player){
-        return dealCard(player);
-    }
 
     public boolean full() {
         if (playerCount == ROOMCAP && players.size() == ROOMCAP){
@@ -127,55 +128,16 @@ public class Dealer extends Domain{
             return false;
         }
     }
-/*
 
-    public int getCzarPos(){
-        for(int i=0; i<players.size(); i++){
-            if(players.get(i).isCzar()){
-                return i;
-            }
-        }
-        return 0;
-    }//end getCzarPos method
-*/
-
-    private Card generateQuestion(){
-        Collections.shuffle(questions);
-        return questions.get(0);
+    public static Card generateQuestion(){
+        Collections.shuffle(questionDeck);
+        return questionDeck.get(0);
     }//end generateCard method
 
     private Card generateAnswer(){
-        Collections.shuffle(answers);
-        return answers.get(0);
+        Collections.shuffle(answerDeck);
+        return answerDeck.get(0);
     }//end generateCard method
-
-    //return cards for czar to pick from
-    public ArrayList<Card> getCardsForCzar(){
-        return forCzar;
-    }//end getCardsForCzar method
-
-    public Card getCardFromString(String cardString){
-        // iterate over cards in play
-        for(Card c: answers){
-            if(c.getText().equals(cardString)){
-                return c;
-            }
-        }
-
-        // iterate over cards for czar
-        for(Card c : questions){
-            if(c.getText().equals(cardString)){
-                return c;
-            }
-        }
-
-        //otherwise return errCard
-        return Card.getErrorCard(cardString);
-    }
-
-    public int getGameSize(){
-        return players.size();
-    }//end getGameSize method
 
     public ArrayList<Card> getNewHand(){
         ArrayList<Card> hand = new ArrayList<>();
@@ -187,22 +149,6 @@ public class Dealer extends Domain{
         return hand;
     }// end getNewHand method
 
-    public Player getPlayerByID(int PID){
-
-        // dummy player has PID = -1. This should never happen.
-        if(PID == -1){
-            Log.wtf("Dealer::getPlayerByID", "Error player detected");
-            return new Player(-1, null);
-        }
-
-        for(int i=0; i<players.size(); i++){
-            if(players.get(i).ID() == PID){
-                return players.get(i);
-            }
-        }
-        return null;
-    }// end getPlayerByID
-
     // Not a fan of this method
     public Player[] getPlayers(){
         return players.toArray(new Player[players.size()]);
@@ -213,17 +159,6 @@ public class Dealer extends Domain{
             questionCard = generateQuestion();
         }
         return questionCard;
-    }
-
-    //return a list of cards for czar to pick from
-    //adds dummy cards to
-    public ArrayList<Card> getSubmitted(){
-        //deal dummy cards until pile forCzar is 5 cards
-        while(forCzar.size() < 5){
-            forCzar.add( generateAnswer() );
-        }
-
-        return forCzar;
     }
 
     //used for keeping GameActivity timer synchronized
@@ -250,24 +185,25 @@ public class Dealer extends Domain{
     }//end isCzar method
 
     public void prepareGame(){
-        if(questions == null) {
-            questions = MainActivity.getQuestions();                //load all questions
+        if(questionDeck == null) {
+            questionDeck = MainActivity.getQuestions();                //load all questions
         }
-        if(answers == null) {
-            answers = MainActivity.getAnswers();                    //load all answers
+        if(answerDeck == null) {
+            answerDeck = MainActivity.getAnswers();                    //load all answers
         }
-        Log.i("prepareGame", "questions has size " + questions.size() +
-                ", answers has size " + answers.size());
+        Log.i("prepareGame", "questions has size " + questionDeck.size() +
+                ", answers has size " + answerDeck.size());
     }
 
     // add dummies to fill room
     public void addDummies(){
         while(!full() && players.size() < ROOMCAP){
-            Player dummy = new Player(Exec.getNewID(), null);
-            addPlayer(dummy);
+            addPlayer(new Player());
             dummyCount++;
             Log.i("add dummies", "dummy count: " + dummyCount);
         }
+
+
 
         if(!online){
             Log.i("add dummies", "setting dummy as czar");
@@ -275,15 +211,8 @@ public class Dealer extends Domain{
         }
     }
 
-    //when players send cards to dealer
-    public void receiveCard(Card card){
-        //add card to submitted list
-        forCzar.add(card);
-    }
-
-    public Object removePlayer(Player player){
+    public Object leave(Player player){
         players.remove(player);
-        session.leave();
         return null;
     }//end remove player method
 
@@ -291,28 +220,32 @@ public class Dealer extends Domain{
     public void setPlayers(){
         for(int i=0; i<players.size(); i++){
             //give everyone 5 cards
-            while(players.get(i).getHand().size() < 5){
-                Card newCard = generateAnswer();
-                if(online){
-                    session.draw(players.get(i), newCard);
-                } else {
-                    players.get(i).draw(newCard);
-                }
+            while(players.get(i).hand().size() < 5){
+                dealCard(players.get(i));
             }
         }
     }//end setPlayers method
+
+    // TODO this picks a random player for now
+    private void setWinner(){
+        int num = (int) (Math.random()*5);
+
+        if(!players.get(num).isCzar()){
+            winner = players.get(num);
+        }else{
+            setWinner();
+        }
+    }
 
     //update czar to next player
     private void updateCzar(){
         players.get(czarNum).setCzar(false);
         czarNum++;
-        czarNum = czarNum % getGameSize();
+        czarNum = czarNum % players.size();
         players.get(czarNum).setCzar(true);
     }//end updateCzar method
 
     public void start(){
-
-
 
     }//end start method
 
@@ -331,37 +264,13 @@ public class Dealer extends Domain{
      * @param   player player that is submitting a card
      * @param   card Card czar has chosen
      */
-    public Object pick(Player player, String cardString){
-
-        Card card = getCardFromString(cardString);
-
-        //czar can't submit during answering phase
-        if(phase.equals("answering") && !player.isCzar()){
-            //can't submit 2 cards in a round
-            int i = 0;
-            for(Card c : forCzar){
-                if(c.getPID() == card.getPID()){
-                    forCzar.remove(i);
-                    break;
-                }
-                i++;
-            }
-            forCzar.add(card);
-        } else if(phase.equals("picking") && player.isCzar()){
-            winningCard = card;
-
-            //update winner
-            for(Player p : players){
-                if(card.getPID() == p.ID()){
-                    winner = p;
-                    session.scoring(winner, cardString, 10);
-                    return null;
-                }
-            }
-            winner = null;
+    private void pick(Player player, Card card){
+        if(online){
+            // call player::pick
+            session.pick(card);
+        }else{
+            player.pick(card);
         }
-
-        return null;
     }//end pick method
 
     /*
@@ -384,36 +293,37 @@ public class Dealer extends Domain{
         @Override
         public void onFinish(){
             switch (type){
-                case "answering": // end of answering phase
+                case "answering": // next phase will be picking
                     phase = "picking";
 
-                    if(online) {
-                        publish("picking", Card.handToStrings(answers), 10);
-                    } else {
-                        //pad hand for czar with dummy cards
-                        while(forCzar.size() != 5){
-                            receiveCard(generateAnswer());
-                        }
+                    // pad pile for czar
+                    while(answers.size() != 5){
+                        answers.add(generateAnswer());
                     }
+
+                    if(online) {
+                        publish("picking", Card.handToStrings(answers), duration);
+                    }
+
                     setNextTimer("picking");
                     break;
-                case "picking": // end of picking phase
-                    forCzar.clear();
+                case "picking": // next phase will be scoring
+                    answers.clear();
                     updateCzar();
                     questionCard = generateQuestion();              //update question
 
                     phase = "scoring";
+                    setWinner();
                     if(online){
-                        publish("scoring", winner, winningCard.getText(), 10);
+                        publish("scoring", winner, winningCard.getText(), duration);
                     }
                     setNextTimer("scoring");
                     break;
-                case "scoring": // end of scoring phase
-                    //TODO give point to winner
-
+                case "scoring": // next phase will be answering
                     phase = "answering";
+
                     if(online){
-                        publish("answering", czar(), getQuestion().getText(), 10);
+                        publish("answering", czar(), getQuestion().getText(), duration);
                     }
                     setPlayers();                    // deal cards back to each player
                     setNextTimer("answering");

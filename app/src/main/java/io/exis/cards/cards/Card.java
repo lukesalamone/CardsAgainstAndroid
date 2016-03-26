@@ -23,56 +23,31 @@ import java.util.ArrayList;
 
 public class Card {
 
-    private String ID;
     private String text;
-    char type;
-    int PID;
-    static JSONArray cardsArray;
-    static JSONObject cardsJSON = new JSONObject();
-    static String[] keys = {"text", "id"};                      //keys for JSON array
-    static ArrayList<Card> questions;
-    static ArrayList<Card> answers;
+    private static JSONArray cardsArray;
+    private static JSONObject cardsJSON = new JSONObject();
+    private static String[] keys = {"text", "id"};                      //keys for JSON array
+    private static ArrayList<Card> questions;
+    private static ArrayList<Card> answers;
 
     static Context context;
 
-    //Every card has an ID, associated text, and type
-    //Type may be 'q' for question or 'a' for answer
-    public Card(String cardID, String cardText, char cardType, int playerID){
-        this.ID = cardID;
+    // Cards are fancy String wrappers
+    public Card(String cardText){
         this.text = cardText;
-        this.type = cardType;
-        this.PID = playerID;
         context = MainActivity.getAppContext();
     }//end Card constructor
 
     public static Card getErrorCard(String dummyString){
-        return new Card("error", dummyString, 'e', -1);
+        return new Card(dummyString);
     }
-
-    public String getID(){
-        return this.ID;
-    }//end getID method
 
     public String getText(){
         return this.text;
     }//end getID method
 
-    public char getType(){
-        return this.type;
-    }//end getType method
-
-    public int getPID(){
-        return this.PID;
-    }
-
     public boolean equals(Card card){
-        if(this.getID() != card.getID()){
-            return false;
-        }
-        if (!this.getText().equals(card.getText())){
-            return false;
-        }
-        return this.getType() == card.getType();
+        return this.text.equals(card.getText());
     }
 
     public static ArrayList<Card> getQuestions(boolean R){
@@ -156,7 +131,7 @@ public class Card {
         String cardText = cardsJSON.getString("text");
 
         //return card created with cardText
-        return new Card(ID + "", cardText, type, -1);
+        return new Card(cardText);
     }//end getCardByID method
 
     /*
@@ -168,7 +143,6 @@ public class Card {
     public static JSONArray getCardsJSON(String name){
 
         if(cardsArray == null || cardsJSON.length() == 0){
-            Log.i("getCardsJSON", "entering conditional");
 
             String cardString = MainActivity.getCardString(name);
 
@@ -186,10 +160,6 @@ public class Card {
         return cardsArray;
 
     }//end getCardJSON method
-
-    public void setPID(int pid){
-        this.PID = pid;
-    }
 
     public static String printHand(ArrayList<Card> hand){
         String s = "";
@@ -221,6 +191,16 @@ public class Card {
             }
         }
 
-        return new Card("error", text, 'e', -1);
+        // this should never happen
+        return new Card(text);
     }// end searchCards method
+
+    public static ArrayList<Card> buildHand(String[] array){
+        ArrayList<Card> hand = new ArrayList<>();
+        for(String s : array){
+            hand.add(new Card(s));
+        }
+
+        return hand;
+    }// end buildHand method
 }

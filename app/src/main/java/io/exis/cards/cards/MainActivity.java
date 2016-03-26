@@ -35,8 +35,6 @@ public class MainActivity extends Activity {
     private static Typeface LibSansItalic;
 
     Button gameButton;
-    TextView pointsText;
-    Switch onlineSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,23 +88,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop(){
         super.onStop();
-
-/*        SharedPreferences settings = getSharedPreferences(PREFS, 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putInt("points", points);
-        editor.apply();*/
     }//end onStop method
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
     }
-
-    public void onSwitchClicked(View view){
-        Log.i("Main Activity", "toggle clicked");
-        online = !online;
-        onlineSwitch.toggle();
-    }//end onRadioButtonClicked method
 
     public static Context getAppContext(){
         return MainActivity.context;
@@ -128,17 +115,5 @@ public class MainActivity extends Activity {
 
     public static ArrayList<Card> getAnswers(){
         return answers;
-    }
-
-    /*
-     * Set points to previously saved value
-     */
-    private void setPoints(){
-        points = getSharedPreferences(PREFS, 0).getInt("points", 0);
-
-        String text = String.valueOf(points);
-        Log.i("points", text);
-
-        pointsText.setText(text);
     }
 }

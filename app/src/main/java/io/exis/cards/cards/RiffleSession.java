@@ -27,13 +27,9 @@ public class RiffleSession {
     Function handler;
     Player player;
     Object ret;
-    final String superdomain = "xs.damouse.CardsAgainst";
-    Domain sender;
-    Domain receiver;
 
-    public RiffleSession(Domain sender, Domain receiver){
-        this.sender = sender;
-        this.receiver = receiver;
+    public RiffleSession(Domain app){
+        this.app = app;
     }
 
     /* damouse's methods
@@ -45,27 +41,21 @@ public class RiffleSession {
     //server-side
     //Player calls Exec at beginning of game to find dealer. Returns new hand.
     public Object[] play(){
-        sender.call("play").then(Object[].class, this::setRet);
+        app.call("play").then(Object[].class, this::setRet);
         return (Object[]) getRet();
     }//end play method
 
-    // player calls pick to tell dealer that Player picked a card
-    public Object[] pick(Player player, String card){
-        String[] cards;
-        String roomName = "Room " + Exec.findDealer().ID();
-
-        dealer.receiveCard(Card.searchCards(card));
-
-        return new Object[]{
-                player.getHand(),
-                dealer.getPlayers(),
-                "",
-                roomName};
+    /* dealer calls pick to receive picked card from player
+     *
+     * @param card New card for player
+    */
+    public void pick(Card card) {
+        app.call("pick", card).then(Card.class, player::pick);
     }//end pick method
 
     // player calls Dealer::removePlayer() upon leaving
     public void leave(){
-        app.call("removePlayer", player).then(() -> {
+        app.call("leave", player).then(() -> {
         });
     }//end leave method
 
@@ -116,7 +106,7 @@ public class RiffleSession {
     }
 
     // dealer calls Player::draw to give card to player
-    public void draw(Player player, Card card){
+    public void draw(Card card){
         app.call("draw", card.getText()).then(()->{});
     }//end draw method
 
@@ -124,13 +114,6 @@ public class RiffleSession {
 
     public void setPlayer(Player player){
         this.player = player;
-    }
-
-    /*
-     * Call to Exec::addPoint
-     */
-    public void addPoint(Player player){
-        Exec.addPoint(player);
     }
 
     // Called in GameActivity. Returns result of call to Dealer::dealCard
@@ -168,21 +151,6 @@ public class RiffleSession {
     }
 
     /*
-     * Call to Dealer::getSubmitted
-     */
-    @SuppressWarnings("unchecked")
-    public ArrayList<Card> getSubmitted(){
-        return dealer.getSubmitted();
-    }
-
-    /*
-     * Called in GameActivity. Returns Dealer::isCzar
-     */
-    public boolean isCzar(Player player){
-        return dealer.isCzar(player);
-    }//end isCzar method
-
-    /*
      * Call to Dealer::PrepareGame
      */
     public void prepareGame(){
@@ -190,18 +158,10 @@ public class RiffleSession {
     }
 
     /*
-     * Called in GameActivity when player sends card to dealer. Returns result of call to
-     * Dealer::ReceiveCard(card).
-     */
-    private void receiveCard(Card card){
-        dealer.receiveCard(card);
-    }
-
-    /*
      * Call to Dealer::removePlayer
     */
     private void removePlayer(Player player){
-        dealer.removePlayer(player);
+        dealer.leave(player);
     }
 
     private void setRet(Object o){
