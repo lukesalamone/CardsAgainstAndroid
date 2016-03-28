@@ -75,6 +75,7 @@ public class Player {
     // dealer calls this method on player
     public Card pick(Card newCard){
         hand.add(newCard);
+        hand.remove(picked);
         return picked;
     }// end pick method
 

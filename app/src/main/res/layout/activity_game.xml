@@ -31,10 +31,8 @@
         android:layout_centerHorizontal="true"
         android:background="#207bae"
         android:textAlignment="center"
-        android:foregroundTint="#ffffffff"
         android:foregroundGravity="left"
         android:progressBackgroundTint="#ff000000"
-        android:progressTint="#ffffffff"
         android:layout_marginBottom="5dp"
         android:progressDrawable="@drawable/progress_drawable" />
 
@@ -56,7 +54,8 @@
         android:layout_below="@+id/progress"
         android:padding="5dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" />
+        android:layout_marginRight="5dp"
+        android:gravity="center_vertical|center_horizontal" />
 
     <TextView
         android:text="@string/answer"
@@ -74,7 +73,8 @@
         android:padding="5dp"
         android:layout_alignParentStart="true"
         android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" />
+        android:layout_marginRight="5dp"
+        android:gravity="center_vertical|center_horizontal" />
 
     <TextView
         android:text="@string/answer"
@@ -91,7 +91,8 @@
         android:layout_marginTop="@dimen/card_spacing"
         android:padding="5dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" />
+        android:layout_marginRight="5dp"
+        android:gravity="center_vertical|center_horizontal" />
 
     <TextView
         android:text="@string/answer"
@@ -108,7 +109,8 @@
         android:layout_marginTop="@dimen/card_spacing"
         android:padding="5dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" />
+        android:layout_marginRight="5dp"
+        android:gravity="center_vertical|center_horizontal" />
 
     <TextView
         android:text="@string/answer"
@@ -125,7 +127,8 @@
         android:layout_marginTop="@dimen/card_spacing"
         android:padding="5dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" />
+        android:layout_marginRight="5dp"
+        android:gravity="center_vertical|center_horizontal" />
 
     <TextView
         android:text="@string/room"
@@ -135,13 +138,14 @@
         android:textSize="20sp"
         android:background="#000"
         android:textColor="#fff"
-        android:padding="5dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:textAlignment="center"
         android:textStyle="italic"
         android:layout_centerHorizontal="true"
-        android:gravity="center" />
+        android:paddingBottom="10dp"
+        android:gravity="center"
+        android:baselineAligned="false"/>
 
 </RelativeLayout>

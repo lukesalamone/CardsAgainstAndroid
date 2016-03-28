@@ -306,10 +306,6 @@ public class GameActivity extends Activity {
                         infoText.setText(R.string.pickingInfo);
                         if(!answerSelected){
                             submitCard1(card1);
-                            player.removeCard(player.hand().get(0));
-                        }else{
-                            player.pick(chosen);
-                            player.removeCard(chosen);
                         }
                     }
 

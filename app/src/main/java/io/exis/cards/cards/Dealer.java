@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import android.content.Context;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
@@ -65,9 +66,6 @@ public class Dealer extends Domain{
 
         Looper.prepare();
         timer = new GameTimer(15000, 1000);
-        timer.setType("answering");
-        Log.i("dealer", "starting Dealer timer...");
-        timer.start();
     }//end Dealer constructor
 
     // riffle calls
@@ -247,21 +245,38 @@ public class Dealer extends Domain{
 
     public void start(){
 
+        Handler handler = new Handler();
+        Runnable r = () -> {
+            timer.setType(phase);
+            switch(phase) {
+                case "answering":
+                    Log.i("dealer", "starting answering timer...");
+                    break;
+                case "picking":
+                    Log.i("dealer", "starting picking timer...");
+                    break;
+                case "scoring":
+                    Log.i("dealer", "starting scoring timer...");
+                    break;
+            }
+            timer.start();
+        };
+
+        handler.postDelayed(r, 10000);
     }//end start method
+
 
     public Object[] play(){
         //Returns: string[] cards, Player[] players, string state, string roomName
 
-        return new Object[]{
+            return new Object[]{
                 Card.handToStrings( getNewHand() ),
                 this.getPlayers(),
                 phase,
                 dealerID};
     }
 
-    /* TODO cannot use player.isCzar on submitted player object!
-     *
-     * @param   player player that is submitting a card
+    /* @param   player player that is submitting a card
      * @param   card Card czar has chosen
      */
     private void pick(Player player, Card card){
@@ -285,9 +300,11 @@ public class Dealer extends Domain{
         private String type;
         private GameTimer next;
         private long timeRemaining;
+        String TAG = "Dealer";
 
         public GameTimer(long duration, long interval){
             super(duration, interval);
+            Log.i(TAG, "Dealer timer init");
         }
 
         @Override
@@ -302,10 +319,13 @@ public class Dealer extends Domain{
                     }
 
                     if(online) {
+                        Log.i(TAG, "publishing [picking, " +
+                                Card.printHand(answers) + ", " +
+                                duration + "]");
                         publish("picking", Card.handToStrings(answers), duration);
                     }
 
-                    setNextTimer("picking");
+//                    setNextTimer("picking");
                     break;
                 case "picking": // next phase will be scoring
                     answers.clear();
@@ -315,27 +335,37 @@ public class Dealer extends Domain{
                     phase = "scoring";
                     setWinner();
                     if(online){
+                        Log.i(TAG, "publishing [scoring, " +
+                                winner + ", " +
+                                winningCard.getText() + ", " +
+                                duration + "]");
                         publish("scoring", winner, winningCard.getText(), duration);
                     }
-                    setNextTimer("scoring");
+//                    setNextTimer("scoring");
                     break;
                 case "scoring": // next phase will be answering
                     phase = "answering";
 
                     if(online){
+                        Log.i(TAG, "publishing [answering, " +
+                                czar().playerID() + ", " +
+                                getQuestion().getText() + ", " +
+                                duration + "]");
                         publish("answering", czar(), getQuestion().getText(), duration);
                     }
                     setPlayers();                    // deal cards back to each player
-                    setNextTimer("answering");
+//                    setNextTimer("answering");
                     break;
             }// end switch
 
-            next.start();
+//            next.start();
         }// end onFinish method
 
         @Override
         public void onTick(long millisUntilFinished){
+            Log.i(TAG, "time remaining: " + timeRemaining);
             timeRemaining = millisUntilFinished;
+            publish("tick", (int) (timeRemaining/1000));
         }//end onTick method
 
         public long getTimeRemaining(){
