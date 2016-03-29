@@ -56,13 +56,13 @@ public class GameActivity extends Activity {
     public GameActivity(){
         Log.i("GameActivity", "entered constructor");
         Riffle.setFabricDev();
-        Riffle.setLogLevelDebug();
+        //Riffle.setLogLevelDebug();
         Riffle.setCuminOff();
 
         ////////////////////////////////
         /////// FAT RED BUTTON ///////
         ////////////////////////////////
-        this.online = true;
+        online = true;
         ///////////////////////////////
 
         this.context = MainActivity.getAppContext();

@@ -65,7 +65,7 @@ public class Dealer extends Domain{
         updateCzar();
 
         Looper.prepare();
-        timer = new GameTimer(15000, 1000);
+//        timer = new GameTimer(15000, 1000);
     }//end Dealer constructor
 
     // riffle calls
@@ -195,13 +195,11 @@ public class Dealer extends Domain{
 
     // add dummies to fill room
     public void addDummies(){
-        while(!full() && players.size() < ROOMCAP){
+        while(players.size() < ROOMCAP){
             addPlayer(new Player());
             dummyCount++;
             Log.i("add dummies", "dummy count: " + dummyCount);
         }
-
-
 
         if(!online){
             Log.i("add dummies", "setting dummy as czar");
@@ -243,39 +241,6 @@ public class Dealer extends Domain{
         players.get(czarNum).setCzar(true);
     }//end updateCzar method
 
-    public void start(){
-
-        Handler handler = new Handler();
-        Runnable r = () -> {
-            timer.setType(phase);
-            switch(phase) {
-                case "answering":
-                    Log.i("dealer", "starting answering timer...");
-                    break;
-                case "picking":
-                    Log.i("dealer", "starting picking timer...");
-                    break;
-                case "scoring":
-                    Log.i("dealer", "starting scoring timer...");
-                    break;
-            }
-            timer.start();
-        };
-
-        handler.postDelayed(r, 10000);
-    }//end start method
-
-
-    public Object[] play(){
-        //Returns: string[] cards, Player[] players, string state, string roomName
-
-            return new Object[]{
-                Card.handToStrings( getNewHand() ),
-                this.getPlayers(),
-                phase,
-                dealerID};
-    }
-
     /* @param   player player that is submitting a card
      * @param   card Card czar has chosen
      */
@@ -288,6 +253,90 @@ public class Dealer extends Domain{
         }
     }//end pick method
 
+    public Object[] play(){
+        //Returns: string[] cards, Player[] players, string state, string roomName
+
+        return new Object[]{
+                Card.handToStrings( getNewHand() ),
+                this.getPlayers(),
+                phase,
+                dealerID};
+    }
+
+    public void start(){
+        Log.i("dealer", "entered start()");
+        Handler handler = new Handler();
+        int delay = 15000;
+
+        handler.postDelayed(new Runnable(){
+            public void run(){
+                Log.i("dealer", "starting " + phase + " phase");
+                playGame(phase);
+                handler.postDelayed(this, delay);
+            }
+        }, delay);
+    }//end start method
+
+    /*
+     * Main game logic.
+     *
+     * Answering - players submit cards to dealer
+     * Picking - Czar picks winner
+     * Scoring - Dealer announces winner
+     *
+     */
+    private void playGame(String type){
+        String TAG = "playGame";
+        switch(type){
+            case "answering":
+                if(online){
+                    Log.i(TAG, "publishing [answering, " +
+                            czar().playerID() + ", " +
+                            getQuestion().getText() + ", " +
+                            duration + "]");
+                    publish("answering", czar(), getQuestion().getText(), duration);
+                }
+
+                setPlayers();                    // deal cards back to each player
+                phase = "picking";
+                break;
+            case "picking":
+                // pad pile for czar
+                while(answers.size() != 5){
+                    answers.add(generateAnswer());
+                }
+
+                if(online) {
+                    Log.i(TAG, "publishing [picking, " +
+                            Card.printHand(answers) + ", " +
+                            duration + "]");
+                    publish("picking", Card.handToStrings(answers), duration);
+                }
+
+                phase = "scoring";
+                break;
+            case "scoring":
+                answers.clear();
+                updateCzar();
+                questionCard = generateQuestion();              //update question
+                setWinner();
+
+                if(online){
+                    Log.i(TAG, "publishing [scoring, " +
+                            winner + ", " +
+                            winningCard.getText() + ", " +
+                            duration + "]");
+                    publish("scoring", winner, winningCard.getText(), duration);
+                }
+
+                phase = "answering";
+                break;
+        }
+    }// end playGame method
+
+
+
+
     /*
      * GameTimer handles 3 game phases: answering, picking, and scoring
      *
@@ -297,7 +346,7 @@ public class Dealer extends Domain{
      *
      */
     private class GameTimer extends CountDownTimer {
-        private String type;
+        String type;
         private GameTimer next;
         private long timeRemaining;
         String TAG = "Dealer";
@@ -325,7 +374,7 @@ public class Dealer extends Domain{
                         publish("picking", Card.handToStrings(answers), duration);
                     }
 
-//                    setNextTimer("picking");
+                    setNextTimer("picking");
                     break;
                 case "picking": // next phase will be scoring
                     answers.clear();
@@ -341,7 +390,7 @@ public class Dealer extends Domain{
                                 duration + "]");
                         publish("scoring", winner, winningCard.getText(), duration);
                     }
-//                    setNextTimer("scoring");
+                    setNextTimer("scoring");
                     break;
                 case "scoring": // next phase will be answering
                     phase = "answering";
@@ -354,11 +403,11 @@ public class Dealer extends Domain{
                         publish("answering", czar(), getQuestion().getText(), duration);
                     }
                     setPlayers();                    // deal cards back to each player
-//                    setNextTimer("answering");
+                    setNextTimer("answering");
                     break;
             }// end switch
 
-//            next.start();
+            next.start();
         }// end onFinish method
 
         @Override
