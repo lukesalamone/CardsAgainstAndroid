@@ -17,10 +17,7 @@ import java.util.ArrayList;
 public class Exec extends Domain{
 
     static ArrayList<Dealer> dealers = new ArrayList<>();
-    private Player player;
-    private RiffleSession riffle;
-    private GameActivity activity;
-    private Domain domain;
+    private static Player player;
 
     public Player externalPlayer;
 
@@ -35,12 +32,14 @@ public class Exec extends Domain{
     }
 
     public static Object[] play(){
-        return findDealer().play();
+        Dealer dealer = findDealer();
+        GameActivity.dealer = dealer;                   // TODO danger
+        return dealer.play();
     }
 
-    public Domain getGame(){
-        return this;
-    }// end getGame method
+    public void setPlayer(Player p){
+        player = p;
+    }
 
     public static void removeDealer(Dealer dealer){
         dealers.remove(dealer);
@@ -56,6 +55,7 @@ public class Exec extends Domain{
 
         Dealer dealer = addDealer();
         Log.i("Exec::findDealer", "found dealer " + dealer.ID());
+        dealer.addPlayer(player);
         dealer.join();
         Log.i("Exec::findDealer", "dealer " + dealer.ID() + " joining");
         dealer.start();

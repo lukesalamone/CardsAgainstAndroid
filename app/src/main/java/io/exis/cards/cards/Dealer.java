@@ -15,7 +15,7 @@ import com.exis.riffle.Riffle;
 /**
  * Dealer.java
  * Manages decks and player points
- * May report corrupted players
+ * TODO register methods joined and closed
  *
  * Created by luke on 10/13/15.
  */
@@ -41,6 +41,9 @@ public class Dealer extends Domain{
     private int dummyCount;
     private int playerCount;
     private int duration;
+    private Handler handler;
+
+    private Player player;
 
     public Dealer(int ID){
         super("dealer" + ID, new Domain("xs.damouse.CardsAgainst"));
@@ -57,7 +60,7 @@ public class Dealer extends Domain{
         online = GameActivity.online;
         dummyCount = 0;
         playerCount = 0;
-        duration = 10;
+        duration = 15;
         phase = "answering";
 
         //fill room with players
@@ -65,23 +68,30 @@ public class Dealer extends Domain{
         updateCzar();
 
         Looper.prepare();
-//        timer = new GameTimer(15000, 1000);
+        handler = GameActivity.handler;
     }//end Dealer constructor
 
     // riffle calls
     @Override
     public void onJoin(){
-        // TODO register methods joined and closed
         register("leave", Player.class, Object.class, this::leave);
 
-        subscribe("picked", Card.class, (c)->{
+        subscribe("picked", Card.class, (c) -> {
             Log.i("picked listener", "received card " + c.getText());
             answers.add(c);
         });
 
+        subscribe("choose", Card.class, (c)->{
+            Log.i("choose listener", "received card " + c.getText());
+            winningCard = c;
+        });
+
         // pub: current czar, current question & round duration
-        publish("answering", players.get(czarNum).ID(), getQuestion().getText(), 10);
+//        publish("answering", players.get(czarNum).ID(), getQuestion().getText(), 10);
+        player.danger_pub_answering(players.get(czarNum).ID(), getQuestion().getText(), duration); // TODO
     }
+
+
 
     public String ID(){
         return this.dealerID;
@@ -90,7 +100,13 @@ public class Dealer extends Domain{
     public void addPlayer(Player player){
         //if max capacity exceeded
         if(full()){
-            return;
+            if(player.dummy){
+                return;
+            }else{
+                removeDummy();
+                this.player = player;
+                addPlayer(player);
+            }
         }
 
         //deal them 5 cards
@@ -112,7 +128,8 @@ public class Dealer extends Domain{
         Card card = generateAnswer();                       //generate new card to give to player
 
         if(online && !player.dummy) {
-            session.draw(card);
+//            session.draw(card);
+            player.draw(card);
         }else{
             player.draw(card);                            //add card to player's hand
         }
@@ -207,6 +224,15 @@ public class Dealer extends Domain{
         }
     }
 
+    private void removeDummy(){
+        for(Player p: players){
+            if(p.dummy){
+                players.remove(p);
+                return;
+            }
+        }
+    }
+
     public Object leave(Player player){
         players.remove(player);
         return null;
@@ -222,11 +248,12 @@ public class Dealer extends Domain{
         }
     }//end setPlayers method
 
-    // TODO this picks a random player for now
+    // dummies pick random winner
     private void setWinner(){
         int num = (int) (Math.random()*5);
 
         if(!players.get(num).isCzar()){
+            winningCard = answers.get(num);
             winner = players.get(num);
         }else{
             setWinner();
@@ -247,7 +274,8 @@ public class Dealer extends Domain{
     private void pick(Player player, Card card){
         if(online){
             // call player::pick
-            session.pick(card);
+//            session.pick(card);                               // TODO danger
+            player.pick(card);
         }else{
             player.pick(card);
         }
@@ -265,20 +293,29 @@ public class Dealer extends Domain{
 
     public void start(){
         Log.i("dealer", "entered start()");
-        Handler handler = new Handler();
+        Log.i("dealer", 1 + "");
         int delay = 15000;
-
-        handler.postDelayed(new Runnable(){
-            public void run(){
+        Log.i("dealer", 2 + "");
+        Runnable r = new Runnable(){
+            public void run() {
                 Log.i("dealer", "starting " + phase + " phase");
                 playGame(phase);
                 handler.postDelayed(this, delay);
             }
-        }, delay);
+        };
+        Log.i("dealer", 3 + "");
+        handler.postDelayed(r, delay);
     }//end start method
 
-    /*
-     * Main game logic.
+    public void danger_pub_chose(Card picked){
+        winningCard = picked;
+    }
+
+    public void danger_pub_picked(Card picked){
+        answers.add(picked);
+    }
+
+    /* Main game logic.
      *
      * Answering - players submit cards to dealer
      * Picking - Czar picks winner
@@ -289,12 +326,16 @@ public class Dealer extends Domain{
         String TAG = "playGame";
         switch(type){
             case "answering":
+                updateCzar();
+                questionCard = generateQuestion();              //update question
+
                 if(online){
                     Log.i(TAG, "publishing [answering, " +
                             czar().playerID() + ", " +
                             getQuestion().getText() + ", " +
                             duration + "]");
-                    publish("answering", czar(), getQuestion().getText(), duration);
+//                    publish("answering", czar(), getQuestion().getText(), duration);
+                    player.danger_pub_answering(players.get(czarNum).ID(), getQuestion().getText(), duration);
                 }
 
                 setPlayers();                    // deal cards back to each player
@@ -302,7 +343,7 @@ public class Dealer extends Domain{
                 break;
             case "picking":
                 // pad pile for czar
-                while(answers.size() != 5){
+                while(answers.size() < 5){
                     answers.add(generateAnswer());
                 }
 
@@ -310,15 +351,13 @@ public class Dealer extends Domain{
                     Log.i(TAG, "publishing [picking, " +
                             Card.printHand(answers) + ", " +
                             duration + "]");
-                    publish("picking", Card.handToStrings(answers), duration);
+//                    publish("picking", Card.handToStrings(answers), duration);
+                    player.danger_pub_picking(Card.handToStrings(answers), duration);
                 }
 
                 phase = "scoring";
                 break;
             case "scoring":
-                answers.clear();
-                updateCzar();
-                questionCard = generateQuestion();              //update question
                 setWinner();
 
                 if(online){
@@ -326,16 +365,14 @@ public class Dealer extends Domain{
                             winner + ", " +
                             winningCard.getText() + ", " +
                             duration + "]");
-                    publish("scoring", winner, winningCard.getText(), duration);
+//                    publish("scoring", winner, winningCard.getText(), duration);
+                    player.danger_pub_scoring(winner, winningCard.getText(), duration);
                 }
-
+                answers.clear();
                 phase = "answering";
                 break;
         }
     }// end playGame method
-
-
-
 
     /*
      * GameTimer handles 3 game phases: answering, picking, and scoring

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -33,14 +34,16 @@ public class GameActivity extends Activity {
     private Context context;
     public static boolean online;
     public Player player;
-    private Dealer dealer;
+    public static Dealer dealer;
     private Exec exec;
     private ProgressBar progressBar;
     public RiffleSession session;
     private boolean answerSelected;                             //whether card has been selected
     private Card chosen;
     private ArrayList<Card> forCzar;
-    private String phase;
+    public static String phase;
+
+    public static Handler handler;
 
     public Player[] players;
     public String state;
@@ -56,7 +59,7 @@ public class GameActivity extends Activity {
     public GameActivity(){
         Log.i("GameActivity", "entered constructor");
         Riffle.setFabricDev();
-        //Riffle.setLogLevelDebug();
+        Riffle.setLogLevelInfo();
         Riffle.setCuminOff();
 
         ////////////////////////////////
@@ -90,6 +93,7 @@ public class GameActivity extends Activity {
         infoText.setTypeface(MainActivity.getTypeface("LibSansItalic"));
 
         Log.i("Game activity", "leaving onCreate()");
+        handler = new Handler();
     }
 
     @Override
@@ -110,13 +114,14 @@ public class GameActivity extends Activity {
 
             Domain app = new Domain("xs.damouse.CardsAgainst");
             Player player = new Player(Exec.getNewID(), app);
+            exec.setPlayer(player);
             player.activity = this;
             session = new RiffleSession(player.playerDomain());
             session.setPlayer(player);
             exec.externalPlayer = player;
             exec.join();
         } else {
-            //TODO consolidate calls into future Exec.join(player)
+//            TODO consolidate calls into future Exec.join(player)
 
             dealer = Exec.findDealer();                       //gets a dealer for the player
             dealer.prepareGame();                                   //load questions and answers
@@ -184,6 +189,7 @@ public class GameActivity extends Activity {
     public void onPlayerJoined(Object[] play){
         String TAG = "onPlayerJoined()";
         Log.i(TAG, "entered method");
+        phase = "answering";
         try {
             player.setHand(Card.buildHand((String[]) play[0]));
             this.players = (Player[]) play[1];

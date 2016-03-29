@@ -128,7 +128,14 @@ public class Player {
 
     public void setPicked(int pos){
         picked = hand.get(pos);
-        playerDomain.publish("picked", picked);
+
+        if(GameActivity.phase.equals("choosing")){
+//            playerDomain.publish("chose", picked);
+            GameActivity.dealer.danger_pub_chose(picked);
+        }else{ // picking phase
+            playerDomain.publish("picked", picked);
+            GameActivity.dealer.danger_pub_picked(picked);
+        }
     }
 
     public void addPoint(){
@@ -146,20 +153,44 @@ public class Player {
     }
 
     public String question(){
-        if(question == null || question == "") {
+        if(question == null || question.equals("")) {
             return Dealer.generateQuestion().getText();
         }else{
             return question;
         }
     }
 
+    public void danger_pub_answering(int czarID, String questionText, int duration){
+        Log.i("answering sub", "received question " + questionText);
+        this.isCzar = (czarID == this.ID);
+        this.question = questionText;
+        this.duration = duration;
+        activity.runOnUiThread(() -> {
+            Log.i("player", "setting question");
+            activity.setQuestion();                              //set question TextView
+        });
+    }
+
+    public void danger_pub_picking(String[] answers, int duration){
+        Log.i("picking sub", "received answers " + Card.printHand(answers));
+        this.answers = Card.buildHand(answers);
+        this.duration = duration;
+    }
+
+    public void danger_pub_scoring(Player winningPlayer, String winningCard, int duration){
+        Log.i("scoring sub", "winning card " + winningCard);
+        this.winner = winningPlayer;
+        this.winningCard = winningCard;
+        this.duration = duration;
+    }
+
     // Receiver handles riffle calls
     private class Receiver extends Domain{
         private Player player;
 
-        public Receiver(String name) {
+/*        public Receiver(String name) {
             super(name);
-        }
+        }*/
 
         public Receiver(String name, Domain superdomain) {
             super(name, superdomain );
@@ -174,21 +205,21 @@ public class Player {
             register("pick", Card.class, Card.class, player::pick);
 
             Log.i("Player", "sub to answering");
-            subscribe("answering", String.class, String.class, Integer.class,
-                    (czarPlayer, questionText, duration) -> {
+            subscribe("answering", Integer.class, String.class, Integer.class,
+                    (czarID, questionText, duration) -> {
                         Log.i("answering sub", "received question " + questionText);
 
-                        player.isCzar = czarPlayer.equals(playerID);
+                        player.isCzar = (czarID == player.ID);
                         player.question = questionText;
                         player.duration = duration;
                         activity.setQuestion();
                     });
 
             Log.i("Player", "sub to picking");
-            subscribe("picking", ArrayList.class, Integer.class,
+            subscribe("picking", String[].class, Integer.class,
                     (answers, duration) -> {
                         Log.i("picking sub", "received answers " + Card.printHand(answers));
-                        player.answers = answers;
+                        player.answers = Card.buildHand(answers);
                         player.duration = duration;
                     });
 
@@ -201,8 +232,7 @@ public class Player {
                         player.duration = duration;
                     });
 
-            // TODO should not be using DANGER_EXEC
-            Object[] playObject = DANGER_EXEC.play();
+            Object[] playObject = DANGER_EXEC.play();       // TODO
 
             if(playObject == null){
                 Log.wtf(TAG, "play object is null!");

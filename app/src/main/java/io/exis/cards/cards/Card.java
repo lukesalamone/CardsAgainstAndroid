@@ -169,6 +169,14 @@ public class Card {
         return s;
     }
 
+    public static String printHand(String[] hand){
+        String s = "";
+        for(String c : hand){
+            s += c + "\n";
+        }
+        return s;
+    }
+
     public static String[] handToStrings(ArrayList<Card> hand){
         String[] arr = new String[hand.size()];
         for(int i=0; i<arr.length; i++){

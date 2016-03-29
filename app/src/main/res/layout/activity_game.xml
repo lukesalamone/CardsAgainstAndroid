@@ -6,7 +6,8 @@
     android:paddingTop="0dp"
     android:paddingBottom="0dp"
     tools:context=".GameActivity"
-    android:background="#000">
+    android:background="#000"
+    android:keepScreenOn="true">
 
     <TextView android:text="@string/question"
         android:layout_width="fill_parent"
