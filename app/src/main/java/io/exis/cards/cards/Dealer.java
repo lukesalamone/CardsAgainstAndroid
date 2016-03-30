@@ -35,7 +35,6 @@ public class Dealer extends Domain{
     private Card questionCard;                              // always know question card
     private String dealerID;
     int czarNum;
-    GameTimer timer;
     RiffleSession session;
     private int dummyCount;
     private int playerCount;
@@ -84,10 +83,6 @@ public class Dealer extends Domain{
             Log.i("choose listener", "received card " + c.getText());
             winningCard = c;
         });
-
-        // pub: current czar, current question & round duration
-//        publish("answering", players.get(czarNum).ID(), getQuestion().getText(), 10);
-        player.danger_pub_answering(players.get(czarNum).ID(), getQuestion().getText(), duration); // TODO
     }
 
 
@@ -155,8 +150,12 @@ public class Dealer extends Domain{
 
     public ArrayList<Card> getNewHand(){
         ArrayList<Card> hand = new ArrayList<>();
-
+        Card newCard = generateAnswer();
         for(int i=0; i<5; i++){
+            while(hand.contains(newCard)) {
+                newCard = generateAnswer();
+            }
+
             hand.add(generateAnswer());
         }
 
@@ -174,29 +173,6 @@ public class Dealer extends Domain{
         }
         return questionCard;
     }
-
-    //used for keeping GameActivity timer synchronized
-    public long getTimeRemainingInPhase(){
-        return timer.getTimeRemaining();
-    }//end getTimeRemainingInPhase method
-
-    public Player getWinner(){
-        return winner;
-    }//end getWinner method
-
-    public static Card getWinningCard(){
-        return winningCard;
-    }
-
-    public boolean isCzar(Player player){
-        for(Player p : players){
-            if(p.ID() == player.ID()){
-                return p.isCzar();
-            }
-        }
-        //hopefully we found the player, but...
-        return false;
-    }//end isCzar method
 
     public void prepareGame(){
         if(questionDeck == null) {
@@ -346,105 +322,15 @@ public class Dealer extends Domain{
                 setWinner();
 
                 Log.i(TAG, "publishing [scoring, " +
-                        winner + ", " +
+                        winner.playerID() + ", " +
                         winningCard.getText() + ", " +
                         duration + "]");
 //                    publish("scoring", winner, winningCard.getText(), duration);
-                player.danger_pub_scoring(winner, winningCard.getText(), duration);
+                player.danger_pub_scoring(winner.playerID(), winningCard.getText(), duration);
 
                 answers.clear();
                 phase = "answering";
                 break;
         }
     }// end playGame method
-
-    /*
-     * GameTimer handles 3 game phases: answering, picking, and scoring
-     *
-     * Answering - players submit cards to dealer
-     * Picking - Czar picks winner
-     * Scoring - Dealer gives point to winner
-     *
-     */
-    private class GameTimer extends CountDownTimer {
-        String type;
-        private GameTimer next;
-        private long timeRemaining;
-        String TAG = "Dealer";
-
-        public GameTimer(long duration, long interval){
-            super(duration, interval);
-            Log.i(TAG, "Dealer timer init");
-        }
-
-        @Override
-        public void onFinish(){
-            switch (type){
-                case "answering": // next phase will be picking
-                    phase = "picking";
-
-                    // pad pile for czar
-                    while(answers.size() != 5){
-                        answers.add(generateAnswer());
-                    }
-
-                        Log.i(TAG, "publishing [picking, " +
-                                Card.printHand(answers) + ", " +
-                                duration + "]");
-                        publish("picking", Card.handToStrings(answers), duration);
-
-                    setNextTimer("picking");
-                    break;
-                case "picking": // next phase will be scoring
-                    answers.clear();
-                    updateCzar();
-                    questionCard = generateQuestion();              //update question
-
-                    phase = "scoring";
-                    setWinner();
-                        Log.i(TAG, "publishing [scoring, " +
-                                winner + ", " +
-                                winningCard.getText() + ", " +
-                                duration + "]");
-                        publish("scoring", winner, winningCard.getText(), duration);
-                    setNextTimer("scoring");
-                    break;
-                case "scoring": // next phase will be answering
-                    phase = "answering";
-
-                        Log.i(TAG, "publishing [answering, " +
-                                czar().playerID() + ", " +
-                                getQuestion().getText() + ", " +
-                                duration + "]");
-                        publish("answering", czar(), getQuestion().getText(), duration);
-                    setPlayers();                    // deal cards back to each player
-                    setNextTimer("answering");
-                    break;
-            }// end switch
-
-            next.start();
-        }// end onFinish method
-
-        @Override
-        public void onTick(long millisUntilFinished){
-            Log.i(TAG, "time remaining: " + timeRemaining);
-            timeRemaining = millisUntilFinished;
-            publish("tick", (int) (timeRemaining/1000));
-        }//end onTick method
-
-        public long getTimeRemaining(){
-            return timeRemaining;
-        }
-
-        private void setNextTimer(String nextType){
-            GameTimer nextTimer = new GameTimer(15000, 1000);
-            nextTimer.setType(nextType);
-            next = nextTimer;
-        }
-
-        public void setType(String timerType){
-            type = timerType;
-        }
-    }//end GameTimer subclass
-
 }//end Dealer class

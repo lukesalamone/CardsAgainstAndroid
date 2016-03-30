@@ -45,8 +45,8 @@ public class MainActivity extends Activity {
         gameButton  = (Button) findViewById(R.id.button);
         gameButton.setTypeface(LibSansBold);
 
-        questions = Card.getQuestions(false);
-        answers = Card.getAnswers(false);
+        questions = Card.questions();
+        answers = Card.answers();
     }
 
     public void startGame(View view) {
@@ -95,12 +95,22 @@ public class MainActivity extends Activity {
 
     //load file into string and return it
     public static String getCardString(String name){
-        //name = name + ".txt";
-        Log.i("Card.getCardString", "name = " + name);
-        int resID = context.getResources().getIdentifier(name, "raw", context.getPackageName());
-        Log.i("Card.getCardString", "resID = " + resID);
-        Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
-        return fileIn.nextLine();
+        String cardString = "";
+        if(name.equals("q13")){
+            for(int i=1; i<=6; i++){
+                int resID = context.getResources().getIdentifier("q" + i, "raw", context.getPackageName());
+                Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
+                cardString += fileIn.useDelimiter("\\Z").next();
+            }
+        }else{
+            for(int i=1; i<=15; i++){
+                int resID = context.getResources().getIdentifier("a" + i, "raw", context.getPackageName());
+                Scanner fileIn = new Scanner(context.getResources().openRawResource(resID));
+                cardString += fileIn.useDelimiter("\\Z").next();
+            }
+        }
+
+        return cardString;
     }//end getCardString method
 
     public static ArrayList<Card> getQuestions(){

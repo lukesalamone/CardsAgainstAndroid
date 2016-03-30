@@ -7,7 +7,8 @@
     android:paddingBottom="0dp"
     tools:context=".GameActivity"
     android:background="#000"
-    android:keepScreenOn="true">
+    android:keepScreenOn="true"
+    android:id="@+id/game_bg">
 
     <TextView android:text="@string/question"
         android:layout_width="fill_parent"
@@ -17,7 +18,6 @@
         android:textAlignment="center"
         android:textColor="#fff"
         android:layout_alignParentTop="true"
-        android:background="#000"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
         android:padding="10dp"
@@ -30,7 +30,7 @@
         android:id="@+id/progress"
         android:layout_below="@+id/question"
         android:layout_centerHorizontal="true"
-        android:background="#207bae"
+        android:background="#00a2ff"
         android:textAlignment="center"
         android:foregroundGravity="left"
         android:progressBackgroundTint="#ff000000"
@@ -117,7 +117,7 @@
         android:minHeight="@dimen/card_height"
         android:id="@+id/card5"
         android:textSize="20sp"
-        android:background="#eee"
+        android:background="#fff"
         android:textColor="#555"
         android:layout_below="@+id/card4"
         android:layout_marginTop="@dimen/card_spacing"

@@ -1,16 +1,15 @@
 package io.exis.cards.cards;
 
-import android.animation.ObjectAnimator;
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.content.Context;
 import android.widget.Toast;
@@ -49,6 +48,7 @@ public class GameActivity extends Activity {
     public String state;
     public String roomName;
 
+    RelativeLayout layout;
     TextView infoText;
     ArrayList<TextView> cardViews;
 
@@ -83,6 +83,7 @@ public class GameActivity extends Activity {
             cardViews.add(i, textView);
         }// end for loop
 
+        layout = (RelativeLayout) findViewById(R.id.game_bg);
         infoText = (TextView) findViewById(R.id.room_id);
         progressBar = (ProgressBar) findViewById(R.id.progress);
         infoText.setTypeface(MainActivity.getTypeface("LibSansItalic"));
@@ -119,7 +120,7 @@ public class GameActivity extends Activity {
     public void onPause(){
         super.onPause();
 
-        // save points here
+//         save points here
 
     }//end onPause method
 
@@ -151,7 +152,6 @@ public class GameActivity extends Activity {
     // called by Player after join
     public void onPlayerJoined(Object[] play){
         String TAG = "onPlayerJoined()";
-        Log.i(TAG, "entered method");
         phase = "answering";
         try {
             player.setHand(Card.buildHand((String[]) play[0]));
@@ -164,7 +164,6 @@ public class GameActivity extends Activity {
         }
 
         this.runOnUiThread(() -> {
-            Log.i(TAG, "runOnUithread block entered");
             setQuestion();                              //set question TextView
             refreshCards(player.hand());
             playOnlineGame();
@@ -188,7 +187,7 @@ public class GameActivity extends Activity {
         }
     }//end setAnswers method
 
-    public void submitCard(int num, View view){
+    private void submitCard(int num, View view){
         String TAG = "submitCard";
         if(player.isCzar() && phase.equals("picking") ||
                 !player.isCzar() && phase.equals("answering")) {
@@ -201,23 +200,45 @@ public class GameActivity extends Activity {
         }
     }
 
-    //whiten card backgrounds other than card c
+    // card c gets colored background
     private void setBackgrounds(int c, View v){
         //v.setBackgroundColor(Color.parseColor("#ff30b2c1"));
-        ((TextView) v).setTextColor(Color.parseColor("#ff000000"));
+        ((TextView) v).setBackgroundColor(Color.parseColor("#ff00a2ff"));
+        ((TextView) v).setTextColor(Color.parseColor("#ffffffff"));
 
         //set other cards to grey
         for(int i=0; i<5; i++){
             if(i != c){
-                cardViews.get(i).setTextColor(Color.parseColor("#55000000"));
+                cardViews.get(i).setBackgroundColor(Color.parseColor("#ffffffff"));
+                cardViews.get(i).setTextColor(Color.parseColor("#ee000000"));
             }
         }
     }//end setBackgrounds method
 
+    // set all backgrounds to white
     private void resetBackgrounds(){
         for(TextView v : cardViews){
+            v.setBackgroundColor(Color.parseColor("#ffffffff"));
             v.setTextColor(Color.parseColor("#ff000000"));
         }
+    }
+
+    // set blur to TRUE to blur, FALSE to unblur
+    private void blurUI(boolean blur){
+        if(blur){
+            layout.setBackground(ContextCompat.getDrawable(context, R.drawable.blur));
+            for(TextView t : cardViews){
+                t.setVisibility(View.GONE);
+            }
+        }else{
+            layout.setBackground(null);
+            layout.setBackgroundColor(Color.parseColor("#ff000000"));
+            for(TextView t: cardViews){
+                t.setVisibility(View.VISIBLE);
+            }
+        }
+
+
     }
 
     private class GameTimer extends CountDownTimer{
@@ -235,12 +256,14 @@ public class GameActivity extends Activity {
             switch(type){
                 case "answering":                           //next phase will be picking
                     if(player.isCzar()){
+                        blurUI(false);
                         infoText.setText(R.string.answeringInfo);
                         forCzar = player.answers();
                         chosen = forCzar.get(0);            //default submit first card
                         refreshCards(forCzar);
                     }else{
                         resetBackgrounds();
+                        refreshCards(forCzar);
                         infoText.setText(R.string.pickingInfo);
                         if(!answerSelected){
                             submitCard(0, cardViews.get(0));
@@ -253,20 +276,22 @@ public class GameActivity extends Activity {
                     break;
                 case "picking":                             //next phase will be scoring
                     infoText.setText(R.string.scoringInfo);
-
+                    resetBackgrounds();
+                    refreshCards(player.hand());
                     phase = "scoring";
                     setNextTimer("scoring");
                     break;
                 case "scoring":                                 //next phase will be answering
                     setQuestion();                              //update question card
                     if(player.isCzar()){
+                        blurUI(true);
                         resetBackgrounds();
                         infoText.setText(R.string.playersPickingInfo);
                     }else{
                         infoText.setText(R.string.answeringInfo);
                     }
-                    Player winner = player.getWinner();             //give point if player is winner
-                    if(winner != null && winner.ID() == player.ID()){
+                    String winnerID = player.getWinner();             //give point if player is winner
+                    if(winnerID != null && winnerID.equals(player.playerID())){
                         Toast.makeText(context, "You won this round!", Toast.LENGTH_SHORT).show();
                         player.addPoint();
                     }

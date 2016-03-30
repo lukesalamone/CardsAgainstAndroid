@@ -27,7 +27,7 @@ public class Player {
     private int score;
     private String dealerDomain;
     private String question;
-    private Player winner;
+    private String winnerID;
     private String winningCard;
     private Object ret;
     private Card nextCard;
@@ -87,8 +87,8 @@ public class Player {
         return this.hand;
     }//end getCards method
 
-    public Player getWinner(){
-        return this.winner;
+    public String getWinner(){
+        return winnerID;
     }
 
     public int ID(){
@@ -169,11 +169,12 @@ public class Player {
         Log.i("danger picking sub", "received answers " + Card.printHand(answers));
         this.answers = Card.buildHand(answers);
         this.duration = duration;
+        activity.runOnUiThread(() -> activity.refreshCards(this.answers) );
     }
 
-    public void danger_pub_scoring(Player winningPlayer, String winningCard, int duration){
+    public void danger_pub_scoring(String winnerID, String winningCard, int duration){
         Log.i("danger scoring sub", "winning card " + winningCard);
-        this.winner = winningPlayer;
+        this.winnerID = winnerID;
         this.winningCard = winningCard;
         this.duration = duration;
     }
@@ -215,13 +216,14 @@ public class Player {
                         Log.i("picking sub", "received answers " + Card.printHand(answers));
                         player.answers = Card.buildHand(answers);
                         player.duration = duration;
+                        activity.runOnUiThread(() -> activity.refreshCards(player.answers) );
                     });
 
             Log.i("Player", "sub to scoring");
-            subscribe("scoring", Player.class, String.class, Integer.class,
-                    (winningPlayer, winningCard, duration) -> {
+            subscribe("scoring", String.class, String.class, Integer.class,
+                    (winnerID, winningCard, duration) -> {
                         Log.i("scoring sub", "winning card " + winningCard);
-                        player.winner = winningPlayer;
+                        player.winnerID = winnerID;
                         player.winningCard = winningCard;
                         player.duration = duration;
                     });

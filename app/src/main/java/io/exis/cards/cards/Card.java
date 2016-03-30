@@ -38,101 +38,55 @@ public class Card {
         context = MainActivity.getAppContext();
     }//end Card constructor
 
-    public static Card getErrorCard(String dummyString){
-        return new Card(dummyString);
-    }
-
-    public String getText(){
-        return this.text;
-    }//end getID method
-
-    public boolean equals(Card card){
-        return this.text.equals(card.getText());
-    }
-
-    public static ArrayList<Card> getQuestions(boolean R){
-        questions = new ArrayList<>();
-
-        try {
-            //There are 595 R-rated questions
-            if (R) {
-                for (int i = 0; i < 595; i++) {
-                    questions.add(getCardByID(i, R, 'q'));
-                    Log.i("getQuestions", "Added question card " + i);
-                }
-            //pg13 questions number 28 - 35
-            } else {
-                for(int i=0; i < 8; i++){
-                    questions.add(getCardByID(i, R, 'q'));
-                }
-            }
-        } catch(JSONException e){
-            e.printStackTrace();
-            throw new RuntimeException(e);
+    public static ArrayList<Card> questions(){
+        if(questions == null || questions.size() == 0){
+            loadQuestions();
         }
-        cardsArray = null;
-        Log.i("get questions", "questions has size " + questions.size());
+
         return questions;
-    }//end getQuestions method
+    }
 
-    public static ArrayList<Card> getAnswers(boolean R){
-        Log.i("getAnswers", "Loading answers...");
-        answers = new ArrayList<>();
-        try {
-            //R answers number from 36 to 2864
-            if (R) {
-                for (int i = 0; i < 2259; i++) {
-                    answers.add(getCardByID(i, R, 'a'));
-                }
-            //pg13 answers number from 0 - 27
-            } else {
-                for(int i = 0; i < 27; i++){
-                    answers.add(getCardByID(i, R, 'a'));
-                }
-            }
-        } catch(JSONException e){
-            e.printStackTrace();
-            throw new RuntimeException(e);
+    public static ArrayList<Card> answers(){
+        if(answers == null || answers.size() == 0){
+            loadAnswers();
         }
-        cardsArray = null;
-        Log.i("get answers", "answers has size " + answers.size());
+
         return answers;
-    }//end getAnswers method
+    }
 
-    //returns a Card from an ID. When R is true return normal card set
-    //Card cannot set PID! Receiving party must set it.
-    public static Card getCardByID(int ID, boolean R, char type) throws JSONException{
-        //load card text files into JSON array
-        if(cardsArray == null) {
-            if (R) {
-                //requesting a question card
-                if (type == 'q') {
-                    cardsArray = getCardsJSON("q21");
-                } else {    //requesting an answer card
-                    cardsArray = getCardsJSON("a21");
-                }
-            } else { //pg-13 card set
-                if (type == 'q') {
-                    cardsArray = getCardsJSON("q13");
-                } else {
-                    cardsArray = getCardsJSON("a13");
-                }
+    private static void loadQuestions(){
+        questions = new ArrayList<>();
+        JSONArray questionsJSON = getCardsJSON("q13");
+        String cardText = "";
+        JSONObject cardsJSON;
+        for(int i=28; i<2890; i++){
+            try{
+                cardsJSON = new JSONObject( questionsJSON.getJSONObject(i), keys );
+                cardText = cardsJSON.getString("text");
+            } catch(JSONException e){
+                break;
             }
+            Log.i("adding question", cardText);
+            questions.add(new Card(cardText));
         }
+    }
 
-        try{
-            //retrieve JSONObject from JSONArray
-            cardsJSON = new JSONObject( cardsArray.getJSONObject(ID), keys );
-        } catch(JSONException e){
-            e.printStackTrace();
-            throw new RuntimeException(e);
+    private static void loadAnswers(){
+        answers = new ArrayList<>();
+        JSONArray answersJSON = getCardsJSON("a13");
+        String cardText = "";
+        JSONObject cardsJSON;
+        for(int i=0; i<2900; i++){
+            try{
+                cardsJSON = new JSONObject( answersJSON.getJSONObject(i), keys );
+                cardText = cardsJSON.getString("text");
+            } catch(JSONException e){
+                break;
+            }
+            Log.i("adding answer", cardText);
+            answers.add(new Card(cardText));
         }
-
-        String cardText = cardsJSON.getString("text");
-
-        //return card created with cardText
-        return new Card(cardText);
-    }//end getCardByID method
+    }
 
     /*
      * Gets a JSON Array of JSON Objects which contain card texts and irrelevant IDs
@@ -141,14 +95,14 @@ public class Card {
      * @return The JSONArray
      */
     public static JSONArray getCardsJSON(String name){
-
         if(cardsArray == null || cardsJSON.length() == 0){
 
             String cardString = MainActivity.getCardString(name);
+            Log.i("getCardsJSON", "cardString has length " + cardString.length());
 
             try {
                 cardsArray = new JSONArray(cardString);
-                Log.i("getCardsJSON", "cardsArray:\n\n" + cardsArray.toString(4));
+                Log.i("getCardsJSON", "cardsArray has length " + cardsArray.length());
             } catch(JSONException e){
                 Log.wtf("getCardsJSON", "JSON Exception thrown.");
                 e.printStackTrace();
@@ -158,7 +112,6 @@ public class Card {
         }
 
         return cardsArray;
-
     }//end getCardJSON method
 
     public static String printHand(ArrayList<Card> hand){
@@ -177,6 +130,10 @@ public class Card {
         return s;
     }
 
+    public String getText(){
+        return this.text;
+    }//end getID method
+
     public static String[] handToStrings(ArrayList<Card> hand){
         String[] arr = new String[hand.size()];
         for(int i=0; i<arr.length; i++){
@@ -184,24 +141,6 @@ public class Card {
         }
         return arr;
     }
-
-    // return card whose text is passed as parameter
-    public static Card searchCards(String text){
-        for(Card card : answers){
-            if(card.getText().equals(text)){
-                return card;
-            }
-        }
-
-        for(Card card : questions){
-            if(card.getText().equals(text)){
-                return card;
-            }
-        }
-
-        // this should never happen
-        return new Card(text);
-    }// end searchCards method
 
     public static ArrayList<Card> buildHand(String[] array){
         ArrayList<Card> hand = new ArrayList<>();
