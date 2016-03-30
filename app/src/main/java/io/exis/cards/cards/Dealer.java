@@ -37,11 +37,11 @@ public class Dealer extends Domain{
     int czarNum;
     GameTimer timer;
     RiffleSession session;
-    private boolean online;
     private int dummyCount;
     private int playerCount;
     private int duration;
     private Handler handler;
+    public Runnable runnable;
 
     private Player player;
 
@@ -57,7 +57,6 @@ public class Dealer extends Domain{
 
 
         answers = new ArrayList<>();
-        online = GameActivity.online;
         dummyCount = 0;
         playerCount = 0;
         duration = 15;
@@ -127,7 +126,7 @@ public class Dealer extends Domain{
 
         Card card = generateAnswer();                       //generate new card to give to player
 
-        if(online && !player.dummy) {
+        if(!player.dummy) {
 //            session.draw(card);
             player.draw(card);
         }else{
@@ -217,11 +216,6 @@ public class Dealer extends Domain{
             dummyCount++;
             Log.i("add dummies", "dummy count: " + dummyCount);
         }
-
-        if(!online){
-            Log.i("add dummies", "setting dummy as czar");
-            players.get(4).setCzar(true);
-        }
     }
 
     private void removeDummy(){
@@ -272,13 +266,8 @@ public class Dealer extends Domain{
      * @param   card Card czar has chosen
      */
     private void pick(Player player, Card card){
-        if(online){
-            // call player::pick
 //            session.pick(card);                               // TODO danger
-            player.pick(card);
-        }else{
-            player.pick(card);
-        }
+        player.pick(card);
     }//end pick method
 
     public Object[] play(){
@@ -296,7 +285,7 @@ public class Dealer extends Domain{
         Log.i("dealer", 1 + "");
         int delay = 15000;
         Log.i("dealer", 2 + "");
-        Runnable r = new Runnable(){
+        runnable = new Runnable(){
             public void run() {
                 Log.i("dealer", "starting " + phase + " phase");
                 playGame(phase);
@@ -304,7 +293,7 @@ public class Dealer extends Domain{
             }
         };
         Log.i("dealer", 3 + "");
-        handler.postDelayed(r, delay);
+        handler.postDelayed(runnable, delay);
     }//end start method
 
     public void danger_pub_chose(Card picked){
@@ -329,14 +318,12 @@ public class Dealer extends Domain{
                 updateCzar();
                 questionCard = generateQuestion();              //update question
 
-                if(online){
-                    Log.i(TAG, "publishing [answering, " +
-                            czar().playerID() + ", " +
-                            getQuestion().getText() + ", " +
-                            duration + "]");
+                Log.i(TAG, "publishing [answering, " +
+                        czar().playerID() + ", " +
+                        getQuestion().getText() + ", " +
+                        duration + "]");
 //                    publish("answering", czar(), getQuestion().getText(), duration);
-                    player.danger_pub_answering(players.get(czarNum).ID(), getQuestion().getText(), duration);
-                }
+                player.danger_pub_answering(players.get(czarNum).ID(), getQuestion().getText(), duration);
 
                 setPlayers();                    // deal cards back to each player
                 phase = "picking";
@@ -347,27 +334,24 @@ public class Dealer extends Domain{
                     answers.add(generateAnswer());
                 }
 
-                if(online) {
-                    Log.i(TAG, "publishing [picking, " +
-                            Card.printHand(answers) + ", " +
-                            duration + "]");
+                Log.i(TAG, "publishing [picking, " +
+                        Card.printHand(answers) + ", " +
+                        duration + "]");
 //                    publish("picking", Card.handToStrings(answers), duration);
-                    player.danger_pub_picking(Card.handToStrings(answers), duration);
-                }
+                player.danger_pub_picking(Card.handToStrings(answers), duration);
 
                 phase = "scoring";
                 break;
             case "scoring":
                 setWinner();
 
-                if(online){
-                    Log.i(TAG, "publishing [scoring, " +
-                            winner + ", " +
-                            winningCard.getText() + ", " +
-                            duration + "]");
+                Log.i(TAG, "publishing [scoring, " +
+                        winner + ", " +
+                        winningCard.getText() + ", " +
+                        duration + "]");
 //                    publish("scoring", winner, winningCard.getText(), duration);
-                    player.danger_pub_scoring(winner, winningCard.getText(), duration);
-                }
+                player.danger_pub_scoring(winner, winningCard.getText(), duration);
+
                 answers.clear();
                 phase = "answering";
                 break;
@@ -404,12 +388,10 @@ public class Dealer extends Domain{
                         answers.add(generateAnswer());
                     }
 
-                    if(online) {
                         Log.i(TAG, "publishing [picking, " +
                                 Card.printHand(answers) + ", " +
                                 duration + "]");
                         publish("picking", Card.handToStrings(answers), duration);
-                    }
 
                     setNextTimer("picking");
                     break;
@@ -420,25 +402,21 @@ public class Dealer extends Domain{
 
                     phase = "scoring";
                     setWinner();
-                    if(online){
                         Log.i(TAG, "publishing [scoring, " +
                                 winner + ", " +
                                 winningCard.getText() + ", " +
                                 duration + "]");
                         publish("scoring", winner, winningCard.getText(), duration);
-                    }
                     setNextTimer("scoring");
                     break;
                 case "scoring": // next phase will be answering
                     phase = "answering";
 
-                    if(online){
                         Log.i(TAG, "publishing [answering, " +
                                 czar().playerID() + ", " +
                                 getQuestion().getText() + ", " +
                                 duration + "]");
                         publish("answering", czar(), getQuestion().getText(), duration);
-                    }
                     setPlayers();                    // deal cards back to each player
                     setNextTimer("answering");
                     break;

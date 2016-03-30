@@ -40,7 +40,6 @@
     <TextView
         android:text="@string/answer"
         android:clickable="true"
-        android:onClick="submitCard1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/card_height"
@@ -61,7 +60,6 @@
     <TextView
         android:text="@string/answer"
         android:clickable="true"
-        android:onClick="submitCard2"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/card_height"
@@ -80,7 +78,6 @@
     <TextView
         android:text="@string/answer"
         android:clickable="true"
-        android:onClick="submitCard3"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/card_height"
@@ -98,7 +95,6 @@
     <TextView
         android:text="@string/answer"
         android:clickable="true"
-        android:onClick="submitCard4"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/card_height"
@@ -116,7 +112,6 @@
     <TextView
         android:text="@string/answer"
         android:clickable="true"
-        android:onClick="submitCard5"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/card_height"

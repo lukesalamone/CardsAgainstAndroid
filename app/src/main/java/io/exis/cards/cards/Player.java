@@ -142,16 +142,6 @@ public class Player {
         score++;
     }
 
-    public String printHand(){
-        String s = "";
-
-        for(Card c: hand){
-            s += c.getText() + "\n";
-        }
-
-        return s;
-    }
-
     public String question(){
         if(question == null || question.equals("")) {
             return Dealer.generateQuestion().getText();
@@ -160,8 +150,12 @@ public class Player {
         }
     }
 
+    public void leave(){
+        playerDomain.leave();
+    }
+
     public void danger_pub_answering(int czarID, String questionText, int duration){
-        Log.i("answering sub", "received question " + questionText);
+        Log.i("danger answering sub", "received question " + questionText);
         this.isCzar = (czarID == this.ID);
         this.question = questionText;
         this.duration = duration;
@@ -172,13 +166,13 @@ public class Player {
     }
 
     public void danger_pub_picking(String[] answers, int duration){
-        Log.i("picking sub", "received answers " + Card.printHand(answers));
+        Log.i("danger picking sub", "received answers " + Card.printHand(answers));
         this.answers = Card.buildHand(answers);
         this.duration = duration;
     }
 
     public void danger_pub_scoring(Player winningPlayer, String winningCard, int duration){
-        Log.i("scoring sub", "winning card " + winningCard);
+        Log.i("danger scoring sub", "winning card " + winningCard);
         this.winner = winningPlayer;
         this.winningCard = winningCard;
         this.duration = duration;

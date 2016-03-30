@@ -20,12 +20,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MainActivity extends Activity {
-
-    static final String CONTENT_RATING = "contentRating";
-    static final String QUESTION_CARDS = "questionCards";
-    static final String ANSWER_CARDS = "answerCards";
-    public static final String PREFS = "prefsFile";
-    public static int points;
     public static boolean online = false;
     private static Context context;
     private static ArrayList<Card> answers;

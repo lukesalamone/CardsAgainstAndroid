@@ -32,7 +32,6 @@ public class GameActivity extends Activity {
     //public final String PREFS;
     public int points;
     private Context context;
-    public static boolean online;
     public Player player;
     public static Dealer dealer;
     private Exec exec;
@@ -42,6 +41,7 @@ public class GameActivity extends Activity {
     private Card chosen;
     private ArrayList<Card> forCzar;
     public static String phase;
+    private GameTimer timer;
 
     public static Handler handler;
 
@@ -49,12 +49,8 @@ public class GameActivity extends Activity {
     public String state;
     public String roomName;
 
-    TextView card1;
-    TextView card2;
-    TextView card3;
-    TextView card4;
-    TextView card5;
     TextView infoText;
+    ArrayList<TextView> cardViews;
 
     public GameActivity(){
         Log.i("GameActivity", "entered constructor");
@@ -62,13 +58,8 @@ public class GameActivity extends Activity {
         Riffle.setLogLevelInfo();
         Riffle.setCuminOff();
 
-        ////////////////////////////////
-        /////// FAT RED BUTTON ///////
-        ////////////////////////////////
-        online = true;
-        ///////////////////////////////
-
         this.context = MainActivity.getAppContext();
+        timer = new GameTimer(15000, 10);
     }
 
     @Override
@@ -77,24 +68,27 @@ public class GameActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        card1 = (TextView) findViewById(R.id.card1);
-        card2 = (TextView) findViewById(R.id.card2);
-        card3 = (TextView) findViewById(R.id.card3);
-        card4 = (TextView) findViewById(R.id.card4);
-        card5 = (TextView) findViewById(R.id.card5);
+        cardViews = new ArrayList<>();
+
+        // add 5 textviews to Array List
+        for(int i=0; i<5; i++){
+            String str = "card" + (i + 1);
+            int resID = context.getResources().getIdentifier(str, "id", context.getPackageName());
+            TextView textView = (TextView) findViewById(resID);
+            textView.setTypeface(MainActivity.getTypeface(""));
+
+            final int index = i;
+            textView.setOnClickListener(view -> submitCard(index, view));
+
+            cardViews.add(i, textView);
+        }// end for loop
+
         infoText = (TextView) findViewById(R.id.room_id);
         progressBar = (ProgressBar) findViewById(R.id.progress);
-
-        card1.setTypeface(MainActivity.getTypeface(""));
-        card2.setTypeface(MainActivity.getTypeface(""));
-        card3.setTypeface(MainActivity.getTypeface(""));
-        card4.setTypeface(MainActivity.getTypeface(""));
-        card5.setTypeface(MainActivity.getTypeface(""));
         infoText.setTypeface(MainActivity.getTypeface("LibSansItalic"));
 
-        Log.i("Game activity", "leaving onCreate()");
         handler = new Handler();
-    }
+    }// end onCreate method
 
     @Override
     public void onStart(){
@@ -105,82 +99,51 @@ public class GameActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        String TAG = "GameActivity::onResume()";
+        String TAG = "GameActivity::onResume";
 
-        if(online){
-            // int id = Exec.getNewID();
-            Log.i(TAG, "creating Exec instance");
-            exec = new Exec();
+        // int id = Exec.getNewID();
+        Log.i(TAG, "creating Exec instance");
+        exec = new Exec();
 
-            Domain app = new Domain("xs.damouse.CardsAgainst");
-            Player player = new Player(Exec.getNewID(), app);
-            exec.setPlayer(player);
-            player.activity = this;
-            session = new RiffleSession(player.playerDomain());
-            session.setPlayer(player);
-            exec.externalPlayer = player;
-            exec.join();
-        } else {
-//            TODO consolidate calls into future Exec.join(player)
-
-            dealer = Exec.findDealer();                       //gets a dealer for the player
-            dealer.prepareGame();                                   //load questions and answers
-            dealer.addPlayer(player);                               //adds player to dealer
-            dealer.addDummies();
-
-            setQuestion();                              //set question TextView
-            refreshCards(player.hand());
-
-            Log.i("onResume", "playing offline game");
-            playOfflineGame();
-        }
+        Domain app = new Domain("xs.damouse.CardsAgainst");
+        Player player = new Player(Exec.getNewID(), app);
+        exec.setPlayer(player);
+        player.activity = this;
+        session = new RiffleSession(player.playerDomain());
+        session.setPlayer(player);
+        exec.externalPlayer = player;
+        exec.join();
     }//end onResume method
 
     @Override
     public void onPause(){
         super.onPause();
 
-        // TODO save points to disk
+        // save points here
 
     }//end onPause method
 
     @Override
     protected void onStop(){
         super.onStop();
+        timer.cancel();
     }//end onStop method
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(online) {
-            session.leave();
-        }else {
-            dealer.leave(player);
-        }
+        handler.removeCallbacks(dealer.runnable);
+        player.leave();
+        session.leave();
+        dealer = null;
+        exec = null;
+        timer = null;
     }
 
-    private void playOfflineGame(){
-        int i = 0;
-        answerSelected = false;
-        player.setCzar(dealer.isCzar(player));
-        player.setHand(dealer.getNewHand());
-        dealer.setPlayers();
-        setQuestion();                          //draw question card
-        chosen = player.hand().get(0);
-
-        GameTimer timer = new GameTimer(15000, 1000);
-        timer.setType("answering");
-        dealer.start();                         //start dealer's timer
-        timer.start();
-    }//end playOfflineGame method
-
     public void playOnlineGame(){
-        String TAG = "playOnlineGame";
-        int i = 0;
         answerSelected = false;
         setQuestion();
 
-        GameTimer timer = new GameTimer(15000, 1000);
         timer.setType("answering");
         timer.start();
     }//end playGame method
@@ -210,12 +173,7 @@ public class GameActivity extends Activity {
 
     public void setQuestion(){
         String questionText;
-        if(online) {
-            questionText = player.question();
-        }else{
-            Card card = dealer.getQuestion();
-            questionText = card.getText();
-        }
+        questionText = player.question();
 
         TextView textView = (TextView) findViewById(R.id.question);
         textView.setText(questionText);
@@ -226,48 +184,21 @@ public class GameActivity extends Activity {
     public void refreshCards(ArrayList<Card> pile){
         //change card texts to text of cards in hand
         for(int i=0; i<5; i++){
-            String str = "card" + (i + 1);
-            int resID = context.getResources().getIdentifier(str,
-                    "id", context.getPackageName());
-            TextView view = (TextView) findViewById(resID);
-            view.setText( pile.get(i).getText() );
+            cardViews.get(i).setText( pile.get(i).getText() );
         }
     }//end setAnswers method
 
-    //TODO condense these 5 methods...
-    public void submitCard1(View view){
-        player.setPicked(0);
-
-        //set background colors
-        setBackgrounds(1, view);
-        answerSelected = true;
-    }
-
-    public void submitCard2(View view){
-        player.setPicked(1);
-
-        setBackgrounds(2, view);
-        answerSelected = true;
-    }
-
-    public void submitCard3(View view){
-        player.setPicked(2);
-        setBackgrounds(3, view);
-        answerSelected = true;
-    }
-
-    public void submitCard4(View view){
-        player.setPicked(3);
-
-        setBackgrounds(4, view);
-        answerSelected = true;
-    }
-
-    public void submitCard5(View view){
-        player.setPicked(4);
-
-        setBackgrounds(5, view);
-        answerSelected = true;
+    public void submitCard(int num, View view){
+        String TAG = "submitCard";
+        if(player.isCzar() && phase.equals("picking") ||
+                !player.isCzar() && phase.equals("answering")) {
+            player.setPicked(num);
+            setBackgrounds(num, view);
+            answerSelected = true;
+        }else{
+            Log.i(TAG, "player is czar: " + player.isCzar());
+            Log.i(TAG, "phase: " + phase);
+        }
     }
 
     //whiten card backgrounds other than card c
@@ -275,19 +206,19 @@ public class GameActivity extends Activity {
         //v.setBackgroundColor(Color.parseColor("#ff30b2c1"));
         ((TextView) v).setTextColor(Color.parseColor("#ff000000"));
 
-        String str;
-        //set only selected card to blue
-        for(int i=1; i<=5; i++){
-            str = "card" + i;
-            if(i != c){//if i != c change background to white
-                int resID = context.getResources().getIdentifier(str, "id",
-                        context.getPackageName());
-                TextView view = (TextView) findViewById(resID);
-                //view.setBackgroundColor(Color.parseColor("#ffffffff"));
-                view.setTextColor(Color.parseColor("#55000000"));
+        //set other cards to grey
+        for(int i=0; i<5; i++){
+            if(i != c){
+                cardViews.get(i).setTextColor(Color.parseColor("#55000000"));
             }
         }
     }//end setBackgrounds method
+
+    private void resetBackgrounds(){
+        for(TextView v : cardViews){
+            v.setTextColor(Color.parseColor("#ff000000"));
+        }
+    }
 
     private class GameTimer extends CountDownTimer{
         private GameTimer next;
@@ -309,9 +240,10 @@ public class GameActivity extends Activity {
                         chosen = forCzar.get(0);            //default submit first card
                         refreshCards(forCzar);
                     }else{
+                        resetBackgrounds();
                         infoText.setText(R.string.pickingInfo);
                         if(!answerSelected){
-                            submitCard1(card1);
+                            submitCard(0, cardViews.get(0));
                         }
                     }
 
@@ -328,6 +260,7 @@ public class GameActivity extends Activity {
                 case "scoring":                                 //next phase will be answering
                     setQuestion();                              //update question card
                     if(player.isCzar()){
+                        resetBackgrounds();
                         infoText.setText(R.string.playersPickingInfo);
                     }else{
                         infoText.setText(R.string.answeringInfo);
@@ -337,7 +270,7 @@ public class GameActivity extends Activity {
                         Toast.makeText(context, "You won this round!", Toast.LENGTH_SHORT).show();
                         player.addPoint();
                     }
-                    Log.i("Player's cards", player.printHand());
+                    Log.i("Player's cards", Card.printHand( player.hand() ));
 
                     refreshCards(player.hand());
                     phase = "answering";
@@ -365,7 +298,7 @@ public class GameActivity extends Activity {
 
         private void setNextTimer(String nextType){
             // TODO synchronization may be a problem
-            next = new GameTimer(10000, 1000);
+            next = new GameTimer(15000, 10);
             next.setType(nextType);
         }
     }//end GameTimer subclass

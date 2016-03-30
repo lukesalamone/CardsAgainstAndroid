@@ -55,8 +55,7 @@ public class RiffleSession {
 
     // player calls Dealer::removePlayer() upon leaving
     public void leave(){
-        app.call("leave", player).then(() -> {
-        });
+        app.call("leave", player);
     }//end leave method
 
     // player calls when starting game
