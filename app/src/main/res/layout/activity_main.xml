@@ -31,11 +31,26 @@
 
     <Button
         android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="@string/edit_name"
+        android:id="@+id/name_button"
+        android:onClick="startNameActivity"
+        android:background="#000000"
+        android:textColor="#ffffff"
+        android:textSize="25sp"
+        android:layout_below="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="85dp"
+        android:textAlignment="gravity"
+        android:gravity="center" />
+
+    <Button
+        android:layout_height="wrap_content"
         android:layout_width="300dp"
         android:text="@string/play"
         android:layout_centerHorizontal="true"
         android:id="@+id/button"
-        android:onClick="startGame"
+        android:onClick="startGameActivity"
         android:background="#000000"
         android:textColor="#ffffff"
         android:textSize="60sp"

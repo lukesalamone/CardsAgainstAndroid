@@ -19,5 +19,6 @@
     <string name="pickingInfo">Czar is picking\n</string>
     <string name="answeringInfo">Choose a card\n</string>
     <string name="playersPickingInfo">Players are submitting cards\n</string>
-    <string name="copyright">Copyright &#169; 2015-2016 Exis.io</string>
+    <string name="change_name">Change Screen Name:</string>
+    <string name="edit_name">&gt; Update screen name</string>
 </resources>

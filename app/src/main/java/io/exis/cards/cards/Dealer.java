@@ -61,10 +61,6 @@ public class Dealer extends Domain{
         duration = 15;
         phase = "answering";
 
-        //fill room with players
-        addDummies();
-        updateCzar();
-
         Looper.prepare();
         handler = GameActivity.handler;
     }//end Dealer constructor
@@ -250,17 +246,17 @@ public class Dealer extends Domain{
         //Returns: string[] cards, Player[] players, string state, string roomName
 
         return new Object[]{
-                Card.handToStrings( getNewHand() ),
-                this.getPlayers(),
-                phase,
-                dealerID};
+                Card.handToStrings( getNewHand() ),             // String[]
+                getPlayers(),                                   // Player[]
+                phase,                                          // String
+                dealerID};                                      // String
     }
 
     public void start(){
-        Log.i("dealer", "entered start()");
-        Log.i("dealer", 1 + "");
+        //fill room with players
+        addDummies();
+        updateCzar();
         int delay = 15000;
-        Log.i("dealer", 2 + "");
         runnable = new Runnable(){
             public void run() {
                 Log.i("dealer", "starting " + phase + " phase");
@@ -299,7 +295,7 @@ public class Dealer extends Domain{
                         getQuestion().getText() + ", " +
                         duration + "]");
 //                    publish("answering", czar(), getQuestion().getText(), duration);
-                player.danger_pub_answering(players.get(czarNum).ID(), getQuestion().getText(), duration);
+                player.danger_pub_answering(players.get(czarNum), getQuestion().getText(), duration);
 
                 setPlayers();                    // deal cards back to each player
                 phase = "picking";

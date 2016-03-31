@@ -18,7 +18,7 @@ import java.util.ArrayList;
  */
 public class Player {
 
-    private int ID;
+//    private int ID;
     private String playerID;
     private ArrayList<Card> hand;
     private ArrayList<Card> answers;
@@ -40,13 +40,13 @@ public class Player {
 
     Exec DANGER_EXEC;
 
-    public Player(int ID, Domain app){
+    public Player(String name, Domain app){
         exec = new Domain(dealerDomain, app);
-        playerDomain = new Receiver("player" + ID, app);
+        playerDomain = new Receiver(name, app);
         playerDomain.player = this;
 
-        this.ID = ID;
-        playerID = "player" + ID;
+        //this.ID = ID;
+        playerID = name;
         hand = new ArrayList<>();
         score = 0;
         dummy = false;
@@ -54,7 +54,7 @@ public class Player {
 
     // constructor for dummies
     public Player(){
-        ID = Exec.getNewID();
+        int ID = Exec.getNewID();
         playerID = "dummy" + ID;
         hand = new ArrayList<>();
         score = 0;
@@ -91,9 +91,11 @@ public class Player {
         return winnerID;
     }
 
+/*
     public int ID(){
         return this.ID;
     }//end getPlayerID method
+*/
 
     public String playerID(){
         return playerID;
@@ -154,9 +156,9 @@ public class Player {
         playerDomain.leave();
     }
 
-    public void danger_pub_answering(int czarID, String questionText, int duration){
+    public void danger_pub_answering(Player currentCzar, String questionText, int duration){
         Log.i("danger answering sub", "received question " + questionText);
-        this.isCzar = (czarID == this.ID);
+        this.isCzar = ( currentCzar.playerID().equals(playerID) );
         this.question = questionText;
         this.duration = duration;
         activity.runOnUiThread(() -> {
@@ -200,11 +202,11 @@ public class Player {
             register("pick", Card.class, Card.class, player::pick);
 
             Log.i("Player", "sub to answering");
-            subscribe("answering", Integer.class, String.class, Integer.class,
-                    (czarID, questionText, duration) -> {
+            subscribe("answering", Player.class, String.class, Integer.class,
+                    (currentCzar, questionText, duration) -> {
                         Log.i("answering sub", "received question " + questionText);
 
-                        player.isCzar = (czarID == player.ID);
+                        player.isCzar = (currentCzar.playerID().equals(playerID));
                         player.question = questionText;
                         player.duration = duration;
                         activity.setQuestion();

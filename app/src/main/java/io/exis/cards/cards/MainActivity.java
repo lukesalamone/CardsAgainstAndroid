@@ -4,17 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Switch;
-import android.widget.TextView;
-
-import com.exis.riffle.Riffle;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -27,6 +22,8 @@ public class MainActivity extends Activity {
     private static Typeface LibSans;
     private static Typeface LibSansBold;
     private static Typeface LibSansItalic;
+    private static String screenName;
+    SharedPreferences preferences;
 
     Button gameButton;
 
@@ -36,6 +33,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         MainActivity.context = getApplicationContext();
         online = false;
+        screenName = "";
 
         //set typefaces
         LibSans = Typeface.createFromAsset(getAssets(),"LiberationSans-Regular.ttf");
@@ -49,9 +47,42 @@ public class MainActivity extends Activity {
         answers = Card.answers();
     }
 
-    public void startGame(View view) {
-        Log.v("MainActivity", "startGame");
+    @Override
+    protected void onStart(){
+        super.onStart();
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        Log.i("MainActivity", "screen name set to " + screenName);
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if(screenName.equals("")){
+            screenName = preferences.getString("screenName", "");
+            Log.i("MainActivity", "loaded screen name " + screenName);
+        }
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("screenName", screenName);
+        editor.apply();
+    }
+
+    public void startNameActivity(View view) {
+        Log.i("startNameActivity", "name = " + screenName);
+        Intent intent = new Intent(view.getContext(), NameActivity.class);
+        intent.putExtra("key_screen_name", screenName);
+        view.getContext().startActivity(intent);
+    }
+
+    public void startGameActivity(View view) {
         Intent intent = new Intent(view.getContext(), GameActivity.class);
+        intent.putExtra("key_screen_name", screenName);
         view.getContext().startActivity(intent);
     }
 
@@ -69,9 +100,6 @@ public class MainActivity extends Activity {
         return LibSans;
     }
 
-    /*
-     * TODO
-     */
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
@@ -112,6 +140,10 @@ public class MainActivity extends Activity {
 
         return cardString;
     }//end getCardString method
+
+    public static void setScreenName(String name){
+        screenName = name;
+    }
 
     public static ArrayList<Card> getQuestions(){
         return questions;

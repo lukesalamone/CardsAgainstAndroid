@@ -41,6 +41,7 @@ public class GameActivity extends Activity {
     private ArrayList<Card> forCzar;
     public static String phase;
     private GameTimer timer;
+    private String screenName;
 
     public static Handler handler;
 
@@ -95,6 +96,15 @@ public class GameActivity extends Activity {
     public void onStart(){
         Log.i("Game activity", "entering onStart()");
         super.onStart();
+
+        Bundle bundle = getIntent().getExtras();
+        screenName = bundle.getString("key_screen_name", "");
+
+        Log.i("screen name", screenName);
+
+        if(screenName.equals("")){
+            screenName = "player" + Exec.getNewID();
+        }
     }
 
     @Override
@@ -102,18 +112,35 @@ public class GameActivity extends Activity {
         super.onResume();
         String TAG = "GameActivity::onResume";
 
-        // int id = Exec.getNewID();
         Log.i(TAG, "creating Exec instance");
         exec = new Exec();
 
+        Log.i(TAG, "1");
         Domain app = new Domain("xs.damouse.CardsAgainst");
-        Player player = new Player(Exec.getNewID(), app);
+
+        Log.i(TAG, "2");
+        Log.i(TAG, "screenname=" + screenName);
+        Player player = new Player(screenName, app);
+
+        Log.i(TAG, "3");
         exec.setPlayer(player);
+
+        Log.i(TAG, "4");
         player.activity = this;
+
+        Log.i(TAG, "5");
         session = new RiffleSession(player.playerDomain());
+
+        Log.i(TAG, "6");
         session.setPlayer(player);
+
+        Log.i(TAG, "7");
         exec.externalPlayer = player;
+
+        Log.i(TAG, "8");
         exec.join();
+
+        Log.i(TAG, "9");
     }//end onResume method
 
     @Override
@@ -141,7 +168,7 @@ public class GameActivity extends Activity {
         timer = null;
     }
 
-    public void playOnlineGame(){
+    public void playGame(){
         answerSelected = false;
         setQuestion();
 
@@ -166,7 +193,7 @@ public class GameActivity extends Activity {
         this.runOnUiThread(() -> {
             setQuestion();                              //set question TextView
             refreshCards(player.hand());
-            playOnlineGame();
+            playGame();
         });
     }//end onPlayerJoin method
 
@@ -263,7 +290,6 @@ public class GameActivity extends Activity {
                         refreshCards(forCzar);
                     }else{
                         resetBackgrounds();
-                        refreshCards(forCzar);
                         infoText.setText(R.string.pickingInfo);
                         if(!answerSelected){
                             submitCard(0, cardViews.get(0));
@@ -288,6 +314,7 @@ public class GameActivity extends Activity {
                         resetBackgrounds();
                         infoText.setText(R.string.playersPickingInfo);
                     }else{
+                        blurUI(false);
                         infoText.setText(R.string.answeringInfo);
                     }
                     String winnerID = player.getWinner();             //give point if player is winner
