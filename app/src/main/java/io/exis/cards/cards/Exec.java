@@ -1,11 +1,7 @@
 package io.exis.cards.cards;
 
-import android.app.Activity;
-import android.content.SharedPreferences;
 import android.util.Log;
-
 import com.exis.riffle.Domain;
-
 import java.util.ArrayList;
 
 /**
@@ -15,11 +11,8 @@ import java.util.ArrayList;
  * Created by luke on 10/15/15.
  */
 public class Exec extends Domain{
-
     static ArrayList<Dealer> dealers = new ArrayList<>();
-    private static Player player;
-
-    public Player externalPlayer;
+    private Player player;
 
     public Exec() {
         super("Exec", new Domain("xs.damouse.CardsAgainst"));
@@ -27,26 +20,27 @@ public class Exec extends Domain{
 
     @Override
     public void onJoin(){
-        register("play", Object[].class, Exec::play);
-        externalPlayer.join();
+        register("play", Object[].class, this::play);
+        player.join();
     }
 
-    public static Object[] play(){
+    public Object[] play(){
         Dealer dealer = findDealer();
         GameActivity.dealer = dealer;                   // TODO danger
         return dealer.play();
     }
 
     public void setPlayer(Player p){
-        player = p;
+        this.player = p;
     }
 
-    public static void removeDealer(Dealer dealer){
+    public void removeDealer(Dealer dealer){
         dealers.remove(dealer);
     }
 
     //finds a dealer not at max capacity
-    public static Dealer findDealer(){
+    public Dealer findDealer(){
+        String TAG = "Exec::findDealer";
         for(int i=0; i<dealers.size(); i++){
             if(!dealers.get(i).full()){
                 return dealers.get(i);
@@ -54,10 +48,11 @@ public class Exec extends Domain{
         }
 
         Dealer dealer = addDealer();
-        Log.i("Exec::findDealer", "found dealer " + dealer.ID());
+        Log.i(TAG, "found dealer " + dealer.ID());
         dealer.addPlayer(player);
+        Log.i(TAG, "added player " + player.playerID());
         dealer.join();
-        Log.i("Exec::findDealer", "dealer " + dealer.ID() + " joining");
+        Log.i(TAG, "dealer " + dealer.ID() + " joining");
         dealer.start();
 
         return dealer;

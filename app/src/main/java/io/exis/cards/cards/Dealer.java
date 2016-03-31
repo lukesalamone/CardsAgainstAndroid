@@ -81,8 +81,6 @@ public class Dealer extends Domain{
         });
     }
 
-
-
     public String ID(){
         return this.dealerID;
     }
@@ -90,12 +88,13 @@ public class Dealer extends Domain{
     public void addPlayer(Player player){
         //if max capacity exceeded
         if(full()){
+            Log.i("dealer", "game is full");
             if(player.dummy){
                 return;
             }else{
                 removeDummy();
-                this.player = player;
                 addPlayer(player);
+                Log.i("dealer", "adding player " + player.playerID());
             }
         }
 
@@ -104,7 +103,11 @@ public class Dealer extends Domain{
             dealCard(player);
         }
 
-        playerCount++;
+
+        if(!player.dummy) {
+            playerCount++;
+            this.player = player;
+        }
         players.add(player);
     }//end addPlayer method
 
@@ -127,11 +130,7 @@ public class Dealer extends Domain{
     }//end dealCard method
 
     public boolean full() {
-        if (playerCount == ROOMCAP && players.size() == ROOMCAP){
-            return true;
-        }else{
-            return false;
-        }
+        return players.size() == ROOMCAP;
     }
 
     public static Card generateQuestion(){
@@ -158,7 +157,6 @@ public class Dealer extends Domain{
         return hand;
     }// end getNewHand method
 
-    // Not a fan of this method
     public Player[] getPlayers(){
         return players.toArray(new Player[players.size()]);
     }//end getPlayers method
@@ -264,7 +262,6 @@ public class Dealer extends Domain{
                 handler.postDelayed(this, delay);
             }
         };
-        Log.i("dealer", 3 + "");
         handler.postDelayed(runnable, delay);
     }//end start method
 
@@ -285,14 +282,15 @@ public class Dealer extends Domain{
      */
     private void playGame(String type){
         String TAG = "playGame";
+
         switch(type){
             case "answering":
                 updateCzar();
                 questionCard = generateQuestion();              //update question
 
-                Log.i(TAG, "publishing [answering, " +
-                        czar().playerID() + ", " +
-                        getQuestion().getText() + ", " +
+                Log.i(TAG, "publishing [answering, \n" +
+                        czar().playerID() + ", \n" +
+                        getQuestion().getText() + ", \n" +
                         duration + "]");
 //                    publish("answering", czar(), getQuestion().getText(), duration);
                 player.danger_pub_answering(players.get(czarNum), getQuestion().getText(), duration);
@@ -306,8 +304,8 @@ public class Dealer extends Domain{
                     answers.add(generateAnswer());
                 }
 
-                Log.i(TAG, "publishing [picking, " +
-                        Card.printHand(answers) + ", " +
+                Log.i(TAG, "publishing [picking, \n" +
+                        Card.printHand(answers) + ", \n" +
                         duration + "]");
 //                    publish("picking", Card.handToStrings(answers), duration);
                 player.danger_pub_picking(Card.handToStrings(answers), duration);

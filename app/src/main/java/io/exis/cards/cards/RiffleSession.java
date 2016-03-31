@@ -121,13 +121,6 @@ public class RiffleSession {
     }
 
     /*
-     * Called in GameActivity. Returns result of call of Exec::findDealer
-     */
-    public Dealer findDealer(){
-        return Exec.findDealer();
-    }//end findDealer method
-
-    /*
      * Calls to Dealer::getNewHand
      */
     @SuppressWarnings("unchecked")

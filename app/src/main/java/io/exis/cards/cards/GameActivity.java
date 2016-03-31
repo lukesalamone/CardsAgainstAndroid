@@ -27,16 +27,13 @@ import java.util.ArrayList;
  * Created by luke on 10/22/15.
  */
 public class GameActivity extends Activity {
-
-    //public final String PREFS;
     public int points;
     private Context context;
     public Player player;
     public static Dealer dealer;
-    private Exec exec;
+    public static Exec exec;
     private ProgressBar progressBar;
-    public RiffleSession session;
-    private boolean answerSelected;                             //whether card has been selected
+    private boolean answerSelected;
     private Card chosen;
     private ArrayList<Card> forCzar;
     public static String phase;
@@ -115,32 +112,12 @@ public class GameActivity extends Activity {
         Log.i(TAG, "creating Exec instance");
         exec = new Exec();
 
-        Log.i(TAG, "1");
         Domain app = new Domain("xs.damouse.CardsAgainst");
-
-        Log.i(TAG, "2");
         Log.i(TAG, "screenname=" + screenName);
         Player player = new Player(screenName, app);
-
-        Log.i(TAG, "3");
-        exec.setPlayer(player);
-
-        Log.i(TAG, "4");
         player.activity = this;
-
-        Log.i(TAG, "5");
-        session = new RiffleSession(player.playerDomain());
-
-        Log.i(TAG, "6");
-        session.setPlayer(player);
-
-        Log.i(TAG, "7");
-        exec.externalPlayer = player;
-
-        Log.i(TAG, "8");
+        exec.setPlayer(player);
         exec.join();
-
-        Log.i(TAG, "9");
     }//end onResume method
 
     @Override
@@ -162,7 +139,6 @@ public class GameActivity extends Activity {
         super.onDestroy();
         handler.removeCallbacks(dealer.runnable);
         player.leave();
-        session.leave();
         dealer = null;
         exec = null;
         timer = null;
@@ -229,15 +205,12 @@ public class GameActivity extends Activity {
 
     // card c gets colored background
     private void setBackgrounds(int c, View v){
-        //v.setBackgroundColor(Color.parseColor("#ff30b2c1"));
         ((TextView) v).setBackgroundColor(Color.parseColor("#ff00a2ff"));
-        ((TextView) v).setTextColor(Color.parseColor("#ffffffff"));
 
-        //set other cards to grey
+        // all other card backgrounds white
         for(int i=0; i<5; i++){
             if(i != c){
-                cardViews.get(i).setBackgroundColor(Color.parseColor("#ffffffff"));
-                cardViews.get(i).setTextColor(Color.parseColor("#ee000000"));
+                cardViews.get(i).setBackgroundColor(Color.WHITE);
             }
         }
     }//end setBackgrounds method
@@ -245,27 +218,24 @@ public class GameActivity extends Activity {
     // set all backgrounds to white
     private void resetBackgrounds(){
         for(TextView v : cardViews){
-            v.setBackgroundColor(Color.parseColor("#ffffffff"));
-            v.setTextColor(Color.parseColor("#ff000000"));
+            v.setBackgroundColor(Color.WHITE);
+//            v.setTextColor(Color.BLACK);
         }
     }
 
     // set blur to TRUE to blur, FALSE to unblur
     private void blurUI(boolean blur){
         if(blur){
-            layout.setBackground(ContextCompat.getDrawable(context, R.drawable.blur));
             for(TextView t : cardViews){
-                t.setVisibility(View.GONE);
+                t.setShadowLayer(25, 0, 0, Color.BLACK);
+                t.setTextColor(Color.parseColor("#99000000"));
             }
         }else{
-            layout.setBackground(null);
-            layout.setBackgroundColor(Color.parseColor("#ff000000"));
             for(TextView t: cardViews){
-                t.setVisibility(View.VISIBLE);
+                t.setShadowLayer(0, 0, 0, 0);
+                t.setTextColor(Color.BLACK);
             }
         }
-
-
     }
 
     private class GameTimer extends CountDownTimer{
@@ -279,7 +249,6 @@ public class GameActivity extends Activity {
         @Override
         public void onFinish(){
             progressBar.setProgress(progressBar.getMax());
-
             switch(type){
                 case "answering":                           //next phase will be picking
                     if(player.isCzar()){
@@ -310,8 +279,8 @@ public class GameActivity extends Activity {
                 case "scoring":                                 //next phase will be answering
                     setQuestion();                              //update question card
                     if(player.isCzar()){
-                        blurUI(true);
                         resetBackgrounds();
+                        blurUI(true);
                         infoText.setText(R.string.playersPickingInfo);
                     }else{
                         blurUI(false);

@@ -35,13 +35,11 @@ public class Player {
     boolean dummy;
 
     GameActivity activity;                  // TODO get rid of this
-    Domain exec;
+    Exec exec;
     private Receiver playerDomain;
 
-    Exec DANGER_EXEC;
-
     public Player(String name, Domain app){
-        exec = new Domain(dealerDomain, app);
+        exec = new Exec();
         playerDomain = new Receiver(name, app);
         playerDomain.player = this;
 
@@ -161,17 +159,18 @@ public class Player {
         this.isCzar = ( currentCzar.playerID().equals(playerID) );
         this.question = questionText;
         this.duration = duration;
-        activity.runOnUiThread(() -> {
-            Log.i("player", "setting question");
-            activity.setQuestion();                              //set question TextView
-        });
     }
 
     public void danger_pub_picking(String[] answers, int duration){
         Log.i("danger picking sub", "received answers " + Card.printHand(answers));
         this.answers = Card.buildHand(answers);
         this.duration = duration;
-        activity.runOnUiThread(() -> activity.refreshCards(this.answers) );
+        activity.runOnUiThread(() -> {
+            Log.i("player", "setting question");
+            activity.setQuestion();
+            Log.i("player", "refreshing cards with answers");
+            activity.refreshCards(this.answers);
+        });
     }
 
     public void danger_pub_scoring(String winnerID, String winningCard, int duration){
@@ -184,10 +183,6 @@ public class Player {
     // Receiver handles riffle calls
     private class Receiver extends Domain{
         private Player player;
-
-/*        public Receiver(String name) {
-            super(name);
-        }*/
 
         public Receiver(String name, Domain superdomain) {
             super(name, superdomain );
@@ -218,7 +213,7 @@ public class Player {
                         Log.i("picking sub", "received answers " + Card.printHand(answers));
                         player.answers = Card.buildHand(answers);
                         player.duration = duration;
-                        activity.runOnUiThread(() -> activity.refreshCards(player.answers) );
+                        activity.runOnUiThread(() -> activity.refreshCards(player.answers));
                     });
 
             Log.i("Player", "sub to scoring");
@@ -230,7 +225,7 @@ public class Player {
                         player.duration = duration;
                     });
 
-            Object[] playObject = DANGER_EXEC.play();       // TODO
+            Object[] playObject = GameActivity.exec.play();       // TODO
 
             if(playObject == null){
                 Log.wtf(TAG, "play object is null!");

@@ -8,8 +8,8 @@
     <string name="adult">Adult</string>
     <string name="score">Score</string>
     <string name="your_score">0</string>
-    <string name="question">QUESTIONS GO HERE</string>
-    <string name="answer">ANSWERS GO HERE</string>
+    <string name="question"></string>
+    <string name="answer"></string>
     <string name="room">Choose a card\n</string>
     <string name="info">Network Mode</string>
     <string name="loading_questions">Loading Questions...</string>
