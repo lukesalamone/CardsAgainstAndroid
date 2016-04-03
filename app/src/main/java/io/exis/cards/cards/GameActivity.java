@@ -53,7 +53,7 @@ public class GameActivity extends Activity {
     public GameActivity(){
         Log.i("GameActivity", "entered constructor");
         Riffle.setFabricDev();
-        Riffle.setLogLevelInfo();
+//        Riffle.setLogLevelInfo();
         Riffle.setCuminOff();
 
         this.context = MainActivity.getAppContext();
@@ -252,7 +252,7 @@ public class GameActivity extends Activity {
             switch(type){
                 case "answering":                           //next phase will be picking
                     if(player.isCzar()){
-                        blurUI(false);
+//                        blurUI(false);
                         infoText.setText(R.string.answeringInfo);
                         forCzar = player.answers();
                         chosen = forCzar.get(0);            //default submit first card
@@ -280,10 +280,10 @@ public class GameActivity extends Activity {
                     setQuestion();                              //update question card
                     if(player.isCzar()){
                         resetBackgrounds();
-                        blurUI(true);
+//                        blurUI(true);
                         infoText.setText(R.string.playersPickingInfo);
                     }else{
-                        blurUI(false);
+//                        blurUI(false);
                         infoText.setText(R.string.answeringInfo);
                     }
                     String winnerID = player.getWinner();             //give point if player is winner

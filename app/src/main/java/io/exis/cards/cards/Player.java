@@ -161,23 +161,28 @@ public class Player {
         this.duration = duration;
     }
 
+    // executed 
     public void danger_pub_picking(String[] answers, int duration){
         Log.i("danger picking sub", "received answers " + Card.printHand(answers));
         this.answers = Card.buildHand(answers);
         this.duration = duration;
         activity.runOnUiThread(() -> {
-            Log.i("player", "setting question");
-            activity.setQuestion();
             Log.i("player", "refreshing cards with answers");
             activity.refreshCards(this.answers);
         });
     }
 
+    // executed at end of scoring phase
     public void danger_pub_scoring(String winnerID, String winningCard, int duration){
         Log.i("danger scoring sub", "winning card " + winningCard);
         this.winnerID = winnerID;
         this.winningCard = winningCard;
         this.duration = duration;
+
+        activity.runOnUiThread(()->{
+            Log.i("player", "setting question");
+            activity.setQuestion();
+        });
     }
 
     // Receiver handles riffle calls
