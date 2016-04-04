@@ -49,6 +49,7 @@ public class GameActivity extends Activity {
     RelativeLayout layout;
     TextView infoText;
     ArrayList<TextView> cardViews;
+    static ArrayList<TextView> playerInfos;
 
     public GameActivity(){
         Log.i("GameActivity", "entered constructor");
@@ -67,8 +68,9 @@ public class GameActivity extends Activity {
         setContentView(R.layout.activity_game);
 
         cardViews = new ArrayList<>();
+        playerInfos = new ArrayList<>();
 
-        // add 5 textviews to Array List
+        // add 5 textviews to cardViews Array List
         for(int i=0; i<5; i++){
             String str = "card" + (i + 1);
             int resID = context.getResources().getIdentifier(str, "id", context.getPackageName());
@@ -81,8 +83,17 @@ public class GameActivity extends Activity {
             cardViews.add(i, textView);
         }// end for loop
 
+        // add 4 textviews to playerInfos
+        for(int i=0; i<4; i++){
+            String str = "player_info" + i;
+            int resID = context.getResources().getIdentifier(str, "id", context.getPackageName());
+            TextView textView = (TextView) findViewById(resID);
+            textView.setTypeface(MainActivity.getTypeface(""));
+            playerInfos.add(textView);
+        }
+
         layout = (RelativeLayout) findViewById(R.id.game_bg);
-        infoText = (TextView) findViewById(R.id.room_id);
+        infoText = (TextView) findViewById(R.id.info);
         progressBar = (ProgressBar) findViewById(R.id.progress);
         infoText.setTypeface(MainActivity.getTypeface("LibSansItalic"));
 
@@ -156,9 +167,30 @@ public class GameActivity extends Activity {
     public void onPlayerJoined(Object[] play){
         String TAG = "onPlayerJoined()";
         phase = "answering";
+        int pos = 0;
         try {
             player.setHand(Card.buildHand((String[]) play[0]));
             this.players = (Player[]) play[1];
+
+            try {
+                // display players in game
+                for (Player p : this.players) {
+                    if (p != null && !this.player.playerID().equals(p.playerID())) {
+                        final int posF = pos;
+                        this.runOnUiThread(() -> {
+                            String str = p.playerID();
+                            playerInfos.get(posF).setText(str);
+                            if(str.startsWith("dummy")){
+                                playerInfos.get(posF).setBackgroundColor(Color.parseColor("#551A8B"));
+                            }
+                        });
+                        pos++;
+                    }
+                }
+            }catch(NullPointerException e){
+                Log.wtf("onPlayerJoined", "caught null players array");
+                e.printStackTrace();
+            }
             this.state = (String) play[2];
             this.roomName = (String) play[3];
         }catch(NullPointerException e){
@@ -205,7 +237,8 @@ public class GameActivity extends Activity {
 
     // card c gets colored background
     private void setBackgrounds(int c, View v){
-        ((TextView) v).setBackgroundColor(Color.parseColor("#ff00a2ff"));
+        v.setBackgroundColor(Color.parseColor("#ff00a2ff"));
+        ((TextView) v).setTextColor(Color.WHITE);
 
         // all other card backgrounds white
         for(int i=0; i<5; i++){
@@ -219,7 +252,7 @@ public class GameActivity extends Activity {
     private void resetBackgrounds(){
         for(TextView v : cardViews){
             v.setBackgroundColor(Color.WHITE);
-//            v.setTextColor(Color.BLACK);
+            v.setTextColor(Color.BLACK);
         }
     }
 

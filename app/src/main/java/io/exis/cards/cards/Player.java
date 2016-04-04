@@ -161,7 +161,7 @@ public class Player {
         this.duration = duration;
     }
 
-    // executed 
+    // executed
     public void danger_pub_picking(String[] answers, int duration){
         Log.i("danger picking sub", "received answers " + Card.printHand(answers));
         this.answers = Card.buildHand(answers);
