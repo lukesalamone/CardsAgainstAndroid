@@ -1,9 +1,7 @@
 package io.exis.cards.cards;
 
 import android.util.Log;
-
 import com.exis.riffle.Domain;
-
 import java.util.ArrayList;
 
 /**
@@ -34,7 +32,7 @@ public class Player {
     private Card picked;
     boolean dummy;
 
-    GameActivity activity;                  // TODO get rid of this
+    GameActivity activity;
     Exec exec;
     private Receiver playerDomain;
 

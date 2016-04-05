@@ -22,11 +22,8 @@ import com.exis.riffle.Riffle;
 public class Dealer extends Domain{
 
     final int ROOMCAP = 5;
-
     private ArrayList<Player> players;                      // keep track of players playing
     private ArrayList<Card> answers;                        // cards sent to czar
-
-    //keep track of cards not in play
     private static ArrayList<Card> questionDeck;
     private ArrayList<Card> answerDeck;
     private String phase;
@@ -35,7 +32,6 @@ public class Dealer extends Domain{
     private Card questionCard;                              // always know question card
     private String dealerID;
     int czarNum;
-    RiffleSession session;
     private int dummyCount;
     private int playerCount;
     private int duration;
@@ -46,7 +42,6 @@ public class Dealer extends Domain{
 
     public Dealer(int ID){
         super("dealer" + ID, new Domain("xs.damouse.CardsAgainst"));
-        session = new RiffleSession(this);
         dealerID = ID + "";
         czarNum = 0;
         players  = new ArrayList<>();
