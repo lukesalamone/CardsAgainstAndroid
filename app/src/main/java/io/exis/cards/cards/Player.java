@@ -70,14 +70,11 @@ public class Player {
 
     // dealer calls this method on player
     public Card pick(Card newCard){
+        Log.i("player", "dealer calling Player::picked()");
         hand.add(newCard);
         hand.remove(picked);
         return picked;
     }// end pick method
-
-    public Receiver playerDomain(){
-        return playerDomain;
-    }
 
     public ArrayList<Card> hand(){
         return this.hand;
@@ -86,12 +83,6 @@ public class Player {
     public String getWinner(){
         return winnerID;
     }
-
-/*
-    public int ID(){
-        return this.ID;
-    }//end getPlayerID method
-*/
 
     public String playerID(){
         return playerID;
@@ -149,11 +140,12 @@ public class Player {
     }
 
     public void leave(){
+        playerDomain.call("leave", this);
         playerDomain.leave();
     }
 
     public void danger_pub_answering(Player currentCzar, String questionText, int duration){
-        Log.i("danger answering sub", "received question " + questionText);
+//        Log.i("danger answering sub", "received question " + questionText);
         this.isCzar = ( currentCzar.playerID().equals(playerID) );
         this.question = questionText;
         this.duration = duration;
@@ -161,7 +153,7 @@ public class Player {
 
     // executed
     public void danger_pub_picking(String[] answers, int duration){
-        Log.i("danger picking sub", "received answers " + Card.printHand(answers));
+//        Log.i("danger picking sub", "received answers " + Card.printHand(answers));
         this.answers = Card.buildHand(answers);
         this.duration = duration;
         activity.runOnUiThread(() -> {
@@ -172,7 +164,7 @@ public class Player {
 
     // executed at end of scoring phase
     public void danger_pub_scoring(String winnerID, String winningCard, int duration){
-        Log.i("danger scoring sub", "winning card " + winningCard);
+//        Log.i("danger scoring sub", "winning card " + winningCard);
         this.winnerID = winnerID;
         this.winningCard = winningCard;
         this.duration = duration;
@@ -198,6 +190,8 @@ public class Player {
 
             register("draw", Card.class, Object.class, player::draw);
             register("pick", Card.class, Card.class, player::pick);
+            subscribe("joined", String.class, activity::addPlayer);
+            subscribe("left", String.class, activity::removePlayer);
 
             Log.i("Player", "sub to answering");
             subscribe("answering", Player.class, String.class, Integer.class,

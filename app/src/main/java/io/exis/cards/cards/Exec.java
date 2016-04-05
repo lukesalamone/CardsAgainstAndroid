@@ -34,7 +34,7 @@ public class Exec extends Domain{
         this.player = p;
     }
 
-    public void removeDealer(Dealer dealer){
+    public static void removeDealer(Dealer dealer){
         dealers.remove(dealer);
     }
 

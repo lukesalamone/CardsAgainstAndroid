@@ -56,12 +56,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume(){
         super.onResume();
-        Log.i("MainActivity", "screen name set to " + screenName);
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         if(screenName.equals("")){
             screenName = preferences.getString("screenName", "");
-            Log.i("MainActivity", "loaded screen name " + screenName);
         }
+        Log.i("MainActivity", "loaded screen name " + screenName);
     }
 
     @Override

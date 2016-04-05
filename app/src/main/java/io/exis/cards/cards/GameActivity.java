@@ -177,10 +177,10 @@ public class GameActivity extends Activity {
                 for (Player p : this.players) {
                     if (p != null && !this.player.playerID().equals(p.playerID())) {
                         final int posF = pos;
-                        this.runOnUiThread(() -> {
+                        runOnUiThread(() -> {
                             String str = p.playerID();
                             playerInfos.get(posF).setText(str);
-                            if(str.startsWith("dummy")){
+                            if (str.startsWith("dummy")) {
                                 playerInfos.get(posF).setBackgroundColor(Color.parseColor("#551A8B"));
                             }
                         });
@@ -222,6 +222,23 @@ public class GameActivity extends Activity {
         }
     }//end setAnswers method
 
+    public void addPlayer(String player){
+        runOnUiThread(() -> {
+            playerInfos.get( playerInfos.size() - 1 ).setText(player);
+            if(player.startsWith("dummy")){
+                playerInfos.get(3).setBackgroundColor(Color.parseColor("#551A8B"));
+            }
+        });
+    }
+
+    public void removePlayer(String player){
+        for(TextView t : playerInfos){
+            if(t.getText().equals(player)){
+                runOnUiThread(()->t.setText(""));
+            }
+        }
+    }
+
     private void submitCard(int num, View view){
         String TAG = "submitCard";
         if(player.isCzar() && phase.equals("picking") ||
@@ -256,21 +273,6 @@ public class GameActivity extends Activity {
         }
     }
 
-    // set blur to TRUE to blur, FALSE to unblur
-    private void blurUI(boolean blur){
-        if(blur){
-            for(TextView t : cardViews){
-                t.setShadowLayer(25, 0, 0, Color.BLACK);
-                t.setTextColor(Color.parseColor("#99000000"));
-            }
-        }else{
-            for(TextView t: cardViews){
-                t.setShadowLayer(0, 0, 0, 0);
-                t.setTextColor(Color.BLACK);
-            }
-        }
-    }
-
     private class GameTimer extends CountDownTimer{
         private GameTimer next;
         private String type;
@@ -285,7 +287,6 @@ public class GameActivity extends Activity {
             switch(type){
                 case "answering":                           //next phase will be picking
                     if(player.isCzar()){
-//                        blurUI(false);
                         infoText.setText(R.string.answeringInfo);
                         forCzar = player.answers();
                         chosen = forCzar.get(0);            //default submit first card
@@ -313,10 +314,8 @@ public class GameActivity extends Activity {
                     setQuestion();                              //update question card
                     if(player.isCzar()){
                         resetBackgrounds();
-//                        blurUI(true);
                         infoText.setText(R.string.playersPickingInfo);
                     }else{
-//                        blurUI(false);
                         infoText.setText(R.string.answeringInfo);
                     }
                     String winnerID = player.getWinner();             //give point if player is winner

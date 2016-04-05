@@ -79,10 +79,12 @@ class App {
                         // TODO: try/catch
 
                         if (t.isRegistration) {
+//                            byte[] yieldId = Utils.serializeCoreBytes(args[0]);
                             BigInteger yieldId = Utils.convertCoreInt64(args[0]);
                             Object result = t.fn.invoke(Arrays.copyOfRange(args, 1, args.length));
 
                             Object[] packed = {result};
+//                            mantleDomain.Yield(Utils.serializeCoreBytes(yieldId), Utils.marshall(packed));
                             mantleDomain.Yield(yieldId.toString(), Utils.marshall(packed));
                         } else {
                             t.fn.invoke(args);

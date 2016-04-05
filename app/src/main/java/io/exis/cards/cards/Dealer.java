@@ -104,6 +104,7 @@ public class Dealer extends Domain{
             this.player = player;
         }
         players.add(player);
+        publish("joined", player.playerID());
     }//end addPlayer method
 
     // returns current czar
@@ -116,7 +117,7 @@ public class Dealer extends Domain{
         Card card = generateAnswer();                       //generate new card to give to player
 
         if(!player.dummy) {
-//            session.draw(card);
+//            call("draw", card);
             player.draw(card);
         }else{
             player.draw(card);                            //add card to player's hand
@@ -192,8 +193,12 @@ public class Dealer extends Domain{
         }
     }
 
-    public Object leave(Player player){
-        players.remove(player);
+    public Object leave(Player leavingPlayer){
+        players.remove(leavingPlayer);
+        if(playerCount == 0){
+            Exec.removeDealer(this);
+        }
+        publish("left", leavingPlayer);
         return null;
     }//end remove player method
 
@@ -228,10 +233,10 @@ public class Dealer extends Domain{
     }//end updateCzar method
 
     /* @param   player player that is submitting a card
-     * @param   card Card czar has chosen
+     * @param   card Card player has chosen
      */
     private void pick(Player player, Card card){
-//            session.pick(card);                               // TODO danger
+//        call("pick", card).then(Card.class, answers::add);                               // TODO danger
         player.pick(card);
     }//end pick method
 

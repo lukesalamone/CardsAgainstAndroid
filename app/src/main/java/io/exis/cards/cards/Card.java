@@ -3,13 +3,9 @@ package io.exis.cards.cards;
 /**
  *
  * Card.java
- * Create a card from a card ID
  *
- * NOTE: Card IDs are completely fucked up in the text files and will probably
- * need to be redone at some point. There are large gaps in their numbering.
- *
- * NOTE: It will be difficult to easily extend the number of cards due to the
- * way they IDs are numbered.
+ * Loads texts from file and into Card objects. Cards are essentially strings with several
+ * associated methods for convenience.
  *
  * Created by luke on 10/8/15.
  * Copyright © 2015 paradrop. All rights reserved.
@@ -29,10 +25,8 @@ public class Card {
     private static String[] keys = {"text", "id"};                      //keys for JSON array
     private static ArrayList<Card> questions;
     private static ArrayList<Card> answers;
-
     static Context context;
 
-    // Cards are fancy String wrappers
     public Card(String cardText){
         this.text = cardText;
         context = MainActivity.getAppContext();
@@ -66,7 +60,6 @@ public class Card {
             } catch(JSONException e){
                 break;
             }
-            Log.i("adding question", cardText);
             questions.add(new Card(cardText));
         }
     }
@@ -83,26 +76,17 @@ public class Card {
             } catch(JSONException e){
                 break;
             }
-            Log.i("adding answer", cardText);
             answers.add(new Card(cardText));
         }
     }
 
-    /*
-     * Gets a JSON Array of JSON Objects which contain card texts and irrelevant IDs
-     *
-     * @param name The name of the file to be retrieved
-     * @return The JSONArray
-     */
     public static JSONArray getCardsJSON(String name){
         if(cardsArray == null || cardsJSON.length() == 0){
 
             String cardString = MainActivity.getCardString(name);
-            Log.i("getCardsJSON", "cardString has length " + cardString.length());
 
             try {
                 cardsArray = new JSONArray(cardString);
-                Log.i("getCardsJSON", "cardsArray has length " + cardsArray.length());
             } catch(JSONException e){
                 Log.wtf("getCardsJSON", "JSON Exception thrown.");
                 e.printStackTrace();

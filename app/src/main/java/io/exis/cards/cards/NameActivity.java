@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -25,6 +26,7 @@ public class NameActivity extends Activity {
     private String screenName;
     private RelativeLayout background;
     SharedPreferences preferences;
+    InputMethodManager mgr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +38,7 @@ public class NameActivity extends Activity {
         nameField = (EditText) findViewById(R.id.name_field);
         nameField.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         border = (TextView) findViewById(R.id.border);
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        mgr = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
         nameField.setOnClickListener(v -> {
             Log.i("name activity", "onClickListener fired");
@@ -45,7 +47,7 @@ public class NameActivity extends Activity {
         });
 
         nameField.setOnFocusChangeListener((v, hasFocus) -> {
-            if(hasFocus){
+            if (hasFocus) {
                 Log.i("name activity", "onFocusChangeListener fired");
                 nameField.setText("");
                 border.setBackgroundColor(Color.parseColor("#00a2ff"));
@@ -53,15 +55,30 @@ public class NameActivity extends Activity {
         });
 
         background.setOnClickListener(v -> {
-            nameField.clearFocus();
-            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-            if (!nameField.getText().toString().equals("") &&
-                    !nameField.getText().toString().equals("Enter Screen Name")) {
-                screenName = nameField.getText().toString();
-            }
-            MainActivity.setScreenName(screenName);
-            border.setBackgroundColor(Color.parseColor("#ffffff"));
+            leaveTextField();
         });
+
+        nameField.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    leaveTextField();
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+
+    void leaveTextField(){
+        nameField.clearFocus();
+        mgr.hideSoftInputFromWindow(background.getWindowToken(), 0);
+        if (!nameField.getText().toString().equals("") &&
+                !nameField.getText().toString().equals("Enter Screen Name")) {
+            screenName = nameField.getText().toString();
+        }
+        MainActivity.setScreenName(screenName);
+        border.setBackgroundColor(Color.parseColor("#ffffff"));
     }
 
     @Override

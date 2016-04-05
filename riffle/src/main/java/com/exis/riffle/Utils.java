@@ -1,8 +1,14 @@
 package com.exis.riffle;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Random;
@@ -35,5 +41,32 @@ public class Utils {
         //Riffle.debug("Converting object: " + o.toString() + " Cast as double: " + t + " long value: " + t.longValue() + " BigInt: " + BigInteger.valueOf(t.longValue()).toString());
         BigInteger id = BigInteger.valueOf(((Double) o).longValue());
         return id;
+    }
+
+    /*
+     * Serialize objects for transmission. Most objects implement serializable, but uses toString()
+     * if not.
+     *
+     * Returns empty byte array on null param.
+     */
+    static byte[] serializeCoreBytes(Object o){
+        if(o == null){
+            Riffle.debug("Attempt to serialize null object");
+            Log.e("SerializeCoreBytes", "Object is null");
+            return new byte[]{};
+        }
+
+        if(o instanceof Serializable) {
+            try{
+                ByteArrayOutputStream a = new ByteArrayOutputStream();
+                ObjectOutputStream b = new ObjectOutputStream(a);
+                b.writeObject(o);
+                return a.toByteArray();
+            }catch(IOException e){
+                Riffle.debug("IOException thrown in Utils::serializeCoreBytes");
+                Log.e("SerializeCoreBytes", "IOException thrown");
+            }
+        }
+        return o.toString().getBytes();
     }
 }
