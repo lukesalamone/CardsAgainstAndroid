@@ -262,7 +262,7 @@ public class Dealer extends Domain{
                 handler.postDelayed(this, delay);
             }
         };
-        handler.postDelayed(runnable, delay);
+        handler.postDelayed(runnable, 0);
     }//end start method
 
     public void danger_pub_chose(Card picked){
@@ -299,13 +299,18 @@ public class Dealer extends Domain{
                 phase = "picking";
                 break;
             case "picking":
+                answers.clear();
+                for(Player p : players){
+                    answers.add( p.pick( generateAnswer() ) );                   // TODO danger
+                }
+/*
                 // pad pile for czar
                 while(answers.size() < 5){
                     answers.add(generateAnswer());
                 }
-
+*/
                 Log.i(TAG, "publishing [picking, \n" +
-                        Card.printHand(answers) + ", \n" +
+                        Card.printHand(answers) +
                         duration + "]");
 //                    publish("picking", Card.handToStrings(answers), duration);
                 player.danger_pub_picking(Card.handToStrings(answers), duration);

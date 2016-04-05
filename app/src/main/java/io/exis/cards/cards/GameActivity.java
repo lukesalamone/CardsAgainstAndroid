@@ -28,23 +28,23 @@ import java.util.ArrayList;
  */
 public class GameActivity extends Activity {
     public int points;
-    private Context context;
     public Player player;
     public static Dealer dealer;
     public static Exec exec;
+    public static Player currentCzar;
+    public static Handler handler;
+    public static String phase;
+    public Player[] players;
+    public String state;
+    public String roomName;
+
+    private Context context;
     private ProgressBar progressBar;
     private boolean answerSelected;
     private Card chosen;
     private ArrayList<Card> forCzar;
-    public static String phase;
     private GameTimer timer;
     private String screenName;
-
-    public static Handler handler;
-
-    public Player[] players;
-    public String state;
-    public String roomName;
 
     RelativeLayout layout;
     TextView infoText;
@@ -180,8 +180,10 @@ public class GameActivity extends Activity {
                         runOnUiThread(() -> {
                             String str = p.playerID();
                             playerInfos.get(posF).setText(str);
-                            if (str.startsWith("dummy")) {
-                                playerInfos.get(posF).setBackgroundColor(Color.parseColor("#551A8B"));
+                            if (currentCzar != null && str.equals(currentCzar.playerID())) {
+                                playerInfos.get(posF).setBackgroundColor(Color.parseColor("#00a2ff"));
+                            }else{
+                                playerInfos.get(posF).setBackgroundColor(Color.parseColor("#005688"));
                             }
                         });
                         pos++;
@@ -219,6 +221,14 @@ public class GameActivity extends Activity {
         //change card texts to text of cards in hand
         for(int i=0; i<5; i++){
             cardViews.get(i).setText( pile.get(i).getText() );
+            if(player.picked != null
+                    && !phase.equals("answering")
+                    && !player.isCzar()
+                    && pile.get(i).getText().equals( player.picked.getText())){
+                cardViews.get(i).setBackgroundColor(Color.parseColor("#8ad4ff"));    // light blue
+            }else{
+                cardViews.get(i).setBackgroundColor(Color.WHITE);
+            }
         }
     }//end setAnswers method
 
@@ -254,7 +264,7 @@ public class GameActivity extends Activity {
 
     // card c gets colored background
     private void setBackgrounds(int c, View v){
-        v.setBackgroundColor(Color.parseColor("#ff00a2ff"));
+        v.setBackgroundColor(Color.parseColor("#ff00a2ff"));        // blue
         ((TextView) v).setTextColor(Color.WHITE);
 
         // all other card backgrounds white
@@ -273,6 +283,16 @@ public class GameActivity extends Activity {
         }
     }
 
+    public void setPlayerBackgrounds(){
+        for(TextView t : playerInfos){
+            if( t.getText().equals( currentCzar.playerID() )){
+                runOnUiThread(() -> t.setBackgroundColor(Color.parseColor("#00a2ff")));
+            }else{
+                runOnUiThread(() -> t.setBackgroundColor(Color.parseColor("#005688")));
+            }
+        }
+    }
+
     private class GameTimer extends CountDownTimer{
         private GameTimer next;
         private String type;
@@ -286,11 +306,15 @@ public class GameActivity extends Activity {
             progressBar.setProgress(progressBar.getMax());
             switch(type){
                 case "answering":                           //next phase will be picking
+                    try {
+                        refreshCards(player.answers());
+                    }catch(NullPointerException e){
+                        Log.wtf("GameActivity", "answers array is null");
+                    }
                     if(player.isCzar()){
                         infoText.setText(R.string.answeringInfo);
                         forCzar = player.answers();
                         chosen = forCzar.get(0);            //default submit first card
-                        refreshCards(forCzar);
                     }else{
                         resetBackgrounds();
                         infoText.setText(R.string.pickingInfo);

@@ -29,7 +29,7 @@ public class Player {
     private String winningCard;
     private Object ret;
     private Card nextCard;
-    private Card picked;
+    public Card picked;
     boolean dummy;
 
     GameActivity activity;
@@ -70,7 +70,9 @@ public class Player {
 
     // dealer calls this method on player
     public Card pick(Card newCard){
-        Log.i("player", "dealer calling Player::picked()");
+        if(dummy){
+            picked = hand.get(0);
+        }
         hand.add(newCard);
         hand.remove(picked);
         return picked;
@@ -193,18 +195,18 @@ public class Player {
             subscribe("joined", String.class, activity::addPlayer);
             subscribe("left", String.class, activity::removePlayer);
 
-            Log.i("Player", "sub to answering");
             subscribe("answering", Player.class, String.class, Integer.class,
                     (currentCzar, questionText, duration) -> {
                         Log.i("answering sub", "received question " + questionText);
 
                         player.isCzar = (currentCzar.playerID().equals(playerID));
+                        activity.currentCzar = currentCzar;
+                        activity.setPlayerBackgrounds();
                         player.question = questionText;
                         player.duration = duration;
                         activity.setQuestion();
                     });
 
-            Log.i("Player", "sub to picking");
             subscribe("picking", String[].class, Integer.class,
                     (answers, duration) -> {
                         Log.i("picking sub", "received answers " + Card.printHand(answers));
@@ -213,7 +215,6 @@ public class Player {
                         activity.runOnUiThread(() -> activity.refreshCards(player.answers));
                     });
 
-            Log.i("Player", "sub to scoring");
             subscribe("scoring", String.class, String.class, Integer.class,
                     (winnerID, winningCard, duration) -> {
                         Log.i("scoring sub", "winning card " + winningCard);
@@ -231,7 +232,6 @@ public class Player {
             player.hand = Card.buildHand( (String[])playObject[0] );
             setDealer((String)playObject[3]);
 
-            Log.i(TAG, "onJoin Finished");
             activity.onPlayerJoined(playObject);
         }
 

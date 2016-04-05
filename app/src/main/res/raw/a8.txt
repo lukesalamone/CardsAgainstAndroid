@@ -14,7 +14,7 @@
     "id": 2671
   },
   {
-    "text": "Done Cherry's wardrobe",
+    "text": "Don Cherry's wardrobe",
     "id": 2672
   },
   {
